@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\FrontendController;
 use App\Http\Controllers\Web\HomeController;
+use App\Http\Controllers\Web\LoginController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -22,5 +23,8 @@ Route::controller(FrontendController::class)->group(function () {
     Route::get('/faq', 'faq')->name('faq');
     Route::get('/notice', 'notice')->name('notice');
 });
+
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
 
 /* Frontend URL End */

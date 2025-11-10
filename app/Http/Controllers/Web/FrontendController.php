@@ -47,14 +47,14 @@ class FrontendController extends Controller
 
     public function faq(){   
         $response = Http::get(config('services.api.base_url') . '/content/faq');
-        $data = $response->json();
+        $allData = collect($response->json());
 
-        // Pass to the view
-        return view('outerTheme.pages.faq', [
-            'link_title' => $data['link_title'] ?? [],
-            'content_title' => $data['content_title'] ?? [],
-            'content_description' => $data['content_description'] ?? []
-        ]);
+        $perPage = 1;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $currentItems = $allData->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        
+        return view('outerTheme.pages.faq', ['faqs' => $allData]);
     }
 
     public function notice(Request $request){ 
