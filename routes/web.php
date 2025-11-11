@@ -27,4 +27,6 @@ Route::controller(FrontendController::class)->group(function () {
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 
+Route::get('captcha/{config?}', '\Mews\Captcha\CaptchaController@getCaptcha');
+
 /* Frontend URL End */

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="icon" href="{{ asset('assets/images/favicon-32.ico') }}" type="image/x-icon">
     <link rel="icon" href="{{ asset('assets/images/favicon-48.ico') }}" type="image/x-icon">
-    <title>Welcome to e-Allotment of Rental Housing Estates. Housing Department, Government of West Bengal</title>
+    <title>@yield('title', 'Welcome to e-Allotment of Rental Housing Estates. Housing Department, Government of West Bengal')</title>
 
     <link rel="stylesheet" href="{{ asset('/assets/outerTheme/css/style.css') }}">
     <link href="{{ asset('/assets/outerTheme/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -14,14 +14,18 @@
 </head>
 
 <body>
-    
     @yield('content')
-    
-   
-        
+
+    <!-- ✅ Common JS scripts  -->
     <script src="{{ asset('/assets/outerTheme/js/jquery.min.js') }}"></script>
     <script src="{{ asset('/assets/outerTheme/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('/assets/outerTheme/js/bootstrap.min.js') }}"></script>
+
+    <!-- Common app scripts -->
+    <script src="{{ asset('/assets/outerTheme/js/custom.js') }}"></script>
+
+    <!-- ✅ Section for page-specific scripts -->
+    @yield('scripts')
 
 </body>
 </html>
