@@ -13,13 +13,33 @@
         <h2 class="mt-4">Admin Sign in to Continue</h2>
     </div>
     <div class="admin-login-white-bg text-start">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if($errors->has('login_error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ $errors->first('login_error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('login') }}">
             @csrf
             <div class="mb-3 mt-3">
-                <input type="username" class="form-control input-form-custom" id="username" placeholder="Enter user name" name="username">
+                <input type="username" class="form-control input-form-custom" id="username" placeholder="Enter user name" name="username" value="{{ old('username') }}" required>
+                @error('username')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
             </div>
             <div class="mb-3">
-                <input type="password" class="form-control input-form-custom" id="pass" placeholder="Enter password" name="pass">
+                <input type="password" class="form-control input-form-custom" id="pass" placeholder="Enter password" name="pass" required>
+                @error('pass')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
             </div>
             <div class="form-group">
                 <label for="captcha">Captcha</label>
