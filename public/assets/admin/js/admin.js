@@ -1,48 +1,54 @@
-// Admin Panel JavaScript
+// admin.js — Shared helpers for admin pages
 
-// API Configuration - Set from window object in layout
-const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000/api';
-let API_TOKEN = window.API_TOKEN || localStorage.getItem('api_token') || '';
+// CSRF token from meta
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || null;
 
-// Set up CSRF token for all requests
-const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-// Helper function to make API requests
-async function apiRequest(url, options = {}) {
+// Generic API fetch to your frontend proxy (no Bearer token here)
+async function apiFetch(path, options = {}) {
+    // Default headers
     const headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        ...options.headers
+        ...(options.headers || {})
     };
 
-    if (API_TOKEN) {
-        headers['Authorization'] = `Bearer ${API_TOKEN}`;
-    }
-
-    if (csrfToken && (options.method === 'POST' || options.method === 'PUT' || options.method === 'DELETE')) {
+    // Add CSRF for mutating requests
+    if (csrfToken && ['POST', 'PUT', 'DELETE', 'PATCH'].includes((options.method || 'GET').toUpperCase())) {
         headers['X-CSRF-TOKEN'] = csrfToken;
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}${url}`, {
+        const resp = await fetch(path, {
             ...options,
             headers
         });
 
-        const data = await response.json();
+        // Try to parse JSON if present
+        const text = await resp.text();
+        let data = null;
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch (e) {
+            // not json
+            data = text;
+        }
 
-        if (!response.ok) {
-            throw new Error(data.message || 'An error occurred');
+        if (!resp.ok) {
+            const errMsg = (data && data.message) ? data.message : `HTTP error: ${resp.status}`;
+            const error = new Error(errMsg);
+            error.response = resp;
+            error.data = data;
+            throw error;
         }
 
         return data;
-    } catch (error) {
-        console.error('API Request Error:', error);
-        throw error;
+    } catch (err) {
+        console.error('apiFetch error:', err);
+        throw err;
     }
 }
 
-// Show notification
+// Notifications
 function showNotification(message, type = 'success') {
     const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
     const alert = document.createElement('div');
@@ -51,30 +57,80 @@ function showNotification(message, type = 'success') {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
-    const content = document.querySelector('.admin-content');
-    if (content) {
-        content.insertBefore(alert, content.firstChild);
-        
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            alert.remove();
-        }, 5000);
-    }
+
+    const content = document.querySelector('.admin-content') || document.body;
+    content.insertBefore(alert, content.firstChild);
+    setTimeout(() => alert.remove(), 5000);
 }
 
-// Format date
+function showError(message) {
+    showNotification(message, 'error');
+}
+
+// Utility: format date/time in local format
 function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleString();
+    if (!dateString) return '-';
+    const d = new Date(dateString);
+    if (isNaN(d)) return dateString;
+    return d.toLocaleString();
 }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if user is authenticated
-    if (!API_TOKEN && window.location.pathname.includes('/admin')) {
-        // Redirect to login if not authenticated
-        // window.location.href = '/login';
-    }
-});
+// Simple debounce helper used by several modules
+function debounce(fn, wait = 300) {
+    let t;
+    return function (...args) {
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, args), wait);
+    };
+}
 
+// Button loading state helpers
+function setButtonLoading(button, isLoading) {
+    if (!button) return;
+    
+    if (isLoading) {
+        button.disabled = true;
+        button.dataset.originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    } else {
+        button.disabled = false;
+        if (button.dataset.originalText) {
+            button.innerHTML = button.dataset.originalText;
+            delete button.dataset.originalText;
+        }
+    }
+}
+
+function setElementLoading(element, isLoading, loadingText = 'Loading...') {
+    if (!element) return;
+    
+    if (isLoading) {
+        element.disabled = true;
+        if (element.tagName === 'BUTTON' || element.tagName === 'A') {
+            element.dataset.originalText = element.innerHTML;
+            element.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${loadingText}`;
+        }
+    } else {
+        element.disabled = false;
+        if (element.dataset.originalText) {
+            element.innerHTML = element.dataset.originalText;
+            delete element.dataset.originalText;
+        }
+    }
+}
+
+// Export helpers to global so other modules (plain JS) can use them
+window.adminHelpers = {
+    apiFetch,
+    showNotification,
+    showError,
+    formatDate,
+    debounce,
+    setButtonLoading,
+    setElementLoading
+};
+
+// Basic initialization
+document.addEventListener('DOMContentLoaded', function () {
+    // nothing here by default; pages will call their init functions
+});

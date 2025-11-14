@@ -4,81 +4,201 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 
 class AdminController extends Controller
 {
-    private $apiBaseUrl;
+    private $backend;
 
     public function __construct()
     {
-        $this->apiBaseUrl = config('services.api.base_url', 'http://localhost:8000/api');
+        $this->backend = rtrim(env('BACKEND_API'), '/');
     }
 
-    /**
-     * Admin Dashboard
-     */
-    public function dashboard(Request $request)
+    /***********************************************************
+     * UNIVERSAL BACKEND API CALLER
+     ***********************************************************/
+    private function apiRequest($method, $endpoint, $data = [])
     {
-        // Ensure token is in session
-        $token = $request->session()->get('api_token');
-        if (!$token) {
-            return redirect()->route('login')->with('error', 'Please login to access admin panel.');
+        $url = $this->backend . '/api/' . ltrim($endpoint, '/');
+
+        // For GET requests, append query parameters to URL
+        if (strtoupper($method) === 'GET' && !empty($data)) {
+            $queryString = http_build_query($data);
+            $url .= '?' . $queryString;
         }
-        
-        return view('admin.dashboard', ['api_token' => $token]);
+
+        $token = session('api_token');
+
+        $headers = [
+            'Accept: application/json',
+            'Content-Type: application/json',
+        ];
+
+        if ($token) {
+            $headers[] = 'Authorization: Bearer ' . $token;
+        }
+
+        $ch = curl_init($url);
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, strtoupper($method));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        if (in_array(strtoupper($method), ['POST', 'PUT', 'PATCH', 'DELETE'])) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        }
+
+        $response = curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Proxy Error: ' . curl_error($ch),
+            ], 500);
+        }
+
+        curl_close($ch);
+
+        return response($response)->header('Content-Type', 'application/json');
     }
 
-    /**
-     * Users Management
-     */
-    public function users(Request $request)
+
+    /***********************************************************
+     * PAGE VIEWS
+     ***********************************************************/
+    public function dashboard()
     {
-        $token = $request->session()->get('api_token');
-        if (!$token) {
-            return redirect()->route('login')->with('error', 'Please login to access admin panel.');
-        }
-        
-        return view('admin.users', ['api_token' => $token]);
+        return view('admin.dashboard');
     }
 
-    /**
-     * Roles Management
-     */
-    public function roles(Request $request)
+    public function usersPage()
     {
-        $token = $request->session()->get('api_token');
-        if (!$token) {
-            return redirect()->route('login')->with('error', 'Please login to access admin panel.');
-        }
-        
-        return view('admin.roles', ['api_token' => $token]);
+        return view('admin.users');
     }
 
-    /**
-     * Permissions Management
-     */
-    public function permissions(Request $request)
+    public function rolesPage()
     {
-        $token = $request->session()->get('api_token');
-        if (!$token) {
-            return redirect()->route('login')->with('error', 'Please login to access admin panel.');
-        }
-        
-        return view('admin.permissions', ['api_token' => $token]);
+        return view('admin.roles');
     }
 
-    /**
-     * Error Logs
-     */
-    public function errorLogs(Request $request)
+    public function permissionsPage()
     {
-        $token = $request->session()->get('api_token');
-        if (!$token) {
-            return redirect()->route('login')->with('error', 'Please login to access admin panel.');
-        }
-        
-        return view('admin.error-logs', ['api_token' => $token]);
+        return view('admin.permissions');
+    }
+
+    public function errorLogsPage()
+    {
+        return view('admin.error-logs');
+    }
+
+
+    /***********************************************************
+     * USERS PROXY (ALL FIXED)
+     ***********************************************************/
+    public function listUsers(Request $req)
+    {
+        return $this->apiRequest('GET', "admin/users", $req->query());
+    }
+
+    public function getUser($id)
+    {
+        return $this->apiRequest('GET', "admin/users/$id");
+    }
+
+    public function createUser(Request $req)
+    {
+        return $this->apiRequest('POST', "admin/users", $req->all());
+    }
+
+    public function updateUser(Request $req, $id)
+    {
+        return $this->apiRequest('PUT', "admin/users/$id", $req->all());
+    }
+
+    public function deleteUser($id)
+    {
+        return $this->apiRequest('DELETE', "admin/users/$id");
+    }
+
+
+    /***********************************************************
+     * ROLES PROXY
+     ***********************************************************/
+    public function listRoles(Request $req)
+    {
+        return $this->apiRequest('GET', "admin/roles", $req->query());
+    }
+
+    public function getRole($id)
+    {
+        return $this->apiRequest('GET', "admin/roles/$id");
+    }
+
+    public function createRole(Request $req)
+    {
+        return $this->apiRequest('POST', "admin/roles", $req->all());
+    }
+
+    public function updateRole(Request $req, $id)
+    {
+        return $this->apiRequest('PUT', "admin/roles/$id", $req->all());
+    }
+
+    public function deleteRole($id)
+    {
+        return $this->apiRequest('DELETE', "admin/roles/$id");
+    }
+
+
+    /***********************************************************
+     * PERMISSIONS PROXY
+     ***********************************************************/
+    public function listPermissions(Request $req)
+    {
+        return $this->apiRequest('GET', "admin/permissions", $req->query());
+    }
+
+    public function getPermission($id)
+    {
+        return $this->apiRequest('GET', "admin/permissions/$id");
+    }
+
+    public function createPermission(Request $req)
+    {
+        return $this->apiRequest('POST', "admin/permissions", $req->all());
+    }
+
+    public function updatePermission(Request $req, $id)
+    {
+        return $this->apiRequest('PUT', "admin/permissions/$id", $req->all());
+    }
+
+    public function deletePermission($id)
+    {
+        return $this->apiRequest('DELETE', "admin/permissions/$id");
+    }
+
+
+    /***********************************************************
+     * ERROR LOGS PROXY
+     ***********************************************************/
+    public function listErrorLogs(Request $req)
+    {
+        return $this->apiRequest('GET', "admin/error-logs", $req->query());
+    }
+
+    public function getErrorLog($id)
+    {
+        return $this->apiRequest('GET', "admin/error-logs/$id");
+    }
+
+    public function deleteErrorLog($id)
+    {
+        return $this->apiRequest('DELETE', "admin/error-logs/$id");
+    }
+
+    public function clearAllErrorLogs()
+    {
+        return $this->apiRequest('DELETE', "admin/error-logs");
     }
 }
-
