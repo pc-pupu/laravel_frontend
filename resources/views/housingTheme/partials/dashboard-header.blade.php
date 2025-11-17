@@ -1,3 +1,7 @@
+@php
+    $user = session('user');
+@endphp
+
 <div class="d-flex flex-row justify-content-between">
     <div class="title">
         <h3 class="title-lg">@yield('page-header')</h3>
@@ -6,14 +10,15 @@
          <li class="breadcrumb-item text-dark">Dashboards</li>
       </ul> -->
     </div>
+    @if($user)
     <div class="dropdown">
         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown"
             aria-expanded="false">
             <img src="{{ asset('/themes/dashboard-theme/images/profile_icon.png') }}" alt="" width="50" height="50"
                 class="rounded-circle me-2">
             <div class="user-name">
-                <strong>{{ Auth::user()->name }}</strong></br>
-                <small><b>Email:</b> {{ Auth::user()->email }}</small>
+                <strong>{{ $user['name'] ?? 'User' }}</strong></br>
+                <small><b>Email:</b> {{ $user['mail'] ?? $user['email'] ?? 'N/A' }}</small>
             </div>
         </a>
         <ul class="dropdown-menu text-small shadow" style="">
@@ -33,4 +38,5 @@
             </li>
         </ul>
     </div>
+    @endif
 </div>
