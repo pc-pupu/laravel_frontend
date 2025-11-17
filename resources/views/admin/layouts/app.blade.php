@@ -35,6 +35,7 @@
                 <li><a href="{{ route('admin.roles') }}" class="{{ request()->routeIs('admin.roles') ? 'active' : '' }}"><i class="fas fa-user-tag"></i> Roles</a></li>
                 <li><a href="{{ route('admin.permissions') }}" class="{{ request()->routeIs('admin.permissions') ? 'active' : '' }}"><i class="fas fa-key"></i> Permissions</a></li>
                 <li><a href="{{ route('admin.error-logs') }}" class="{{ request()->routeIs('admin.error-logs') ? 'active' : '' }}"><i class="fas fa-exclamation-triangle"></i> Error Logs</a></li>
+                <li><a href="{{ route('admin.sidebar-menus') }}" class="{{ request()->routeIs('admin.sidebar-menus') ? 'active' : '' }}"><i class="fas fa-bars"></i> Sidebar Menus</a></li>
 
                 <li><a href="{{ route('homepage') }}" target="_blank"><i class="fas fa-external-link-alt"></i> View Site</a></li>
 

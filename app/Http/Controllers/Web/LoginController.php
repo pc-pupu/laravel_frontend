@@ -59,6 +59,11 @@ class LoginController extends Controller
                 // Redirect to admin dashboard with token in cookie
                 return redirect()->route('admin.dashboard')->withCookie($cookie);
             }
+            
+            if ($user && isset($user['uid']) && isset($user['name']) && strtolower($user['name']) === 'housing_cms') {
+                // Redirect to CMS content manager dashboard with token in cookie
+                return redirect()->route('cms-content.index')->withCookie($cookie);
+            }
 
             return redirect()->route('dashboard')->withCookie($cookie);
         } else {

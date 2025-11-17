@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\FrontendController;
 use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\LoginController;
+use App\Http\Controllers\Web\CmsContentManagerController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -35,6 +36,18 @@ Route::get('dashboard', function () {
     return view('outerTheme.pages.dashboard');
 })->name('dashboard')->middleware(\App\Http\Middleware\CheckSessionAuth::class);
 
+Route::prefix('cms-content')
+    ->middleware(\App\Http\Middleware\CheckSessionAuth::class)
+    ->name('cms-content.')
+    ->group(function () {
+        Route::get('/', [CmsContentManagerController::class, 'index'])->name('index');
+        Route::get('/create', [CmsContentManagerController::class, 'create'])->name('create');
+        Route::post('/', [CmsContentManagerController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [CmsContentManagerController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [CmsContentManagerController::class, 'update'])->name('update');
+        Route::delete('/{id}', [CmsContentManagerController::class, 'destroy'])->name('destroy');
+    });
+
 // Admin routes
 Route::prefix('admin')
     ->middleware(\App\Http\Middleware\CheckSessionAuth::class)
@@ -46,6 +59,7 @@ Route::prefix('admin')
     Route::get('/roles', [AdminController::class, 'rolesPage'])->name('admin.roles');
     Route::get('/permissions', [AdminController::class, 'permissionsPage'])->name('admin.permissions');
     Route::get('/error-logs', [AdminController::class, 'errorLogsPage'])->name('admin.error-logs');
+    Route::get('/sidebar-menus', [AdminController::class, 'sidebarMenusPage'])->name('admin.sidebar-menus');
 
     // USERS PROXY
     Route::get('/users/list', [AdminController::class, 'listUsers']);
@@ -73,6 +87,13 @@ Route::prefix('admin')
     Route::get('/error-logs/{id}', [AdminController::class, 'getErrorLog']);
     Route::delete('/error-logs/{id}', [AdminController::class, 'deleteErrorLog']);
     Route::delete('/error-logs', [AdminController::class, 'clearAllErrorLogs']);
+
+    // SIDEBAR MENUS
+    Route::get('/sidebar-menus/list', [AdminController::class, 'listSidebarMenus']);
+    Route::get('/sidebar-menus/{id}', [AdminController::class, 'getSidebarMenu']);
+    Route::post('/sidebar-menus', [AdminController::class, 'createSidebarMenu']);
+    Route::put('/sidebar-menus/{id}', [AdminController::class, 'updateSidebarMenu']);
+    Route::delete('/sidebar-menus/{id}', [AdminController::class, 'deleteSidebarMenu']);
 });
 
 

@@ -91,6 +91,11 @@ class AdminController extends Controller
         return view('admin.error-logs');
     }
 
+    public function sidebarMenusPage()
+    {
+        return view('admin.sidebar-menus');
+    }
+
 
     /***********************************************************
      * USERS PROXY (ALL FIXED)
@@ -200,5 +205,34 @@ class AdminController extends Controller
     public function clearAllErrorLogs()
     {
         return $this->apiRequest('DELETE', "admin/error-logs");
+    }
+
+
+    /***********************************************************
+     * SIDEBAR MENUS PROXY
+     ***********************************************************/
+    public function listSidebarMenus(Request $req)
+    {
+        return $this->apiRequest('GET', "admin/sidebar-menus/all", $req->query());
+    }
+
+    public function getSidebarMenu($id)
+    {
+        return $this->apiRequest('GET', "admin/sidebar-menus/$id");
+    }
+
+    public function createSidebarMenu(Request $req)
+    {
+        return $this->apiRequest('POST', "admin/sidebar-menus", $req->all());
+    }
+
+    public function updateSidebarMenu(Request $req, $id)
+    {
+        return $this->apiRequest('PUT', "admin/sidebar-menus/$id", $req->all());
+    }
+
+    public function deleteSidebarMenu($id)
+    {
+        return $this->apiRequest('DELETE', "admin/sidebar-menus/$id");
     }
 }
