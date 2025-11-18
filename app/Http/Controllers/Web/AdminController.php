@@ -223,16 +223,31 @@ class AdminController extends Controller
 
     public function createSidebarMenu(Request $req)
     {
-        return $this->apiRequest('POST', "admin/sidebar-menus", $req->all());
+        $response = $this->apiRequest('POST', "admin/sidebar-menus", $req->all());
+        
+        // Clear sidebar menu cache after creating menu
+        \App\Http\ViewComposers\SidebarMenuComposer::clearAllCaches();
+        
+        return $response;
     }
 
     public function updateSidebarMenu(Request $req, $id)
     {
-        return $this->apiRequest('PUT', "admin/sidebar-menus/$id", $req->all());
+        $response = $this->apiRequest('PUT', "admin/sidebar-menus/$id", $req->all());
+        
+        // Clear sidebar menu cache after updating menu
+        \App\Http\ViewComposers\SidebarMenuComposer::clearAllCaches();
+        
+        return $response;
     }
 
     public function deleteSidebarMenu($id)
     {
-        return $this->apiRequest('DELETE', "admin/sidebar-menus/$id");
+        $response = $this->apiRequest('DELETE', "admin/sidebar-menus/$id");
+        
+        // Clear sidebar menu cache after deleting menu
+        \App\Http\ViewComposers\SidebarMenuComposer::clearAllCaches();
+        
+        return $response;
     }
 }

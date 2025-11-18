@@ -24,7 +24,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrap();
         
-        // Register sidebar menu composer for housing theme layouts
+        // Register sidebar menu composer for housing theme and admin panel
         View::composer('housingTheme.partials.dashboard-sidebar', SidebarMenuComposer::class);
+        View::composer('admin.partials.admin-sidebar', SidebarMenuComposer::class);
     }
 }

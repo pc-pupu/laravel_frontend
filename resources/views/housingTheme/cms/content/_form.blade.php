@@ -125,6 +125,7 @@
     <div class="col-md-4">
         <label for="content_file_upload" class="form-label">Upload Content File (PDF &lt;= 1 MB)</label>
         <input class="form-control @error('content_file_upload') is-invalid @enderror" type="file" id="content_file_upload" name="content_file_upload" accept="application/pdf">
+        <div id="fileUploadError" class="invalid-feedback d-block d-none"></div>
         @error('content_file_upload')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror

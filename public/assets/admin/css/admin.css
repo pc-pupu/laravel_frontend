@@ -151,6 +151,51 @@ body {
     text-align: center;
 }
 
+/* Submenu Styles */
+.admin-nav li.has-submenu > a {
+    position: relative;
+}
+
+.admin-nav .submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.2);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.admin-nav .submenu.show {
+    max-height: 500px;
+}
+
+.admin-nav .submenu li {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-nav .submenu a {
+    padding-left: 50px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.admin-nav .submenu a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding-left: 55px;
+}
+
+.admin-nav .submenu a.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-left: 3px solid #fff;
+}
+
+.admin-nav .submenu a i {
+    font-size: 0.7em;
+}
+
 /* Main Content Area */
 .admin-main {
     flex: 1;
