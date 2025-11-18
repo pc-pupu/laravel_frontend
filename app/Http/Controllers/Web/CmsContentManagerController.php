@@ -146,7 +146,14 @@ class CmsContentManagerController extends Controller
     protected function handleValidation($response, Request $request)
     {
         $errors = $response->json('errors') ?? [];
-        $message = $response->json('message') ?? 'Validation error.';
+        $message = $response->json('message');
+
+        if (!$message && !empty($errors)) {
+            $flattened = collect($errors)->flatten();
+            $message = $flattened->first();
+        }
+
+        $message = $message ?: 'Please review the highlighted fields.';
 
         return back()->withErrors($errors)->withInput()->with('error', $message);
     }

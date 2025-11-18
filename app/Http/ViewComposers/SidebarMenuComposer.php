@@ -32,10 +32,14 @@ class SidebarMenuComposer
         $user = session('user');
         $userId = $user['uid'] ?? 'guest';
         
-        // Cache for 5 minutes per user
-        $cacheKey = 'sidebar_menus_user_' . $userId;
+        // Get cache version to invalidate when menus change
+        $cacheVersion = Cache::get('sidebar_menus_version', 0);
         
-        return Cache::remember($cacheKey, 300, function () use ($token) {
+        // Cache for 1 minute per user (reduced from 5 minutes for better responsiveness)
+        // Include version in cache key so it invalidates when menus change
+        $cacheKey = 'sidebar_menus_user_' . $userId . '_v' . $cacheVersion;
+        
+        return Cache::remember($cacheKey, 60, function () use ($token) {
             try {
                 $response = Http::withToken($token)
                     ->timeout(5)
@@ -46,6 +50,8 @@ class SidebarMenuComposer
                     if (isset($data['status']) && $data['status'] === 'success') {
                         return $data['data'] ?? [];
                     }
+                } else {
+                    \Log::warning('Failed to fetch sidebar menus: ' . $response->status() . ' - ' . $response->body());
                 }
             } catch (\Exception $e) {
                 // Log error if needed
@@ -54,6 +60,25 @@ class SidebarMenuComposer
 
             return [];
         });
+    }
+
+    /**
+     * Clear all sidebar menu caches for all users
+     */
+    public static function clearAllCaches(): void
+    {
+        // Store a version/timestamp that invalidates all sidebar menu caches
+        // When this changes, all cached menus become invalid
+        Cache::put('sidebar_menus_version', time(), 86400); // 24 hours
+    }
+
+    /**
+     * Clear sidebar menu cache for a specific user
+     */
+    public static function clearUserCache($userId): void
+    {
+        $cacheKey = 'sidebar_menus_user_' . $userId;
+        Cache::forget($cacheKey);
     }
 }
 

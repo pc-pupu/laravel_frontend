@@ -91,7 +91,15 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('cms-content.update', $content['housing_cms_id']) }}" enctype="multipart/form-data">
+                <div id="cmsFormError" class="alert alert-danger d-none"></div>
+
+                @if(session('error'))
+                    <div class="alert alert-danger">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                <form id="cmsContentForm" method="POST" action="{{ route('cms-content.update', $content['housing_cms_id']) }}" enctype="multipart/form-data" novalidate>
                     @csrf
                     @method('PUT')
                     <div class="form-section">
@@ -110,4 +118,6 @@
     </div>
 </div>
 @endsection
+
+@include('housingTheme.cms.content._form-validation-script')
 

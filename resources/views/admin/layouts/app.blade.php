@@ -19,37 +19,8 @@
 <body>
 <div class="admin-wrapper">
 
-    {{-- Sidebar --}}
-    <aside class="admin-sidebar">
-        <div class="admin-sidebar-header">
-            <a href="{{ route('admin.dashboard') }}" class="admin-logo">
-                <img src="{{ asset('/assets/outerTheme/images/admin-logo-rhe.png') }}" alt="Admin Logo">
-                <span>Admin Panel</span>
-            </a>
-        </div>
-
-        <nav class="admin-nav">
-            <ul>
-                <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users') ? 'active' : '' }}"><i class="fas fa-users"></i> Users</a></li>
-                <li><a href="{{ route('admin.roles') }}" class="{{ request()->routeIs('admin.roles') ? 'active' : '' }}"><i class="fas fa-user-tag"></i> Roles</a></li>
-                <li><a href="{{ route('admin.permissions') }}" class="{{ request()->routeIs('admin.permissions') ? 'active' : '' }}"><i class="fas fa-key"></i> Permissions</a></li>
-                <li><a href="{{ route('admin.error-logs') }}" class="{{ request()->routeIs('admin.error-logs') ? 'active' : '' }}"><i class="fas fa-exclamation-triangle"></i> Error Logs</a></li>
-                <li><a href="{{ route('admin.sidebar-menus') }}" class="{{ request()->routeIs('admin.sidebar-menus') ? 'active' : '' }}"><i class="fas fa-bars"></i> Sidebar Menus</a></li>
-
-                <li><a href="{{ route('homepage') }}" target="_blank"><i class="fas fa-external-link-alt"></i> View Site</a></li>
-
-                <li>
-                    <form method="POST" action="{{ route('logout') }}" style="display:inline;">
-                        @csrf
-                        <a href="#" onclick="event.preventDefault(); this.closest('form').submit();">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
-                    </form>
-                </li>
-            </ul>
-        </nav>
-    </aside>
+    {{-- Dynamic Sidebar --}}
+    @include('admin.partials.admin-sidebar')
 
     {{-- Main Content --}}
     <main class="admin-main">
