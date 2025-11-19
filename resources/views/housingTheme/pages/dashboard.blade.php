@@ -112,7 +112,7 @@
 </div>
 @endif
 @stop
-<script src="{{ asset('/jquery/jquery.min.js') }}"></script>
+<script src="{{ asset('/assets/housingTheme/jquery/jquery.min.js') }}"></script>
 <script>
 $(document).ready(function(){
 	var table = $('.data-table').DataTable({

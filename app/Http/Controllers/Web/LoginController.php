@@ -54,18 +54,31 @@ class LoginController extends Controller
             // Set SameSite to 'None' if needed for cross-origin, otherwise 'Lax'
             $cookie = cookie('api_token', $token, 60 * 24 * 7, '/', null, false, false, false, 'Lax'); // 7 days, httpOnly=false so JS can access, path=/, SameSite=Lax
             
+            $response = Http::withToken($token)
+                ->get(config('services.api.base_url') . '/sidebar-menus');
+
+            $menus = $response->json('data') ?? [];
+            // Log::info('Sidebar menus fetched', ['menus' => $menus]);
+
+            session([
+                'user' => $user,
+                'api_token' => $token,
+                'sidebar_menus' => $menus,
+            ]);
+
+
             // Check if user is admin (uid 1 and name 'admin')
             if ($user && isset($user['uid']) && (int)$user['uid'] === 1 && isset($user['name']) && strtolower($user['name']) === 'admin') {
                 // Redirect to admin dashboard with token in cookie
                 return redirect()->route('admin.dashboard')->withCookie($cookie);
             }
             
-            if ($user && isset($user['uid']) && isset($user['name']) && strtolower($user['name']) === 'housing_cms') {
+            if ($user && isset($user['uid']) && isset($user['name']) && strtolower($user['name']) !== 'admin') {
                 // Redirect to CMS content manager dashboard with token in cookie
-                return redirect()->route('cms-content.index')->withCookie($cookie);
+                return redirect()->route('dashboard')->withCookie($cookie);
             }
 
-            return redirect()->route('dashboard')->withCookie($cookie);
+            // return redirect()->route('dashboard')->withCookie($cookie);
         } else {
             // Handle different error scenarios
             $errorData = $response->json();
