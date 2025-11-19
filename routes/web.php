@@ -5,7 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\FrontendController;
 use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\LoginController;
+use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\CmsContentManagerController;
+use App\Http\Controllers\Web\ExistingApplicantController;
+use App\Http\Controllers\Web\ExistingOccupantController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -32,9 +35,9 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('captcha/{config?}', '\Mews\Captcha\CaptchaController@getCaptcha');
 
-Route::get('dashboard', function () {
-    return view('outerTheme.pages.dashboard');
-})->name('dashboard')->middleware(\App\Http\Middleware\CheckSessionAuth::class);
+Route::get('dashboard', DashboardController::class)
+    ->name('dashboard')
+    ->middleware(\App\Http\Middleware\CheckSessionAuth::class);
 
 Route::prefix('cms-content')
     ->middleware(\App\Http\Middleware\CheckSessionAuth::class)
@@ -46,6 +49,39 @@ Route::prefix('cms-content')
         Route::get('/{id}/edit', [CmsContentManagerController::class, 'edit'])->name('edit');
         Route::put('/{id}', [CmsContentManagerController::class, 'update'])->name('update');
         Route::delete('/{id}', [CmsContentManagerController::class, 'destroy'])->name('destroy');
+    });
+
+// Existing Applicant (Legacy/Physical Applicants)
+Route::prefix('existing-applicant')
+    ->middleware(\App\Http\Middleware\CheckSessionAuth::class)
+    ->name('existing-applicant.')
+    ->group(function () {
+        Route::get('/', [ExistingApplicantController::class, 'index'])->name('index');
+        Route::get('/with-hrms', [ExistingApplicantController::class, 'withHrms'])->name('with-hrms');
+        Route::get('/without-hrms', [ExistingApplicantController::class, 'withoutHrms'])->name('without-hrms');
+        Route::get('/search', [ExistingApplicantController::class, 'search'])->name('search');
+        Route::post('/search', [ExistingApplicantController::class, 'searchSubmit'])->name('search.submit');
+        Route::get('/create', [ExistingApplicantController::class, 'create'])->name('create');
+        Route::get('/{id}/view', [ExistingApplicantController::class, 'view'])->name('view');
+        Route::get('/{id}/edit', [ExistingApplicantController::class, 'edit'])->name('edit');
+    });
+
+// Existing Occupant
+Route::prefix('existing-occupant')
+    ->middleware(\App\Http\Middleware\CheckSessionAuth::class)
+    ->name('existing-occupant.')
+    ->group(function () {
+        Route::get('/', [ExistingOccupantController::class, 'index'])->name('index');
+        Route::get('/with-hrms', [ExistingOccupantController::class, 'withHrms'])->name('with-hrms');
+        Route::get('/without-hrms', [ExistingOccupantController::class, 'withoutHrms'])->name('without-hrms');
+        Route::get('/flat-list', [ExistingOccupantController::class, 'flatList'])->name('flat-list');
+        Route::get('/create', [ExistingOccupantController::class, 'create'])->name('create');
+        Route::get('/create/{flat_id}', [ExistingOccupantController::class, 'create'])->name('create.flat');
+        Route::post('/', [ExistingOccupantController::class, 'store'])->name('store');
+        Route::get('/{id}/view', [ExistingOccupantController::class, 'view'])->name('view');
+        Route::get('/{id}/edit', [ExistingOccupantController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [ExistingOccupantController::class, 'update'])->name('update');
+        Route::delete('/{id}', [ExistingOccupantController::class, 'destroy'])->name('destroy');
     });
 
 // Admin routes
