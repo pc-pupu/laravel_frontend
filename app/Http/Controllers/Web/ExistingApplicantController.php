@@ -161,6 +161,57 @@ class ExistingApplicantController extends Controller
         ]);
     }
 
+    public function store(Request $request)
+    {
+        $response = $this->authorizedRequest()
+            ->post($this->backend . '/api/admin/existing-applicants', $request->all());
+
+        if (!$response->successful()) {
+            $errors = $response->json('errors') ?? [];
+            $message = $response->json('message') ?? 'Failed to create applicant.';
+            return back()->withInput()->withErrors($errors)->with('error', $message);
+        }
+
+        return redirect()->route('existing-applicant.index')
+            ->with('success', $response->json('message') ?? 'Applicant created successfully.');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $decryptedId = decrypt($id);
+        $response = $this->authorizedRequest()
+            ->put($this->backend . '/api/admin/existing-applicants/' . $decryptedId, $request->all());
+
+        if (!$response->successful()) {
+            $errors = $response->json('errors') ?? [];
+            $message = $response->json('message') ?? 'Failed to update applicant.';
+            return back()->withInput()->withErrors($errors)->with('error', $message);
+        }
+
+        return redirect()->route('existing-applicant.index')
+            ->with('success', $response->json('message') ?? 'Applicant updated successfully.');
+    }
+
+    public function acceptDeclaration(Request $request, $appId, $hrmsId, $uid)
+    {
+        $decryptedAppId = decrypt($appId);
+        $decryptedHrmsId = decrypt($hrmsId);
+        $decryptedUid = decrypt($uid);
+
+        $response = $this->authorizedRequest()
+            ->post($this->backend . '/api/admin/existing-applicants/' . $decryptedAppId . '/accept-declaration', [
+                'hrms_id' => $decryptedHrmsId,
+                'uid' => $decryptedUid,
+            ]);
+
+        if (!$response->successful()) {
+            return back()->with('error', $response->json('message') ?? 'Failed to update HRMS ID.');
+        }
+
+        return redirect()->route('existing-applicant.view', $appId)
+            ->with('success', $response->json('message') ?? 'HRMS ID updated successfully.');
+    }
+
     protected function authorizedRequest()
     {
         $token = session('api_token');

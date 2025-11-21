@@ -1,6 +1,6 @@
 @extends('housingTheme.layouts.app')
-@section('title', 'Edit Existing Applicant')
-@section('page-header', 'Edit Existing Applicant')
+@section('title', 'Edit VS/CS Application')
+@section('page-header', 'Edit VS/CS Application')
 
 @push('styles')
 <style>
@@ -24,17 +24,22 @@
         margin-bottom: 2rem;
         box-shadow: 0 4px 20px rgba(73, 128, 247, 0.3);
     }
-    .cms-header h3 {
-        margin: 0;
-        font-weight: 600;
-        font-size: 1.75rem;
-    }
     .form-section {
-        background: linear-gradient(135deg, #f8faff 0%, #ffffff 100%);
-        padding: 2rem;
+        margin-bottom: 2.5rem;
+        padding: 1.5rem;
+        background: #f8faff;
         border-radius: 12px;
-        margin-bottom: 1.5rem;
         border: 1px solid rgba(73, 128, 247, 0.15);
+    }
+    .form-section h5 {
+        color: #4980f7;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid rgba(73, 128, 247, 0.2);
+    }
+    .required::after {
+        content: " *";
+        color: red;
     }
 </style>
 @endpush
@@ -47,11 +52,11 @@
                 <div class="cms-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3><i class="fa fa-edit me-2"></i> Edit Existing Applicant</h3>
-                            <p>Update legacy/physical applicant information</p>
+                            <h3><i class="fa fa-edit me-2"></i> Edit VS/CS Application</h3>
+                            <p class="mb-0">Update Floor Shifting (VS) / Category Shifting (CS) Application</p>
                         </div>
-                        <a href="{{ route('existing-applicant.index') }}" class="btn btn-light">
-                            <i class="fa fa-arrow-left me-2"></i> Back to List
+                        <a href="{{ route('existing-applicant-vs-cs.flat-wise-form') }}" class="btn btn-light">
+                            <i class="fa fa-arrow-left me-2"></i> Back
                         </a>
                     </div>
                 </div>
@@ -62,29 +67,33 @@
                     </div>
                 @endif
 
-                <div class="alert alert-info">
-                    <i class="fa fa-info-circle me-2"></i>
-                    {{-- <strong>Note:</strong> Edit form implementation will be completed based on Drupal existing_applicant_edit_form logic. --}}
-                </div>
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-                @if(isset($applicant))
-                    <form method="POST" action="{{ route('existing-applicant.update', encrypt($applicant['online_application_id'] ?? '')) }}" 
-                        id="editApplicantForm" enctype="multipart/form-data" onsubmit="return validate_existing_applicant_form()">
+                @if(isset($application))
+                    <form method="POST" action="{{ route('existing-applicant-vs-cs.update', $id) }}" id="vsCsForm" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
-                        
-                        @include('housingTheme.existing-applicant._form_fields_edit')
+
+                        @include('housingTheme.existing-applicant-vs-cs._form_fields_edit', ['application' => $application])
 
                         <div class="mt-4 d-flex justify-content-end gap-3">
-                            <a href="{{ route('existing-applicant.index') }}" class="btn btn-outline-secondary px-4">Cancel</a>
-                            <button type="submit" class="btn btn-submit">
-                                <i class="fa fa-save me-2"></i>Update Applicant
+                            <a href="{{ route('existing-applicant-vs-cs.flat-wise-form') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="fa fa-save me-2"></i>Update
                             </button>
                         </div>
                     </form>
                 @else
                     <div class="alert alert-warning">
-                        Applicant data not found.
+                        Application data not found.
                     </div>
                 @endif
             </div>
@@ -98,6 +107,6 @@
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
 
-@include('housingTheme.existing-applicant._form_scripts_edit')
+@include('housingTheme.existing-applicant-vs-cs._form_scripts_edit')
 @endpush
 

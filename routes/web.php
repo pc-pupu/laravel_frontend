@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\CmsContentManagerController;
 use App\Http\Controllers\Web\ExistingApplicantController;
 use App\Http\Controllers\Web\ExistingOccupantController;
+use App\Http\Controllers\Web\ExistingApplicantVsCsController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -62,8 +63,11 @@ Route::prefix('existing-applicant')
         Route::get('/search', [ExistingApplicantController::class, 'search'])->name('search');
         Route::post('/search', [ExistingApplicantController::class, 'searchSubmit'])->name('search.submit');
         Route::get('/create', [ExistingApplicantController::class, 'create'])->name('create');
+        Route::post('/store', [ExistingApplicantController::class, 'store'])->name('store');
         Route::get('/{id}/view', [ExistingApplicantController::class, 'view'])->name('view');
         Route::get('/{id}/edit', [ExistingApplicantController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update', [ExistingApplicantController::class, 'update'])->name('update');
+        Route::post('/{appId}/accept-declaration/{hrmsId}/{uid}', [ExistingApplicantController::class, 'acceptDeclaration'])->name('accept-declaration');
     });
 
 // Existing Occupant
@@ -82,6 +86,23 @@ Route::prefix('existing-occupant')
         Route::get('/{id}/edit', [ExistingOccupantController::class, 'edit'])->name('edit');
         Route::put('/{id}', [ExistingOccupantController::class, 'update'])->name('update');
         Route::delete('/{id}', [ExistingOccupantController::class, 'destroy'])->name('destroy');
+    });
+
+// Existing Applicant VS/CS (Floor Shifting / Category Shifting)
+Route::prefix('existing-applicant-vs-cs')
+    ->middleware(\App\Http\Middleware\CheckSessionAuth::class)
+    ->name('existing-applicant-vs-cs.')
+    ->group(function () {
+        Route::get('/flat-wise-form', [ExistingApplicantVsCsController::class, 'flatWiseForm'])->name('flat-wise-form');
+        Route::get('/flat-details', [ExistingApplicantVsCsController::class, 'getFlatDetails'])->name('flat-details');
+        Route::get('/create/{uid}', [ExistingApplicantVsCsController::class, 'create'])->name('create');
+        Route::post('/', [ExistingApplicantVsCsController::class, 'store'])->name('store');
+        Route::get('/vs-list-with-hrms', [ExistingApplicantVsCsController::class, 'vsListWithHrms'])->name('vs-list-with-hrms');
+        Route::get('/vs-list-without-hrms', [ExistingApplicantVsCsController::class, 'vsListWithoutHrms'])->name('vs-list-without-hrms');
+        Route::get('/cs-list-with-hrms', [ExistingApplicantVsCsController::class, 'csListWithHrms'])->name('cs-list-with-hrms');
+        Route::get('/cs-list-without-hrms', [ExistingApplicantVsCsController::class, 'csListWithoutHrms'])->name('cs-list-without-hrms');
+        Route::get('/{id}/edit', [ExistingApplicantVsCsController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('update');
     });
 
 // Admin routes

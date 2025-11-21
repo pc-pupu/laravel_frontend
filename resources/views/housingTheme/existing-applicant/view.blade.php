@@ -116,8 +116,57 @@
                                 <td>Designation</td>
                                 <td>{{ $applicant['applicant_designation'] ?? 'Not Available' }}</td>
                             </tr>
+                            <tr>
+                                <td>Place of Posting</td>
+                                <td>{{ $applicant['applicant_posting_place'] ?? 'Not Available' }}</td>
+                            </tr>
+                            <tr>
+                                <td>Pay Band</td>
+                                <td>{{ $applicant['pay_band_id'] ?? 'Not Available' }}</td>
+                            </tr>
+                            <tr>
+                                <td>Basic Pay</td>
+                                <td>{{ $applicant['pay_in_the_pay_band'] ?? 'Not Available' }}</td>
+                            </tr>
+                            <tr>
+                                <td>Office Name</td>
+                                <td>{{ $applicant['office_name'] ?? 'Not Available' }}</td>
+                            </tr>
+                            <tr>
+                                <td>Allotment Category</td>
+                                <td>{{ $applicant['allotment_category'] ?? 'Not Available' }}</td>
+                            </tr>
                         </table>
                     </div>
+
+                    @php
+                        $user = session('user');
+                        $hrmsId = $user['name'] ?? '';
+                        $email = $user['mail'] ?? $user['email'] ?? '';
+                    @endphp
+
+                    @if($user && !empty($hrmsId))
+                        <div class="mb-3 d-flex align-items-center mt-4" style="margin-top: 50px;">
+                            <label for="readonlyField" style="background-color: #473a39; color: white; padding: 8px; border-radius: 4px; min-width: 100px; text-align: center;" class="me-3">
+                                HRMS ID
+                            </label>
+                            <input type="text" id="readonlyField" class="form-control-plaintext" value="{{ $hrmsId }}" readonly>
+                        </div>
+
+                        <form action="{{ route('existing-applicant.accept-declaration', [encrypt($applicant['online_application_id'] ?? ''), encrypt($hrmsId), encrypt($user['uid'] ?? '')]) }}" method="POST" class="mt-4">
+                            @csrf
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="acceptCheck" name="accept_declaration" required>
+                                <label class="form-check-label" for="acceptCheck">
+                                    I accept
+                                </label>
+                            </div>
+                            <div class="form-text text-muted mb-3">
+                                I do hereby declare that this Application bearing App No- {{ $applicant['application_no'] ?? 'Not Available' }} was submitted by me to the Housing Department.
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    @endif
                 @else
                     <div class="alert alert-warning">
                         <i class="fa fa-exclamation-triangle me-2"></i>
