@@ -95,111 +95,16 @@
                     The full form implementation will be completed based on the Drupal existing_applicant_form.inc structure. --}}
                 </div>
 
-                <form method="POST" action="#" id="existingApplicantForm" novalidate>
+                <form method="POST" action="{{ route('existing-applicant.store') }}" id="existingApplicantForm" 
+                    enctype="multipart/form-data" onsubmit="return validate_existing_applicant_form()">
                     @csrf
                     
-                    <div class="form-section">
-                        <h5 class="mb-3"><i class="fa fa-user me-2"></i> Personal Information</h5>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="applicant_name" name="applicant_name" 
-                                        placeholder="Applicant Name" required>
-                                    <label for="applicant_name" class="required">Applicant's Name</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="guardian_name" name="guardian_name" 
-                                        placeholder="Father/Husband Name" required>
-                                    <label for="guardian_name" class="required">Father / Husband Name</label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="mobile_no" name="mobile_no" 
-                                        placeholder="Mobile No" maxlength="10">
-                                    <label for="mobile_no">Mobile No</label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="email" name="email" 
-                                        placeholder="Email ID">
-                                    <label for="email">Email ID</label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="dob" name="dob" 
-                                        placeholder="Date of Birth (DD/MM/YYYY)" required>
-                                    <label for="dob" class="required">Date of Birth (DD/MM/YYYY)</label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-floating">
-                                    <select class="form-select" id="gender" name="gender" required>
-                                        <option value="">Select Gender</option>
-                                        <option value="M">Male</option>
-                                        <option value="F">Female</option>
-                                    </select>
-                                    <label for="gender" class="required">Gender</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h5 class="mb-3"><i class="fa fa-briefcase me-2"></i> Official Information</h5>
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="hrms_id" name="hrms_id" 
-                                        placeholder="HRMS ID" maxlength="10">
-                                    <label for="hrms_id">Employee HRMS ID</label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="designation" name="designation" 
-                                        placeholder="Designation" required>
-                                    <label for="designation" class="required">Designation</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h5 class="mb-3"><i class="fa fa-file-alt me-2"></i> Application Information</h5>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="physical_application_no" name="physical_application_no" 
-                                        placeholder="Physical Application No" required>
-                                    <label for="physical_application_no" class="required">Physical Application No</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="computer_serial_no" name="computer_serial_no" 
-                                        placeholder="Computer Serial No" required>
-                                    <label for="computer_serial_no" class="required">Computer Serial No</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="confirm_computer_serial_no" name="confirm_computer_serial_no" 
-                                        placeholder="Confirm Computer Serial No" required>
-                                    <label for="confirm_computer_serial_no" class="required">Confirm Computer Serial No</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    @include('housingTheme.existing-applicant._form_fields')
 
                     <div class="mt-4 d-flex justify-content-end gap-3">
                         <a href="{{ route('existing-applicant.index') }}" class="btn btn-outline-secondary px-4">Cancel</a>
                         <button type="submit" class="btn btn-submit">
-                            <i class="fa fa-save me-2"></i>Save Applicant
+                            <i class="fa fa-save me-2"></i>Submit
                         </button>
                     </div>
                 </form>
@@ -210,16 +115,10 @@
 @endsection
 
 @push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('existingApplicantForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Form submission');
-        });
-    }
-});
-</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
+
+@include('housingTheme.existing-applicant._form_scripts')
 @endpush
 

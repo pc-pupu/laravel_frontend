@@ -1,0 +1,183 @@
+@extends('housingTheme.layouts.app')
+@section('title', 'VS List (Without HRMS)')
+@section('page-header', 'Existing Applicant\'s List for Floor Shifting (without HRMS ID)')
+
+@push('styles')
+<style>
+    .cms-wrapper {
+        background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%);
+        min-height: calc(100vh - 200px);
+        padding: 1.5rem 0;
+    }
+    .cms-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(73, 128, 247, 0.12);
+        padding: 2rem;
+        border: 1px solid rgba(73, 128, 247, 0.1);
+    }
+    .search-filter-box {
+        background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(73, 128, 247, 0.15);
+    }
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(73, 128, 247, 0.1);
+    }
+    .table thead {
+        background: linear-gradient(135deg, #4980f7 0%, #19bbd3 100%);
+        color: white;
+    }
+</style>
+@endpush
+
+@section('content')
+<div class="cms-wrapper">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="cms-card">
+                <div class="search-filter-box">
+                    <form method="GET" action="{{ route('existing-applicant-vs-cs.vs-list-without-hrms') }}" id="filterForm">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="rhe_name" name="rhe_name">
+                                        <option value="">- Select RHE -</option>
+                                    </select>
+                                    <label for="rhe_name">Name of the RHE</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4" id="flat_type_replace">
+                                <!-- Flat Type will be loaded here -->
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fa fa-search me-2"></i> Filter
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-container">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Sl. No.</th>
+                                <th>Application No</th>
+                                <th>Applicant Name</th>
+                                <th>Date of Application</th>
+                                <th>Mobile No.</th>
+                                <th>Gender</th>
+                                <th>Current Occupancy Details</th>
+                                <th>Flat Type Applied For</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($applications as $index => $app)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $app['application_no'] ?? 'N/A' }}</td>
+                                    <td>{{ $app['applicant_name'] ?? 'N/A' }}</td>
+                                    <td>{{ $app['date_of_application'] ?? 'N/A' }}</td>
+                                    <td>{{ $app['mobile_no'] ?? 'N/A' }}</td>
+                                    <td>{{ $app['gender'] ?? 'N/A' }}</td>
+                                    <td>{{ ($app['estate_name'] ?? '') . ', ' . ($app['block_name'] ?? '') . ', ' . ($app['flat_no'] ?? '') }}</td>
+                                    <td>{{ $app['flat_type'] ?? 'N/A' }}</td>
+                                    <td>
+                                        <a href="{{ route('existing-applicant-vs-cs.edit', encrypt($app['online_application_id'])) }}" class="btn btn-sm btn-primary">
+                                            <i class="fa fa-edit"></i> Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="9" class="text-center">No applications found.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    const backendUrl = '{{ env("BACKEND_API") }}';
+    const token = '{{ session("api_token") }}';
+
+    // Load RHE list
+    $.ajax({
+        url: backendUrl + '/api/admin/existing-applicant-vs-cs-helpers/rhe-list',
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/json'
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                const select = $('#rhe_name');
+                select.html('<option value="">- Select RHE -</option>');
+                for (const id in response.data) {
+                    select.append('<option value="' + id + '">' + response.data[id] + '</option>');
+                }
+                select.val('{{ $filters["rhe_name"] ?? "" }}');
+                if (select.val()) {
+                    select.trigger('change');
+                }
+            }
+        }
+    });
+
+    // Load flat types
+    $('#rhe_name').on('change', function() {
+        const rheId = $(this).val();
+        if (!rheId) {
+            $('#flat_type_replace').html('');
+            return;
+        }
+
+        $.ajax({
+            url: backendUrl + '/api/admin/existing-applicant-vs-cs-helpers/flat-types',
+            method: 'GET',
+            data: { rhe_id: rheId },
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Accept': 'application/json'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    let html = '<div class="form-floating">';
+                    html += '<select class="form-select" id="flat_type" name="flat_type">';
+                    html += '<option value="">- Select Flat Type -</option>';
+                    for (const id in response.data) {
+                        html += '<option value="' + id + '">' + response.data[id] + '</option>';
+                    }
+                    html += '</select>';
+                    html += '<label for="flat_type">Flat Type</label>';
+                    html += '</div>';
+                    $('#flat_type_replace').html(html);
+                    $('#flat_type').val('{{ $filters["flat_type"] ?? "" }}');
+                }
+            }
+        });
+    });
+
+    if ($('#rhe_name').val()) {
+        $('#rhe_name').trigger('change');
+    }
+});
+</script>
+@endpush
+
