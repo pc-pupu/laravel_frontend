@@ -52,58 +52,69 @@ Route::prefix('cms-content')
         Route::delete('/{id}', [CmsContentManagerController::class, 'destroy'])->name('destroy');
     });
 
-// Existing Applicant (Legacy/Physical Applicants)
-Route::prefix('existing-applicant')
-    ->middleware(\App\Http\Middleware\CheckSessionAuth::class)
-    ->name('existing-applicant.')
-    ->group(function () {
-        Route::get('/', [ExistingApplicantController::class, 'index'])->name('index');
-        Route::get('/with-hrms', [ExistingApplicantController::class, 'withHrms'])->name('with-hrms');
-        Route::get('/without-hrms', [ExistingApplicantController::class, 'withoutHrms'])->name('without-hrms');
-        Route::get('/search', [ExistingApplicantController::class, 'search'])->name('search');
-        Route::post('/search', [ExistingApplicantController::class, 'searchSubmit'])->name('search.submit');
-        Route::get('/create', [ExistingApplicantController::class, 'create'])->name('create');
-        Route::post('/store', [ExistingApplicantController::class, 'store'])->name('store');
-        Route::get('/{id}/view', [ExistingApplicantController::class, 'view'])->name('view');
-        Route::get('/{id}/edit', [ExistingApplicantController::class, 'edit'])->name('edit');
-        Route::put('/{id}/update', [ExistingApplicantController::class, 'update'])->name('update');
-        Route::post('/{appId}/accept-declaration/{hrmsId}/{uid}', [ExistingApplicantController::class, 'acceptDeclaration'])->name('accept-declaration');
-    });
+// Existing Applicant (Legacy/Physical Applicants) - Matching Drupal URLs
+Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
+    // In Drupal, existing_applicant_entry is the form itself (create form)
+    Route::get('existing_applicant_entry', [ExistingApplicantController::class, 'create'])->name('existing-applicant.create');
+    Route::post('existing_applicant_entry', [ExistingApplicantController::class, 'store'])->name('existing-applicant.store');
+    Route::get('existing-applicant-list', [ExistingApplicantController::class, 'index'])->name('existing-applicant.index');
+    Route::get('view-legacy-applicant-list-whrms', [ExistingApplicantController::class, 'withHrms'])->name('existing-applicant.with-hrms');
+    Route::get('view-legacy-applicant-list-wohrms', [ExistingApplicantController::class, 'withoutHrms'])->name('existing-applicant.without-hrms');
+    Route::get('search-with-physical-application-no', [ExistingApplicantController::class, 'search'])->name('existing-applicant.search');
+    Route::post('search-with-physical-application-no', [ExistingApplicantController::class, 'searchSubmit'])->name('existing-applicant.search.submit');
+    Route::get('physical-application-view/{id}', [ExistingApplicantController::class, 'view'])->name('existing-applicant.view');
+    Route::get('physical-application-edit/{id}', [ExistingApplicantController::class, 'edit'])->name('existing-applicant.edit');
+    Route::post('physical-application-edit/{id}', [ExistingApplicantController::class, 'update'])->name('existing-applicant.update');
+    Route::put('physical-application-edit/{id}', [ExistingApplicantController::class, 'update'])->name('existing-applicant.update.put');
+    Route::post('physical-application-accept-declaration/{appId}/{hrmsId}/{uid}', [ExistingApplicantController::class, 'acceptDeclaration'])->name('existing-applicant.accept-declaration');
+});
 
-// Existing Occupant
-Route::prefix('existing-occupant')
-    ->middleware(\App\Http\Middleware\CheckSessionAuth::class)
-    ->name('existing-occupant.')
-    ->group(function () {
-        Route::get('/', [ExistingOccupantController::class, 'index'])->name('index');
-        Route::get('/with-hrms', [ExistingOccupantController::class, 'withHrms'])->name('with-hrms');
-        Route::get('/without-hrms', [ExistingOccupantController::class, 'withoutHrms'])->name('without-hrms');
-        Route::get('/flat-list', [ExistingOccupantController::class, 'flatList'])->name('flat-list');
-        Route::get('/create', [ExistingOccupantController::class, 'create'])->name('create');
-        Route::get('/create/{flat_id}', [ExistingOccupantController::class, 'create'])->name('create.flat');
-        Route::post('/', [ExistingOccupantController::class, 'store'])->name('store');
-        Route::get('/{id}/view', [ExistingOccupantController::class, 'view'])->name('view');
-        Route::get('/{id}/edit', [ExistingOccupantController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [ExistingOccupantController::class, 'update'])->name('update');
-        Route::delete('/{id}', [ExistingOccupantController::class, 'destroy'])->name('destroy');
-    });
+// Existing Occupant - Matching Drupal URLs
+Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
+    Route::get('rhewise_flatlist', [ExistingOccupantController::class, 'index'])->name('existing-occupant.index');
+    Route::get('rhewise_flatlist_draft', [ExistingOccupantController::class, 'indexDraft'])->name('existing-occupant.index-draft');
+    Route::get('rhewise_occupant_data_entry/{flat_id}', [ExistingOccupantController::class, 'create'])->name('existing-occupant.create');
+    Route::get('rhewise_occupant_draft_data_entry/{flat_id}', [ExistingOccupantController::class, 'createDraft'])->name('existing-occupant.create-draft');
+    Route::post('rhewise_occupant_data_entry/{flat_id}', [ExistingOccupantController::class, 'store'])->name('existing-occupant.store');
+    Route::post('rhewise_occupant_draft_data_entry/{flat_id}', [ExistingOccupantController::class, 'storeDraft'])->name('existing-occupant.store-draft');
+    Route::get('rhewise_occupant_draft_list', [ExistingOccupantController::class, 'withoutHrms'])->name('existing-occupant.without-hrms');
+    Route::get('existing-occupant-list-wohrms', [ExistingOccupantController::class, 'withoutHrms'])->name('existing-occupant.without-hrms-alt');
+    Route::get('existing-occupant-list-whrms', [ExistingOccupantController::class, 'withHrms'])->name('existing-occupant.with-hrms');
+    Route::get('view-occupant-list', [ExistingOccupantController::class, 'withHrms'])->name('existing-occupant.with-hrms-alt');
+    Route::get('existing-occupant-view-det/{id}', [ExistingOccupantController::class, 'view'])->name('existing-occupant.view');
+    Route::get('existing-occupant-view-det-draft/{id}', [ExistingOccupantController::class, 'viewDraft'])->name('existing-occupant.view-draft');
+    Route::get('existing-occupant-edit/{id}', [ExistingOccupantController::class, 'edit'])->name('existing-occupant.edit');
+    Route::post('existing-occupant-edit/{id}', [ExistingOccupantController::class, 'update'])->name('existing-occupant.update');
+    Route::put('existing-occupant-edit/{id}', [ExistingOccupantController::class, 'update'])->name('existing-occupant.update.put');
+    Route::get('existing-occupant-draft-edit/{id}', [ExistingOccupantController::class, 'editDraft'])->name('existing-occupant.edit-draft');
+    Route::post('existing-occupant-draft-edit/{id}', [ExistingOccupantController::class, 'updateDraft'])->name('existing-occupant.update-draft');
+    Route::put('existing-occupant-draft-edit/{id}', [ExistingOccupantController::class, 'updateDraft'])->name('existing-occupant.update-draft.put');
+    Route::post('rhe-wise-flat-occupant-delete/{type}/{id}/{flat_id}', [ExistingOccupantController::class, 'destroy'])->name('existing-occupant.destroy');
+});
 
-// Existing Applicant VS/CS (Floor Shifting / Category Shifting)
-Route::prefix('existing-applicant-vs-cs')
-    ->middleware(\App\Http\Middleware\CheckSessionAuth::class)
-    ->name('existing-applicant-vs-cs.')
-    ->group(function () {
-        Route::get('/flat-wise-form', [ExistingApplicantVsCsController::class, 'flatWiseForm'])->name('flat-wise-form');
-        Route::get('/flat-details', [ExistingApplicantVsCsController::class, 'getFlatDetails'])->name('flat-details');
-        Route::get('/create/{uid}', [ExistingApplicantVsCsController::class, 'create'])->name('create');
-        Route::post('/', [ExistingApplicantVsCsController::class, 'store'])->name('store');
-        Route::get('/vs-list-with-hrms', [ExistingApplicantVsCsController::class, 'vsListWithHrms'])->name('vs-list-with-hrms');
-        Route::get('/vs-list-without-hrms', [ExistingApplicantVsCsController::class, 'vsListWithoutHrms'])->name('vs-list-without-hrms');
-        Route::get('/cs-list-with-hrms', [ExistingApplicantVsCsController::class, 'csListWithHrms'])->name('cs-list-with-hrms');
-        Route::get('/cs-list-without-hrms', [ExistingApplicantVsCsController::class, 'csListWithoutHrms'])->name('cs-list-without-hrms');
-        Route::get('/{id}/edit', [ExistingApplicantVsCsController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('update');
-    });
+// Existing Applicant VS/CS (Floor Shifting / Category Shifting) - Matching Drupal URLs exactly
+Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
+    Route::get('legacy-vs-cs', [ExistingApplicantVsCsController::class, 'flatWiseForm'])->name('existing-applicant-vs-cs.flat-wise-form');
+    // Note: Drupal has typo "legay" instead of "legacy" - matching exactly
+    Route::get('legay-vs-or-cs-form/{uid}', [ExistingApplicantVsCsController::class, 'create'])->name('existing-applicant-vs-cs.create');
+    Route::post('legay-vs-or-cs-form/{uid}', [ExistingApplicantVsCsController::class, 'store'])->name('existing-applicant-vs-cs.store');
+    Route::get('legacy-vs-list-wohrms', [ExistingApplicantVsCsController::class, 'vsListWithoutHrms'])->name('existing-applicant-vs-cs.vs-list-without-hrms');
+    Route::get('legacy-vs-wohrms-edit/{id}', [ExistingApplicantVsCsController::class, 'edit'])->name('existing-applicant-vs-cs.vs-edit-without-hrms');
+    Route::post('legacy-vs-wohrms-edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.vs-update-without-hrms');
+    Route::put('legacy-vs-wohrms-edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.vs-update-without-hrms.put');
+    Route::get('legacy-vs-list-whrms', [ExistingApplicantVsCsController::class, 'vsListWithHrms'])->name('existing-applicant-vs-cs.vs-list-with-hrms');
+    Route::get('legacy-vs-whrms-edit/{id}', [ExistingApplicantVsCsController::class, 'edit'])->name('existing-applicant-vs-cs.vs-edit-with-hrms');
+    Route::post('legacy-vs-whrms-edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.vs-update-with-hrms');
+    Route::put('legacy-vs-whrms-edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.vs-update-with-hrms.put');
+    Route::get('legacy-cs-list-wohrms', [ExistingApplicantVsCsController::class, 'csListWithoutHrms'])->name('existing-applicant-vs-cs.cs-list-without-hrms');
+    Route::get('legacy-cs-wohrms-edit/{id}', [ExistingApplicantVsCsController::class, 'edit'])->name('existing-applicant-vs-cs.cs-edit-without-hrms');
+    Route::post('legacy-cs-wohrms-edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.cs-update-without-hrms');
+    Route::put('legacy-cs-wohrms-edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.cs-update-without-hrms.put');
+    Route::get('legacy-cs-list-whrms', [ExistingApplicantVsCsController::class, 'csListWithHrms'])->name('existing-applicant-vs-cs.cs-list-with-hrms');
+    Route::get('legacy-cs-whrms-edit/{id}', [ExistingApplicantVsCsController::class, 'edit'])->name('existing-applicant-vs-cs.cs-edit-with-hrms');
+    Route::post('legacy-cs-whrms-edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.cs-update-with-hrms');
+    Route::put('legacy-cs-whrms-edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.cs-update-with-hrms.put');
+});
 
 // Admin routes
 Route::prefix('admin')
