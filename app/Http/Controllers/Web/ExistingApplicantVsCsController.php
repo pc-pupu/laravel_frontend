@@ -77,8 +77,13 @@ class ExistingApplicantVsCsController extends Controller
     /**
      * Store VS/CS application
      */
-    public function store(Request $request)
+    public function store(Request $request, $uid = null)
     {
+        // If uid is provided in route, add it to request
+        if ($uid) {
+            $request->merge(['housing_hidden_uid_or_draft_id' => decrypt($uid)]);
+        }
+        
         $response = $this->authorizedRequest()
             ->post($this->backend . '/api/admin/existing-applicant-vs-cs', $request->all());
 

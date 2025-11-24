@@ -258,18 +258,61 @@ class ExistingOccupantController extends Controller
         return redirect()->route('existing-occupant.index')->with('success', 'Occupant updated successfully.');
     }
 
-    public function destroy($id)
+    public function indexDraft(Request $request)
+    {
+        // Similar to index but for draft entries
+        return $this->index($request);
+    }
+
+    public function createDraft($flatId = null)
+    {
+        // Similar to create but for draft entries
+        return $this->create($flatId);
+    }
+
+    public function storeDraft(Request $request, $flatId)
+    {
+        // Similar to store but for draft entries
+        return $this->store($request);
+    }
+
+    public function viewDraft($id)
+    {
+        // Similar to view but for draft entries
+        return $this->view($id);
+    }
+
+    public function editDraft($id)
+    {
+        // Similar to edit but for draft entries
+        return $this->edit($id);
+    }
+
+    public function updateDraft(Request $request, $id)
+    {
+        // Similar to update but for draft entries
+        return $this->update($request, $id);
+    }
+
+    public function destroy($type, $id, $flatId)
     {
         $decryptedId = decrypt($id);
+        $decryptedFlatId = decrypt($flatId);
+        
         $response = $this->authorizedRequest()
-            ->delete($this->backend . '/api/admin/existing-occupants/' . $decryptedId);
+            ->delete($this->backend . '/api/admin/existing-occupants/' . $decryptedId, [
+                'type' => $type,
+                'flat_id' => $decryptedFlatId
+            ]);
 
         if (!$response->successful()) {
-            return redirect()->route('existing-occupant.index')
+            $redirectRoute = $type === 'draft' ? 'existing-occupant.without-hrms' : 'existing-occupant.with-hrms';
+            return redirect()->route($redirectRoute)
                 ->with('error', $response->json('message') ?? 'Failed to delete occupant.');
         }
 
-        return redirect()->route('existing-occupant.index')->with('success', 'Occupant deleted successfully.');
+        $redirectRoute = $type === 'draft' ? 'existing-occupant.without-hrms' : 'existing-occupant.with-hrms';
+        return redirect()->route($redirectRoute)->with('success', 'Occupant deleted successfully.');
     }
 
     protected function authorizedRequest()
