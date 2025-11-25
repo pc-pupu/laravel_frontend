@@ -2,39 +2,6 @@
 @section('title', 'VS List (Without HRMS)')
 @section('page-header', 'Existing Applicant\'s List for Floor Shifting (without HRMS ID)')
 
-@push('styles')
-<style>
-    .cms-wrapper {
-        background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%);
-        min-height: calc(100vh - 200px);
-        padding: 1.5rem 0;
-    }
-    .cms-card {
-        background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 8px 30px rgba(73, 128, 247, 0.12);
-        padding: 2rem;
-        border: 1px solid rgba(73, 128, 247, 0.1);
-    }
-    .search-filter-box {
-        background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%);
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        border: 1px solid rgba(73, 128, 247, 0.15);
-    }
-    .table-container {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(73, 128, 247, 0.1);
-    }
-    .table thead {
-        background: linear-gradient(135deg, #4980f7 0%, #19bbd3 100%);
-        color: white;
-    }
-</style>
-@endpush
 
 @section('content')
 <div class="cms-wrapper">
@@ -119,7 +86,7 @@ $(document).ready(function() {
 
     // Load RHE list
     $.ajax({
-        url: backendUrl + '/api/admin/existing-applicant-vs-cs-helpers/rhe-list',
+        url: backendUrl + '/api/existing-applicant-vs-cs-helpers/rhe-list',
         method: 'GET',
         headers: {
             'Authorization': 'Bearer ' + token,
@@ -149,7 +116,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicant-vs-cs-helpers/flat-types',
+            url: backendUrl + '/api/existing-applicant-vs-cs-helpers/flat-types',
             method: 'GET',
             data: { rhe_id: rheId },
             headers: {

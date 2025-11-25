@@ -2,64 +2,6 @@
 @section('title', 'Flat wise Existing Applicant Details')
 @section('page-header', 'Flat wise Existing Applicant Details')
 
-@push('styles')
-<style>
-    .cms-wrapper {
-        background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%);
-        min-height: calc(100vh - 200px);
-        padding: 1.5rem 0;
-    }
-    .cms-card {
-        background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 8px 30px rgba(73, 128, 247, 0.12);
-        padding: 2rem;
-        border: 1px solid rgba(73, 128, 247, 0.1);
-    }
-    .cms-header {
-        background: linear-gradient(135deg, #4980f7 0%, #19bbd3 100%);
-        color: white;
-        padding: 1.5rem 2rem;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 20px rgba(73, 128, 247, 0.3);
-    }
-    .cms-header h3 {
-        margin: 0;
-        font-weight: 600;
-        font-size: 1.75rem;
-    }
-    .form-section {
-        margin-bottom: 2rem;
-    }
-    .info-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1.5rem;
-    }
-    .info-table th {
-        background: #0a8bd6dc;
-        color: white;
-        padding: 1rem;
-        text-align: center;
-        font-size: 18px;
-        font-weight: normal;
-    }
-    .info-table td {
-        padding: 0.75rem 1rem;
-        border: 1px solid #e0e0e0;
-    }
-    .info-table td:first-child {
-        width: 50%;
-        background-color: #f8f9fa;
-        font-weight: 500;
-    }
-    #flat_list_replace {
-        margin-top: 2rem;
-    }
-</style>
-@endpush
-
 @section('content')
 <div class="cms-wrapper">
     <div class="row">
@@ -84,7 +26,7 @@
                 @endif
 
                 <form id="flatWiseForm">
-                    <div class="form-section">
+                    <div class="form-section-vs-cs">
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-floating">
@@ -128,7 +70,7 @@ $(document).ready(function() {
     // Load RHE list
     function loadRheList() {
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicant-vs-cs-helpers/rhe-list',
+            url: backendUrl + '/api/existing-applicant-vs-cs-helpers/rhe-list',
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + token,
@@ -157,7 +99,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicant-vs-cs-helpers/flat-types',
+            url: backendUrl + '/api/existing-applicant-vs-cs-helpers/flat-types',
             method: 'GET',
             data: { rhe_id: rheId },
             headers: {
@@ -195,7 +137,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicant-vs-cs-helpers/blocks',
+            url: backendUrl + '/api/existing-applicant-vs-cs-helpers/blocks',
             method: 'GET',
             data: { rhe_id: rheId, flat_type_id: flatTypeId },
             headers: {
@@ -232,7 +174,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicant-vs-cs-helpers/flats',
+            url: backendUrl + '/api/existing-applicant-vs-cs-helpers/flats',
             method: 'GET',
             data: { rhe_id: rheId, flat_type_id: flatTypeId, block_id: blockId },
             headers: {
@@ -268,7 +210,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicant-vs-cs/flat-details',
+            url: backendUrl + '/api/existing-applicant-vs-cs/flat-details',
             method: 'GET',
             data: {
                 rhe_name: rheId,

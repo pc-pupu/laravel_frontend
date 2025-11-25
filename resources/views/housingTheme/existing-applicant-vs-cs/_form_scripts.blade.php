@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load districts
     function loadDistricts(elementId, defaultValue = '') {
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicants-helpers/districts',
+            url: backendUrl + '/api/existing-applicants-helpers/districts',
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + token,
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicants-helpers/ddo-designations',
+            url: backendUrl + '/api/existing-applicants-helpers/ddo-designations',
             method: 'GET',
             data: { district_code: districtCode },
             headers: {
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicants-helpers/ddo-address',
+            url: backendUrl + '/api/existing-applicants-helpers/ddo-address',
             method: 'GET',
             data: { ddo_id: ddoId },
             headers: {
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load pay bands
     function loadPayBands(payBandType, defaultValue = '') {
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicants-helpers/pay-bands',
+            url: backendUrl + '/api/existing-applicants-helpers/pay-bands',
             method: 'GET',
             data: { pay_band_type: payBandType },
             headers: {
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicants-helpers/rhe-flat-type',
+            url: backendUrl + '/api/existing-applicants-helpers/rhe-flat-type',
             method: 'GET',
             data: { pay_band_id: payBandId },
             headers: {
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load housing estates
     function loadHousingEstates(defaultValue = '') {
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicant-vs-cs-helpers/housing-estates',
+            url: backendUrl + '/api/existing-applicant-vs-cs-helpers/housing-estates',
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + token,
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicant-vs-cs-helpers/housing-blocks',
+            url: backendUrl + '/api/existing-applicant-vs-cs-helpers/housing-blocks',
             method: 'GET',
             data: { estate_id: estateId },
             headers: {
@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicant-vs-cs-helpers/housing-flats',
+            url: backendUrl + '/api/existing-applicant-vs-cs-helpers/housing-flats',
             method: 'GET',
             data: { estate_id: estateId, block_id: blockId },
             headers: {
@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         $.ajax({
-            url: backendUrl + '/api/admin/existing-applicant-vs-cs-helpers/possession-date',
+            url: backendUrl + '/api/existing-applicant-vs-cs-helpers/possession-date',
             method: 'GET',
             data: { flat_id: flatId },
             headers: {

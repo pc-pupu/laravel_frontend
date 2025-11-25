@@ -79,27 +79,60 @@ function displayUsersPagination(pagination) {
         return;
     }
 
-    const totalPages = pagination.last_page;
+    const current = pagination.current_page;
+    const last = pagination.last_page;
+
+    let pages = [];
+
+    // Always show first 3 pages
+    for (let i = 1; i <= 3 && i <= last; i++) {
+        pages.push(i);
+    }
+
+    // Add left ellipsis (...)
+    if (current > 5) pages.push('...');
+
+    // Show current-1, current, current+1
+    for (let i = current - 1; i <= current + 1; i++) {
+        if (i > 3 && i < last - 2) pages.push(i);
+    }
+
+    // Add right ellipsis (...)
+    if (current < last - 4) pages.push('...');
+
+    // Always show last 3 pages
+    for (let i = last - 2; i <= last; i++) {
+        if (i > 0) pages.push(i);
+    }
+
+    // Remove duplicates and sort
+    pages = [...new Set(pages)].sort((a, b) => a - b);
+
     let html = '<div class="pagination">';
-    if (pagination.current_page > 1) {
-        html += `<a href="#" class="page-link" onclick="event.preventDefault(); const btn = this; H.setElementLoading(btn, true, 'Loading...'); loadUsers(${pagination.current_page - 1}).finally(() => H.setElementLoading(btn, false)); return false;">Previous</a>`;
+
+    if (current > 1) {
+        html += `<a href="#" class="page-link" onclick="event.preventDefault(); loadUsers(${current - 1})">Previous</a>`;
     }
 
-    for (let i = 1; i <= totalPages; i++) {
-        if (i === pagination.current_page) {
-            html += `<span class="page-link active">${i}</span>`;
+    pages.forEach(p => {
+        if (p === '...') {
+            html += `<span class="page-link dots">...</span>`;
+        } else if (p === current) {
+            html += `<span class="page-link active">${p}</span>`;
         } else {
-            html += `<a href="#" class="page-link" onclick="event.preventDefault(); const btn = this; H.setElementLoading(btn, true, 'Loading...'); loadUsers(${i}).finally(() => H.setElementLoading(btn, false)); return false;">${i}</a>`;
+            html += `<a href="#" class="page-link" onclick="event.preventDefault(); loadUsers(${p})">${p}</a>`;
         }
-    }
+    });
 
-    if (pagination.current_page < totalPages) {
-        html += `<a href="#" class="page-link" onclick="event.preventDefault(); const btn = this; H.setElementLoading(btn, true, 'Loading...'); loadUsers(${pagination.current_page + 1}).finally(() => H.setElementLoading(btn, false)); return false;">Next</a>`;
+    if (current < last) {
+        html += `<a href="#" class="page-link" onclick="event.preventDefault(); loadUsers(${current + 1})">Next</a>`;
     }
 
     html += '</div>';
+
     paginationDiv.innerHTML = html;
 }
+
 
 // H.Debounced search
 const searchUsers = H.debounce(() => loadUsers(1), 500);

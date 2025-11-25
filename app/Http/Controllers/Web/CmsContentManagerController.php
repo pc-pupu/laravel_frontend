@@ -20,7 +20,7 @@ class CmsContentManagerController extends Controller
     public function index(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/cms-content', $request->query());
+            ->get($this->backend . '/api/cms-content', $request->query());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load CMS contents.');
@@ -50,7 +50,7 @@ class CmsContentManagerController extends Controller
     public function create()
     {
         $nextOrder = 1;
-        $response = $this->authorizedRequest()->get($this->backend . '/api/admin/cms-content/meta/stats');
+        $response = $this->authorizedRequest()->get($this->backend . '/api/cms-content/meta/stats');
         if ($response->successful()) {
             $nextOrder = data_get($response->json(), 'data.next_order_no', 1);
         }
@@ -77,7 +77,7 @@ class CmsContentManagerController extends Controller
             );
         }
 
-        $response = $builder->post($this->backend . '/api/admin/cms-content', $payload);
+        $response = $builder->post($this->backend . '/api/cms-content', $payload);
 
         if ($response->status() === 422) {
             return $this->handleValidation($response, $request);
@@ -92,7 +92,7 @@ class CmsContentManagerController extends Controller
 
     public function edit($id)
     {
-        $response = $this->authorizedRequest()->get($this->backend . "/api/admin/cms-content/{$id}");
+        $response = $this->authorizedRequest()->get($this->backend . "/api/cms-content/{$id}");
 
         if (!$response->successful()) {
             return redirect()->route('cms-content.index')->with('error', $response->json('message') ?? 'Content not found.');
@@ -118,7 +118,7 @@ class CmsContentManagerController extends Controller
             );
         }
 
-        $response = $builder->put($this->backend . "/api/admin/cms-content/{$id}", $payload);
+        $response = $builder->put($this->backend . "/api/cms-content/{$id}", $payload);
 
         if ($response->status() === 422) {
             return $this->handleValidation($response, $request);
@@ -133,7 +133,7 @@ class CmsContentManagerController extends Controller
 
     public function destroy($id)
     {
-        $response = $this->authorizedRequest()->delete($this->backend . "/api/admin/cms-content/{$id}");
+        $response = $this->authorizedRequest()->delete($this->backend . "/api/cms-content/{$id}");
 
         if (!$response->successful()) {
             return redirect()->route('cms-content.index')

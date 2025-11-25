@@ -20,7 +20,7 @@ class ExistingApplicantController extends Controller
     public function index(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicants', $request->query());
+            ->get($this->backend . '/api/existing-applicants', $request->query());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load existing applicants.');
@@ -49,7 +49,7 @@ class ExistingApplicantController extends Controller
     public function withHrms(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicants/with-hrms', $request->query());
+            ->get($this->backend . '/api/existing-applicants/with-hrms', $request->query());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load applicants.');
@@ -79,7 +79,7 @@ class ExistingApplicantController extends Controller
     public function withoutHrms(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicants/without-hrms', $request->query());
+            ->get($this->backend . '/api/existing-applicants/without-hrms', $request->query());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load applicants.');
@@ -114,7 +114,7 @@ class ExistingApplicantController extends Controller
     public function searchSubmit(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicants/search', $request->only(['search_type', 'search_value']));
+            ->get($this->backend . '/api/existing-applicants/search', $request->only(['search_type', 'search_value']));
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'No matching application found.');
@@ -128,7 +128,7 @@ class ExistingApplicantController extends Controller
     {
         $decryptedId = decrypt($id);
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicants/' . $decryptedId);
+            ->get($this->backend . '/api/existing-applicants/' . $decryptedId);
 
         if (!$response->successful()) {
             return redirect()->route('existing-applicant.index')
@@ -149,7 +149,7 @@ class ExistingApplicantController extends Controller
     {
         $decryptedId = decrypt($id);
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicants/' . $decryptedId);
+            ->get($this->backend . '/api/existing-applicants/' . $decryptedId);
 
         if (!$response->successful()) {
             return redirect()->route('existing-applicant.index')
@@ -164,7 +164,7 @@ class ExistingApplicantController extends Controller
     public function store(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->post($this->backend . '/api/admin/existing-applicants', $request->all());
+            ->post($this->backend . '/api/existing-applicants', $request->all());
 
         if (!$response->successful()) {
             $errors = $response->json('errors') ?? [];
@@ -180,7 +180,7 @@ class ExistingApplicantController extends Controller
     {
         $decryptedId = decrypt($id);
         $response = $this->authorizedRequest()
-            ->put($this->backend . '/api/admin/existing-applicants/' . $decryptedId, $request->all());
+            ->put($this->backend . '/api/existing-applicants/' . $decryptedId, $request->all());
 
         if (!$response->successful()) {
             $errors = $response->json('errors') ?? [];
@@ -199,7 +199,7 @@ class ExistingApplicantController extends Controller
         $decryptedUid = decrypt($uid);
 
         $response = $this->authorizedRequest()
-            ->post($this->backend . '/api/admin/existing-applicants/' . $decryptedAppId . '/accept-declaration', [
+            ->post($this->backend . '/api/existing-applicants/' . $decryptedAppId . '/accept-declaration', [
                 'hrms_id' => $decryptedHrmsId,
                 'uid' => $decryptedUid,
             ]);

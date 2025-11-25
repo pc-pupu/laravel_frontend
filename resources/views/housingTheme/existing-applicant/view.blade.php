@@ -2,43 +2,6 @@
 @section('title', 'View Existing Applicant')
 @section('page-header', 'View Existing Applicant Details')
 
-@push('styles')
-<style>
-    .cms-wrapper {
-        background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%);
-        min-height: calc(100vh - 200px);
-        padding: 1.5rem 0;
-    }
-    .cms-card {
-        background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 8px 30px rgba(73, 128, 247, 0.12);
-        padding: 2rem;
-        border: 1px solid rgba(73, 128, 247, 0.1);
-    }
-    .info-table {
-        width: 100%;
-    }
-    .info-table th {
-        background: #473a39;
-        color: white;
-        padding: 1rem;
-        text-align: center;
-        font-size: 18px;
-        font-weight: normal;
-    }
-    .info-table td {
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid #e0e0e0;
-    }
-    .info-table td:first-child {
-        width: 50%;
-        background-color: #f8f9fa;
-        font-weight: 500;
-    }
-</style>
-@endpush
-
 @section('content')
 <div class="cms-wrapper">
     <div class="row">

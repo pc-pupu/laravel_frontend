@@ -20,7 +20,7 @@ class ExistingOccupantController extends Controller
     public function index(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-occupants', $request->query());
+            ->get($this->backend . '/api/existing-occupants', $request->query());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load existing occupants.');
@@ -49,7 +49,7 @@ class ExistingOccupantController extends Controller
     public function withHrms(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-occupants/with-hrms', $request->query());
+            ->get($this->backend . '/api/existing-occupants/with-hrms', $request->query());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load occupants.');
@@ -79,7 +79,7 @@ class ExistingOccupantController extends Controller
     public function withoutHrms(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-occupants/without-hrms', $request->query());
+            ->get($this->backend . '/api/existing-occupants/without-hrms', $request->query());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load occupants.');
@@ -110,7 +110,7 @@ class ExistingOccupantController extends Controller
     {
         // Fetch RHE list for dropdown
         $rheResponse = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-occupants/meta/rhe-list');
+            ->get($this->backend . '/api/existing-occupants/meta/rhe-list');
 
         $rheList = [];
         if ($rheResponse->successful()) {
@@ -137,7 +137,7 @@ class ExistingOccupantController extends Controller
             }
             
             $flatResponse = $this->authorizedRequest()
-                ->get($this->backend . '/api/admin/existing-occupants/flat/' . $decryptedFlatId . '/details');
+                ->get($this->backend . '/api/existing-occupants/flat/' . $decryptedFlatId . '/details');
 
             if ($flatResponse->successful()) {
                 $flatDetails = $flatResponse->json('data');
@@ -146,19 +146,19 @@ class ExistingOccupantController extends Controller
 
         // Fetch meta data for dropdowns
         $districtsResponse = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-occupants/meta/districts');
+            ->get($this->backend . '/api/existing-occupants/meta/districts');
         if ($districtsResponse->successful()) {
             $metaData['districts'] = $districtsResponse->json('data') ?? [];
         }
 
         $ddoResponse = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-occupants/meta/ddo-list');
+            ->get($this->backend . '/api/existing-occupants/meta/ddo-list');
         if ($ddoResponse->successful()) {
             $metaData['ddos'] = $ddoResponse->json('data') ?? [];
         }
 
         $payBandsResponse = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-occupants/meta/pay-bands');
+            ->get($this->backend . '/api/existing-occupants/meta/pay-bands');
         if ($payBandsResponse->successful()) {
             $metaData['payBands'] = $payBandsResponse->json('data') ?? [];
         }
@@ -175,7 +175,7 @@ class ExistingOccupantController extends Controller
         $payload = $request->except(['_token']);
 
         $response = $this->authorizedRequest()
-            ->post($this->backend . '/api/admin/existing-occupants', $payload);
+            ->post($this->backend . '/api/existing-occupants', $payload);
 
         if ($response->status() === 422) {
             $errors = $response->json('errors') ?? [];
@@ -194,7 +194,7 @@ class ExistingOccupantController extends Controller
     {
         $decryptedId = decrypt($id);
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-occupants/' . $decryptedId);
+            ->get($this->backend . '/api/existing-occupants/' . $decryptedId);
 
         if (!$response->successful()) {
             return redirect()->route('existing-occupant.index')
@@ -210,7 +210,7 @@ class ExistingOccupantController extends Controller
     {
         $decryptedId = decrypt($id);
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-occupants/' . $decryptedId);
+            ->get($this->backend . '/api/existing-occupants/' . $decryptedId);
 
         if (!$response->successful()) {
             return redirect()->route('existing-occupant.index')
@@ -220,13 +220,13 @@ class ExistingOccupantController extends Controller
         // Fetch meta data
         $metaData = [];
         $districtsResponse = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-occupants/meta/districts');
+            ->get($this->backend . '/api/existing-occupants/meta/districts');
         if ($districtsResponse->successful()) {
             $metaData['districts'] = $districtsResponse->json('data') ?? [];
         }
 
         $ddoResponse = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-occupants/meta/ddo-list');
+            ->get($this->backend . '/api/existing-occupants/meta/ddo-list');
         if ($ddoResponse->successful()) {
             $metaData['ddos'] = $ddoResponse->json('data') ?? [];
         }
@@ -243,7 +243,7 @@ class ExistingOccupantController extends Controller
         $payload = $request->except(['_token', '_method']);
 
         $response = $this->authorizedRequest()
-            ->put($this->backend . '/api/admin/existing-occupants/' . $decryptedId, $payload);
+            ->put($this->backend . '/api/existing-occupants/' . $decryptedId, $payload);
 
         if ($response->status() === 422) {
             $errors = $response->json('errors') ?? [];
@@ -300,7 +300,7 @@ class ExistingOccupantController extends Controller
         $decryptedFlatId = decrypt($flatId);
         
         $response = $this->authorizedRequest()
-            ->delete($this->backend . '/api/admin/existing-occupants/' . $decryptedId, [
+            ->delete($this->backend . '/api/existing-occupants/' . $decryptedId, [
                 'type' => $type,
                 'flat_id' => $decryptedFlatId
             ]);
