@@ -41,7 +41,7 @@ class ExistingApplicantVsCsController extends Controller
     public function getFlatDetails(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicant-vs-cs/flat-details', $request->query());
+            ->get($this->backend . '/api/existing-applicant-vs-cs/flat-details', $request->query());
 
         return response()->json($response->json());
     }
@@ -62,7 +62,7 @@ class ExistingApplicantVsCsController extends Controller
         // Fetch existing data if available
         $applicantData = null;
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicants/' . $decryptedUid);
+            ->get($this->backend . '/api/existing-applicants/' . $decryptedUid);
 
         if ($response->successful()) {
             $applicantData = $response->json('data');
@@ -85,7 +85,7 @@ class ExistingApplicantVsCsController extends Controller
         }
         
         $response = $this->authorizedRequest()
-            ->post($this->backend . '/api/admin/existing-applicant-vs-cs', $request->all());
+            ->post($this->backend . '/api/existing-applicant-vs-cs', $request->all());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to submit application.')
@@ -103,7 +103,7 @@ class ExistingApplicantVsCsController extends Controller
     public function vsListWithHrms(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicant-vs-cs/vs-list-with-hrms', $request->query());
+            ->get($this->backend . '/api/existing-applicant-vs-cs/vs-list-with-hrms', $request->query());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load VS applications.');
@@ -123,7 +123,7 @@ class ExistingApplicantVsCsController extends Controller
     public function vsListWithoutHrms(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicant-vs-cs/vs-list-without-hrms', $request->query());
+            ->get($this->backend . '/api/existing-applicant-vs-cs/vs-list-without-hrms', $request->query());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load VS applications.');
@@ -143,7 +143,7 @@ class ExistingApplicantVsCsController extends Controller
     public function csListWithHrms(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicant-vs-cs/cs-list-with-hrms', $request->query());
+            ->get($this->backend . '/api/existing-applicant-vs-cs/cs-list-with-hrms', $request->query());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load CS applications.');
@@ -163,7 +163,7 @@ class ExistingApplicantVsCsController extends Controller
     public function csListWithoutHrms(Request $request)
     {
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicant-vs-cs/cs-list-without-hrms', $request->query());
+            ->get($this->backend . '/api/existing-applicant-vs-cs/cs-list-without-hrms', $request->query());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load CS applications.');
@@ -189,7 +189,7 @@ class ExistingApplicantVsCsController extends Controller
         }
 
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/admin/existing-applicant-vs-cs/' . $decryptedId);
+            ->get($this->backend . '/api/existing-applicant-vs-cs/' . $decryptedId);
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load application.');
@@ -215,7 +215,7 @@ class ExistingApplicantVsCsController extends Controller
         }
 
         $response = $this->authorizedRequest()
-            ->put($this->backend . '/api/admin/existing-applicant-vs-cs/' . $decryptedId, $request->all());
+            ->put($this->backend . '/api/existing-applicant-vs-cs/' . $decryptedId, $request->all());
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to update application.')

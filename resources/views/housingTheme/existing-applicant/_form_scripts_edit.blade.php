@@ -1,5 +1,5 @@
 <script>
-const API_BASE = '{{ config("services.api.base_url") }}/api/admin';
+const API_BASE = '{{ rtrim(config("services.api.base_url"), "/") }}';
 const TOKEN = '{{ session("api_token") }}';
 const APPLICANT_DATA = @json($applicant ?? []);
 

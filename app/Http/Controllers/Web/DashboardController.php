@@ -18,9 +18,9 @@ class DashboardController extends Controller
     public function __invoke(Request $request)
     {
         $stats = [
-            'existing_with_hrms' => $this->fetchPaginatedTotal('/api/admin/existing-occupants/with-hrms'),
-            'existing_without_hrms' => $this->fetchPaginatedTotal('/api/admin/existing-occupants/without-hrms'),
-            'cms_items' => $this->fetchPaginatedTotal('/api/admin/cms-content'),
+            'existing_with_hrms' => $this->fetchPaginatedTotal('/api/existing-occupants/with-hrms'),
+            'existing_without_hrms' => $this->fetchPaginatedTotal('/api/existing-occupants/without-hrms'),
+            'cms_items' => $this->fetchPaginatedTotal('/api/cms-content'),
         ];
 
         return view('housingTheme.dashboard.index', [

@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrap();
+        Paginator::defaultView('vendor.pagination.bootstrap-5');
         
         // Register sidebar menu composer for housing theme and admin panel
         // View::composer('housingTheme.partials.dashboard-sidebar', SidebarMenuComposer::class);

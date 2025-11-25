@@ -2,61 +2,6 @@
 @section('title', 'Existing Occupants')
 @section('page-header', $title ?? 'Existing Occupant List')
 
-@push('styles')
-<style>
-    .cms-wrapper {
-        background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%);
-        min-height: calc(100vh - 200px);
-        padding: 1.5rem 0;
-    }
-    .cms-card {
-        background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 8px 30px rgba(73, 128, 247, 0.12);
-        padding: 2rem;
-        border: 1px solid rgba(73, 128, 247, 0.1);
-    }
-    .cms-header {
-        background: linear-gradient(135deg, #4980f7 0%, #19bbd3 100%);
-        color: white;
-        padding: 1.5rem 2rem;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 20px rgba(73, 128, 247, 0.3);
-    }
-    .cms-header h3 {
-        margin: 0;
-        font-weight: 600;
-        font-size: 1.75rem;
-    }
-    .search-filter-box {
-        background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%);
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        border: 1px solid rgba(73, 128, 247, 0.15);
-    }
-    .table-container {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(73, 128, 247, 0.1);
-    }
-    .table thead {
-        background: linear-gradient(135deg, #4980f7 0%, #19bbd3 100%);
-        color: white;
-    }
-    .table thead th {
-        border: none;
-        padding: 1.25rem 1rem;
-        font-weight: 600;
-        color: white;
-    }
-    .table tbody tr:hover {
-        background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%);
-    }
-</style>
-@endpush
 
 @section('content')
 <div class="cms-wrapper">
