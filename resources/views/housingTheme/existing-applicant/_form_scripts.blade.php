@@ -8,12 +8,26 @@ let payBands = {};
 let allotmentCategories = {};
 let ddoDesignations = {};
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     initializeDatePickers();
-    loadDistricts();
-    loadPayBands('new');
+    const oldInputs = window.__oldInputs || {};
+    const initialPayBandType = oldInputs.pay_band_type || 'new';
+
+    const initialRadio = document.getElementById(`pay_band_type_${initialPayBandType}`);
+    if (initialRadio) {
+        initialRadio.checked = true;
+    }
+
+    await Promise.all([
+        loadDistricts(),
+        loadPayBands(initialPayBandType),
+    ]);
     setupEventListeners();
     setupNumericInputs();
+    if (typeof applyOldInputs === 'function') {
+        applyOldInputs();
+    }
+    await restoreDependentDropdowns();
 });
 
 // Initialize date pickers
@@ -69,10 +83,12 @@ async function loadDistricts() {
             populateSelect('#present_district', districts);
             populateSelect('#office_district', districts);
             populateSelect('#ddo_district', districts);
+            return districts;
         }
     } catch (error) {
         console.error('Error loading districts:', error);
     }
+    return {};
 }
 
 // Load pay bands based on type
@@ -85,10 +101,12 @@ async function loadPayBands(type) {
         if (data.status === 'success') {
             payBands = data.data;
             populateSelect('#pay_band', payBands);
+            return payBands;
         }
     } catch (error) {
         console.error('Error loading pay bands:', error);
     }
+    return {};
 }
 
 // Load RHE flat type based on pay band
@@ -96,7 +114,7 @@ async function loadRheFlatType(payBandId) {
     if (!payBandId) {
         document.getElementById('rhe_flat_type').value = '';
         document.getElementById('reason').innerHTML = '<option value="">--Choose Allotment Reason--</option>';
-        return;
+        return '';
     }
     
     try {
@@ -107,12 +125,14 @@ async function loadRheFlatType(payBandId) {
         if (data.status === 'success') {
             document.getElementById('rhe_flat_type').value = data.data || '';
             if (data.data) {
-                loadAllotmentCategories(data.data);
+                await loadAllotmentCategories(data.data);
             }
+            return data.data || '';
         }
     } catch (error) {
         console.error('Error loading RHE flat type:', error);
     }
+    return '';
 }
 
 // Load allotment categories
@@ -125,17 +145,19 @@ async function loadAllotmentCategories(rheFlatType) {
         if (data.status === 'success') {
             allotmentCategories = data.data;
             populateSelect('#reason', allotmentCategories);
+            return allotmentCategories;
         }
     } catch (error) {
         console.error('Error loading allotment categories:', error);
     }
+    return {};
 }
 
 // Load DDO designations
 async function loadDdoDesignations(districtCode) {
     if (!districtCode) {
         document.getElementById('designation').innerHTML = '<option value="">- Select -</option>';
-        return;
+        return {};
     }
     
     try {
@@ -146,10 +168,12 @@ async function loadDdoDesignations(districtCode) {
         if (data.status === 'success') {
             ddoDesignations = data.data;
             populateSelect('#designation', ddoDesignations);
+            return ddoDesignations;
         }
     } catch (error) {
         console.error('Error loading DDO designations:', error);
     }
+    return {};
 }
 
 // Load DDO address
@@ -157,7 +181,7 @@ async function loadDdoAddress(ddoId) {
     if (!ddoId) {
         document.getElementById('ddo_address').value = '';
         document.getElementById('replace_ddo_address').style.display = 'none';
-        return;
+        return '';
     }
     
     try {
@@ -165,13 +189,16 @@ async function loadDdoAddress(ddoId) {
             headers: { 'Authorization': `Bearer ${TOKEN}` }
         });
         const data = await response.json();
+        
         if (data.status === 'success') {
             document.getElementById('ddo_address').value = data.data || '';
-            document.getElementById('replace_ddo_address').style.display = 'block';
+            document.getElementById('replace_ddo_address').style.display = data.data ? 'block' : 'none';
+            return data.data || '';
         }
     } catch (error) {
         console.error('Error loading DDO address:', error);
     }
+    return '';
 }
 
 // Populate select dropdown
@@ -180,6 +207,7 @@ function populateSelect(selector, options) {
     if (!select) return;
     
     const currentValue = select.value;
+    const oldValue = window.__oldInputs ? window.__oldInputs[select.name] : null;
     select.innerHTML = '';
     
     for (const [value, text] of Object.entries(options)) {
@@ -191,6 +219,38 @@ function populateSelect(selector, options) {
     
     if (currentValue && options[currentValue]) {
         select.value = currentValue;
+    } else if (oldValue && options[oldValue]) {
+        select.value = oldValue;
+    }
+
+    if (typeof applyOldInputs === 'function') {
+        applyOldInputs();
+    }
+}
+
+// Restore dependent dropdowns based on old input values (after validation errors)
+async function restoreDependentDropdowns() {
+    const oldInputs = window.__oldInputs || {};
+
+    if (oldInputs.pay_band) {
+        await loadRheFlatType(oldInputs.pay_band);
+        if (oldInputs.reason) {
+            const reasonSelect = document.getElementById('reason');
+            if (reasonSelect) {
+                reasonSelect.value = oldInputs.reason;
+            }
+        }
+    }
+
+    if (oldInputs.ddo_district) {
+        await loadDdoDesignations(oldInputs.ddo_district);
+        if (oldInputs.designation) {
+            const designationSelect = document.getElementById('designation');
+            if (designationSelect) {
+                designationSelect.value = oldInputs.designation;
+                await loadDdoAddress(oldInputs.designation);
+            }
+        }
     }
 }
 
@@ -198,8 +258,8 @@ function populateSelect(selector, options) {
 function setupEventListeners() {
     // Pay band type change
     document.querySelectorAll('input[name="pay_band_type"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            loadPayBands(this.value);
+        radio.addEventListener('change', async function() {
+            await loadPayBands(this.value);
             document.getElementById('pay_band').value = '';
             document.getElementById('rhe_flat_type').value = '';
             document.getElementById('reason').innerHTML = '<option value="">--Choose Allotment Reason--</option>';
@@ -217,8 +277,8 @@ function setupEventListeners() {
     // DDO district change
     const ddoDistrictSelect = document.getElementById('ddo_district');
     if (ddoDistrictSelect) {
-        ddoDistrictSelect.addEventListener('change', function() {
-            loadDdoDesignations(this.value);
+        ddoDistrictSelect.addEventListener('change', async function() {
+            await loadDdoDesignations(this.value);
             document.getElementById('designation').value = '';
             document.getElementById('ddo_address').value = '';
             document.getElementById('replace_ddo_address').style.display = 'none';

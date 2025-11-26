@@ -163,8 +163,20 @@ class ExistingApplicantController extends Controller
 
     public function store(Request $request)
     {
-        $response = $this->authorizedRequest()
-            ->post($this->backend . '/api/existing-applicants', $request->all());
+        $payload = $request->except('extra_doc');
+
+        $httpRequest = $this->authorizedRequest()->asMultipart();
+
+        if ($request->hasFile('extra_doc')) {
+            $file = $request->file('extra_doc');
+            $httpRequest = $httpRequest->attach(
+                'extra_doc',
+                file_get_contents($file->getRealPath()),
+                $file->getClientOriginalName()
+            );
+        }
+
+        $response = $httpRequest->post($this->backend . '/api/existing-applicants', $payload);
 
         if (!$response->successful()) {
             $errors = $response->json('errors') ?? [];
