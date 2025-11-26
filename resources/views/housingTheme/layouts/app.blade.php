@@ -30,6 +30,85 @@
         <script src="{{ asset('/assets/housingTheme/bootstrap/js/bootstrap.min.js') }}"></script>
         <script src="{{ asset('/assets/housingTheme/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ asset('/themes/dashboard-theme/js/custome.js') }}"></script>
+        <script>
+            window.__oldInputs = @json(session()->getOldInput());
+            window.__formErrors = @json($errors->toArray());
+
+            function applyOldInputs() {
+                const oldInputs = window.__oldInputs || {};
+                Object.entries(oldInputs).forEach(([field, value]) => {
+                    if (value === null || typeof value === 'undefined') {
+                        return;
+                    }
+
+                    let elements = document.querySelectorAll(`[name="${field}"]`);
+                    if (!elements.length) {
+                        elements = document.querySelectorAll(`[name="${field}[]"]`);
+                    }
+                    if (!elements.length) {
+                        return;
+                    }
+
+                    elements.forEach(element => {
+                        if (element.type === 'file') {
+                            return;
+                        }
+
+                        if (element.type === 'radio' || element.type === 'checkbox') {
+                            const values = Array.isArray(value) ? value : [value];
+                            element.checked = values.includes(element.value);
+                            return;
+                        }
+
+                        if (!element.value) {
+                            if (Array.isArray(value)) {
+                                element.value = value[0];
+                            } else {
+                                element.value = value;
+                            }
+                        }
+                    });
+                });
+            }
+
+            function renderFieldErrors() {
+                const formErrors = window.__formErrors || {};
+                Object.entries(formErrors).forEach(([field, messages]) => {
+                    const message = Array.isArray(messages) ? messages[0] : messages;
+                    if (!message) {
+                        return;
+                    }
+
+                    let elements = document.querySelectorAll(`[name="${field}"]`);
+                    if (!elements.length) {
+                        elements = document.querySelectorAll(`[name="${field}[]"]`);
+                    }
+
+                    if (!elements.length) {
+                        return;
+                    }
+
+                    const container = elements[0].closest('.form-floating')
+                        || elements[0].closest('.form-check')
+                        || elements[0].closest('.form-group')
+                        || elements[0].parentElement;
+
+                    elements.forEach(element => element.classList.add('is-invalid'));
+
+                    if (container && !container.querySelector('.invalid-feedback')) {
+                        const feedback = document.createElement('div');
+                        feedback.classList.add('invalid-feedback', 'd-block', 'mt-1');
+                        feedback.textContent = message;
+                        container.appendChild(feedback);
+                    }
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                applyOldInputs();
+                renderFieldErrors();
+            });
+        </script>
         @stack('scripts')
     </body>
 </html>

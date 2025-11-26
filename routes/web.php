@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\CmsContentManagerController;
 use App\Http\Controllers\Web\ExistingApplicantController;
 use App\Http\Controllers\Web\ExistingOccupantController;
 use App\Http\Controllers\Web\ExistingApplicantVsCsController;
+use App\Http\Controllers\Web\EstateTreasuryMappingController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -114,6 +115,17 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::get('legacy-cs-whrms-edit/{id}', [ExistingApplicantVsCsController::class, 'edit'])->name('existing-applicant-vs-cs.cs-edit-with-hrms');
     Route::post('legacy-cs-whrms-edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.cs-update-with-hrms');
     Route::put('legacy-cs-whrms-edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.cs-update-with-hrms.put');
+});
+
+// Estate Treasury Mapping - Matching Drupal URLs
+Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
+    Route::get('estate-treasury-selection', [EstateTreasuryMappingController::class, 'index'])->name('estate-treasury-selection.index');
+    Route::get('estate-treasury-selection/add', [EstateTreasuryMappingController::class, 'create'])->name('estate-treasury-selection.create');
+    Route::post('estate-treasury-selection/add', [EstateTreasuryMappingController::class, 'store'])->name('estate-treasury-selection.store');
+    Route::get('estate-treasury-selection/edit/{id}', [EstateTreasuryMappingController::class, 'edit'])->name('estate-treasury-selection.edit');
+    Route::post('estate-treasury-selection/edit/{id}', [EstateTreasuryMappingController::class, 'update'])->name('estate-treasury-selection.update');
+    Route::put('estate-treasury-selection/edit/{id}', [EstateTreasuryMappingController::class, 'update'])->name('estate-treasury-selection.update.put');
+    Route::get('estate-treasury-selection/delete/{id}', [EstateTreasuryMappingController::class, 'destroy'])->name('estate-treasury-selection.destroy');
 });
 
 // Admin routes

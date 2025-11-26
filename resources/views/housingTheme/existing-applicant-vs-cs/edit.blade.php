@@ -62,9 +62,9 @@
 @endsection
 
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
+<script src="{{ asset('/assets/housingTheme/jquery/jquery.min.js') }}"></script>
+<script src="{{ asset('/assets/housingTheme/jquery/jquery-ui.min.js') }}"></script>
+<link rel="stylesheet" href="{{ asset('/assets/housingTheme/css/jquery-ui.css') }}">
 
 @include('housingTheme.existing-applicant-vs-cs._form_scripts_edit')
 @endpush
