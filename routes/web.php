@@ -97,9 +97,14 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
 Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
     Route::get('legacy-vs-cs', [ExistingApplicantVsCsController::class, 'flatWiseForm'])->name('existing-applicant-vs-cs.flat-wise-form');
     // Note: Drupal has typo "legay" instead of "legacy" - matching exactly
-    Route::get('legay-vs-or-cs-form/{uid}', [ExistingApplicantVsCsController::class, 'create'])->name('existing-applicant-vs-cs.create');
+    Route::get('legay-vs-or-cs-form/{uid}',  
+    [ExistingApplicantVsCsController::class, 'create']
+)->where('uid', '.*')->name('existing-applicant-vs-cs.create');
 
-    Route::post('legay-vs-or-cs-form/{uid}', [ExistingApplicantVsCsController::class, 'store'])->name('existing-applicant-vs-cs.store');
+Route::post('legay-vs-or-cs-form/{uid}',  
+    [ExistingApplicantVsCsController::class, 'store']
+)->where('uid', '.*')->name('existing-applicant-vs-cs.store');
+
     Route::get('legacy-vs-list-wohrms', [ExistingApplicantVsCsController::class, 'vsListWithoutHrms'])->name('existing-applicant-vs-cs.vs-list-without-hrms');
     Route::get('legacy-vs-wohrms-edit/{id}', [ExistingApplicantVsCsController::class, 'edit'])->name('existing-applicant-vs-cs.vs-edit-without-hrms');
     Route::post('legacy-vs-wohrms-edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.vs-update-without-hrms');

@@ -144,7 +144,7 @@
         <div class="col-md-4">
             <div class="form-floating">
                 <input type="text" class="form-control" id="dob" name="dob" 
-                    placeholder="DD/MM/YYYY" value="{{ old('dob', '01/01/1900') }}" autocomplete="off">
+                    placeholder="DD/MM/YYYY" value="{{ old('dob', $applicantData['dob'] ?? '01/01/1945') }}" autocomplete="off">
                 <label for="dob">Date of Birth (According to Service Book)</label>
             </div>
         </div>
@@ -253,7 +253,7 @@
         <div class="col-md-6">
             <div class="form-floating">
                 <input type="text" class="form-control" id="doj" name="doj" 
-                    placeholder="DD/MM/YYYY" value="{{ old('doj', '01/01/1900') }}" autocomplete="off">
+                    placeholder="DD/MM/YYYY" value="{{ old('doj', $applicantData['doj'] ?? '01/01/1945') }}" autocomplete="off">
                 <label for="doj">Date of Joining</label>
             </div>
         </div>
@@ -355,7 +355,7 @@
         <div class="col-md-12" id="replace_ddo_address">
             <div class="form-floating">
                 <textarea class="form-control" id="ddo_address" name="ddo_address" 
-                    placeholder="DDO Address" readonly style="height: 100px;">{{ old('ddo_address') }}</textarea>
+                    placeholder="DDO Address" readonly style="height: 100px;">{{ old('ddo_address', $applicantData['ddo_address'] ?? '') }}</textarea>
                 <label for="ddo_address">DDO Address</label>
             </div>
         </div>

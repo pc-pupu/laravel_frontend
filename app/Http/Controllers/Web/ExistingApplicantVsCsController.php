@@ -51,50 +51,72 @@ class ExistingApplicantVsCsController extends Controller
     /**
      * VS/CS application form
      */
-public function create(Request $request, $uid)
-{
-    Log::info("UID received", ['uid' => $uid]);
+    public function create(Request $request, $uid)
+    {
+        Log::info("UID received", ['uid' => $uid]);
 
-    try {
-        $decryptedUid = Crypt::decryptString($uid);
-    } catch (\Exception $e) {
-        Log::error("Decryption failed", [
-            "uid" => $uid,
-            "error" => $e->getMessage()
+        try {
+            $decryptedUid = Crypt::decryptString($uid);
+        } catch (\Exception $e) {
+            Log::error("Decryption failed", [
+                "uid" => $uid,
+                "error" => $e->getMessage()
+            ]);
+
+            return redirect()
+                ->route('existing-applicant-vs-cs.flat-wise-form')
+                ->with("error", "Invalid applicant ID.");
+        }
+
+        Log::info("Decrypted UID OK", ['decrypted' => $decryptedUid]);
+
+        $response = $this->authorizedRequest()
+            ->get($this->backend . '/api/existing-applicants/' . $decryptedUid);
+
+        return view('housingTheme.existing-applicant-vs-cs.create', [
+            'uid' => $uid,
+            'applicantData' => $response->json('data'),
         ]);
-
-        return redirect()
-            ->route('existing-applicant-vs-cs.flat-wise-form')
-            ->with("error", "Invalid applicant ID.");
     }
-
-    Log::info("Decrypted UID OK", ['decrypted' => $decryptedUid]);
-
-    $response = $this->authorizedRequest()
-        ->get($this->backend . '/api/existing-applicants/' . $decryptedUid);
-
-    return view('housingTheme.existing-applicant-vs-cs.create', [
-        'uid' => $uid,
-        'applicantData' => $response->json('data'),
-    ]);
-}
 
 
     /**
      * Store VS/CS application
      */
-    public function store(Request $request, $uid = null)
+    public function store(Request $request, $uid)
     {
-        // If uid is provided in route, add it to request
-        if ($uid) {
-            $request->merge(['housing_hidden_uid_or_draft_id' => decrypt($uid)]);
+        $decoded = rawurldecode($uid);
+
+        Log::info("Store called", [
+            'raw_uid' => $uid,
+            'decoded' => $decoded
+        ]);
+
+        try {
+            $realUid = Crypt::decryptString($decoded);
+
+            $request->merge([
+                'housing_hidden_uid_or_draft_id' => $realUid
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Decrypt failed", [
+                'uid'=>$uid,
+                'decoded'=>$decoded,
+                'error'=>$e->getMessage()
+            ]);
+
+            return back()
+                ->with('error', 'Invalid UID received.')
+                ->withInput();
         }
-        
+
         $response = $this->authorizedRequest()
             ->post($this->backend . '/api/existing-applicant-vs-cs', $request->all());
 
         if (!$response->successful()) {
-            return back()->with('error', $response->json('message') ?? 'Failed to submit application.')
+            return back()
+                ->with('error', $response->json('message') ?? 'Failed.')
                 ->withInput()
                 ->withErrors($response->json('errors') ?? []);
         }
@@ -102,6 +124,8 @@ public function create(Request $request, $uid)
         return redirect()->route('existing-applicant-vs-cs.flat-wise-form')
             ->with('success', 'Application submitted successfully.');
     }
+
+
 
     /**
      * VS List (with HRMS)

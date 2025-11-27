@@ -36,11 +36,19 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('existing-applicant-vs-cs.store', ['uid' => $uid])}}" id="vsCsForm" enctype="multipart/form-data">
+                
+                @php
+                    $safeUid = rawurlencode($uid); // prevent Blade escape + safe for URL
+                @endphp
+
+                <form method="POST"
+                    action="{{ route('existing-applicant-vs-cs.store', ['uid' => $safeUid]) }}"
+                    id="vsCsForm"
+                    enctype="multipart/form-data">
+
                     @csrf
 
-                    <input type="hidden" name="housing_hidden_uid_or_draft_id" value="{{ $uid }}">
-
+                    
                     @include('housingTheme.existing-applicant-vs-cs._form_fields', ['applicantData' => $applicantData ?? null])
 
                     <div class="mt-4 d-flex justify-content-end gap-3">
