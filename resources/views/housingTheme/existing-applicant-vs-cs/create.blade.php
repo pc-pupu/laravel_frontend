@@ -36,7 +36,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('existing-applicant-vs-cs.store') }}" id="vsCsForm" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('existing-applicant-vs-cs.store', ['uid' => $uid])}}" id="vsCsForm" enctype="multipart/form-data">
                     @csrf
 
                     <input type="hidden" name="housing_hidden_uid_or_draft_id" value="{{ $uid }}">
