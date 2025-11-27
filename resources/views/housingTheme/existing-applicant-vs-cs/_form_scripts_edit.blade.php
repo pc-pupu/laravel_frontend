@@ -84,18 +84,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Authorization': 'Bearer ' + token,
                 'Accept': 'application/json'
             },
+
             success: function(response) {
+
+                console.log("RAW RESPONSE:", response);
+                console.log("TYPE OF data:", typeof response.data);
+                console.log("DATA:", response.data);
+
                 if (response.status === 'success') {
+
                     let html = '<div class="form-floating">';
                     html += '<select class="form-select" id="designation" name="designation">';
                     html += '<option value="">- Select DDO Designation -</option>';
-                    response.data.forEach(function(ddo) {
-                        html += '<option value="' + ddo.ddo_id + '">' + ddo.ddo_designation + '</option>';
-                    });
+
+                    // ⭐ FIX: Loop over object safely
+                    for (const key in response.data) {
+                        if (response.data.hasOwnProperty(key)) {
+                            html += `<option value="${key}">${response.data[key]}</option>`;
+                        }
+                    }
+
                     html += '</select>';
                     html += '<label for="designation">DDO Designation</label>';
                     html += '</div>';
+
                     $('#replace_designation').html(html);
+
                     if (defaultValue) {
                         $('#designation').val(defaultValue).trigger('change');
                     }

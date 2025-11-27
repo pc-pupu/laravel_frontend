@@ -2,6 +2,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     const backendUrl = '{{ env("BACKEND_API") }}';
     const token = '{{ session("api_token") }}';
+    const serviceBookMinDate = new Date(1945, 0, 1);
+    const serviceBookMinDateString = '01/01/1945';
+    const possessionMinDate = new Date(1975, 0, 1);
+    const possessionMinDateString = '01/01/1975';
+    const today = new Date();
 
     // Initialize date pickers
     $("#application_date").datepicker({
@@ -16,7 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
         dateFormat: "dd/mm/yy",
         changeMonth: true,
         changeYear: true,
-        yearRange: "-70:-18",
+        yearRange: "1945:" + (new Date().getFullYear() - 18),
+        minDate: serviceBookMinDate,
         maxDate: "-18Y",
         autoSize: true
     });
@@ -25,7 +31,8 @@ document.addEventListener('DOMContentLoaded', function() {
         dateFormat: "dd/mm/yy",
         changeMonth: true,
         changeYear: true,
-        yearRange: "-70:+0",
+        yearRange: "1945:+0",
+        minDate: serviceBookMinDate,
         maxDate: "0",
         autoSize: true
     });
@@ -38,6 +45,28 @@ document.addEventListener('DOMContentLoaded', function() {
         minDate: "0",
         autoSize: true
     });
+
+    function parseDdMmYyyy(dateStr) {
+        if (!dateStr) {
+            return null;
+        }
+        const parts = dateStr.split('/');
+        if (parts.length !== 3) {
+            return null;
+        }
+        const [day, month, year] = parts.map(Number);
+        if (!day || !month || !year) {
+            return null;
+        }
+        return new Date(year, month - 1, day);
+    }
+
+    function formatDate(dateObj) {
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
 
     // Load districts
     function loadDistricts(elementId, defaultValue = '') {
@@ -71,10 +100,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load DDO designations
     function loadDdoDesignations(districtCode, defaultValue = '') {
         if (!districtCode) {
-            $('#replace_designation').html('<div class="form-floating"><select class="form-select" id="designation" name="designation"><option value="">- Select DDO Designation -</option></select><label for="designation">DDO Designation</label></div>');
+            $('#replace_designation').html(
+                '<div class="form-floating">' +
+                    '<select class="form-select" id="designation" name="designation">' +
+                        '<option value="">- Select DDO Designation -</option>' +
+                    '</select>' +
+                    '<label for="designation">DDO Designation</label>' +
+                '</div>'
+            );
+            $('#ddo_address').val('');
             return;
         }
-
+        // console.log(districtCode);
+        
         $.ajax({
             url: backendUrl + '/api/existing-applicants-helpers/ddo-designations',
             method: 'GET',
@@ -84,24 +122,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Accept': 'application/json'
             },
             success: function(response) {
+                // console.log(response);
+                
                 if (response.status === 'success') {
                     let html = '<div class="form-floating">';
                     html += '<select class="form-select" id="designation" name="designation">';
                     html += '<option value="">- Select DDO Designation -</option>';
-                    response.data.forEach(function(ddo) {
-                        html += '<option value="' + ddo.ddo_id + '">' + ddo.ddo_designation + '</option>';
-                    });
+
+                    for (const key in response.data) {
+                        if (response.data.hasOwnProperty(key)) {
+                            html += '<option value="' + key + '">' + response.data[key] + '</option>';
+                        }
+                    }
+
                     html += '</select>';
                     html += '<label for="designation">DDO Designation</label>';
                     html += '</div>';
+
                     $('#replace_designation').html(html);
+
                     if (defaultValue) {
-                        $('#designation').val(defaultValue);
+                        $('#designation').val(defaultValue).trigger('change');
                     }
                 }
             }
         });
     }
+
 
     // Load DDO address
     function loadDdoAddress(ddoId) {
@@ -285,7 +332,19 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             success: function(response) {
                 if (response.status === 'success' && response.data) {
-                    $('#possession_date').val(response.data);
+                    let parsed = parseDdMmYyyy(response.data);
+                    if (!parsed) {
+                        parsed = possessionMinDate;
+                    }
+                    if (parsed < possessionMinDate) {
+                        parsed = possessionMinDate;
+                    }
+                    if (parsed > today) {
+                        parsed = today;
+                    }
+                    $('#possession_date').val(formatDate(parsed));
+                } else {
+                    $('#possession_date').val(possessionMinDateString);
                 }
             }
         });
@@ -325,17 +384,37 @@ document.addEventListener('DOMContentLoaded', function() {
         loadPossessionDate($(this).val());
     });
 
+    function enforceMinServiceBookDate(selector) {
+        const $field = $(selector);
+        const value = $field.val();
+        if (!value) {
+            $field.val(serviceBookMinDateString);
+            return;
+        }
+        const [day, month, year] = value.split('/');
+        const parsedDate = new Date(year, month - 1, day);
+        if (parsedDate < serviceBookMinDate) {
+            $field.val(serviceBookMinDateString);
+        }
+    }
+
     // Initial loads
-    loadDistricts('permanent_district', '{{ old("permanent_district", "17") }}');
-    loadDistricts('present_district', '{{ old("present_district", "17") }}');
-    loadDistricts('office_district', '{{ old("office_district", "17") }}');
-    loadDistricts('district', '{{ old("district", "17") }}');
+    const initialPermanentDistrict = '{{ old("permanent_district", $applicantData["permanent_district"] ?? "17") }}';
+    const initialPresentDistrict = '{{ old("present_district", $applicantData["present_district"] ?? "17") }}';
+    const initialOfficeDistrict = '{{ old("office_district", $applicantData["office_district"] ?? "17") }}';
+    const initialDdoDistrict = '{{ old("district", $applicantData["district_code"] ?? "") }}';
+    const initialDdoDesignation = '{{ old("designation", $applicantData["ddo_id"] ?? "") }}';
+
+    loadDistricts('permanent_district', initialPermanentDistrict);
+    loadDistricts('present_district', initialPresentDistrict);
+    loadDistricts('office_district', initialOfficeDistrict);
+    loadDistricts('district', initialDdoDistrict || '');
     
     const initialPayBandType = $('input[name="pay_type_new"]:checked').val() || 'old';
     loadPayBands(initialPayBandType, '{{ old("pay_band") }}');
     
-    if ('{{ old("district") }}') {
-        loadDdoDesignations('{{ old("district") }}', '{{ old("designation") }}');
+    if (initialDdoDistrict) {
+        loadDdoDesignations(initialDdoDistrict, initialDdoDesignation);
     }
     
     loadHousingEstates('{{ old("occupation_estate") }}');
@@ -346,6 +425,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if ('{{ old("occupation_estate") }}' && '{{ old("occupation_block") }}') {
         loadHousingFlats('{{ old("occupation_estate") }}', '{{ old("occupation_block") }}', '{{ old("occupation_flat") }}');
+    }
+
+    enforceMinServiceBookDate('#dob');
+    enforceMinServiceBookDate('#doj');
+
+    const existingPossession = $('#possession_date').val();
+    if (existingPossession) {
+        let parsed = parseDdMmYyyy(existingPossession) || possessionMinDate;
+        if (parsed < possessionMinDate) {
+            parsed = possessionMinDate;
+        }
+        if (parsed > today) {
+            parsed = today;
+        }
+        $('#possession_date').val(formatDate(parsed));
     }
 
     // Form validation
