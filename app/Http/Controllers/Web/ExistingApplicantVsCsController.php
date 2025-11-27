@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Log;
+use Illuminate\Support\Facades\Crypt;
 
 class ExistingApplicantVsCsController extends Controller
 {
@@ -49,30 +51,34 @@ class ExistingApplicantVsCsController extends Controller
     /**
      * VS/CS application form
      */
-    public function create(Request $request, $uid)
-    {
-        try {
-            // Decrypt the UID (it's encrypted by Laravel's encrypt helper)
-            $decryptedUid = decrypt(urldecode($uid));
-        } catch (\Exception $e) {
-            return redirect()->route('existing-applicant-vs-cs.flat-wise-form')
-                ->with('error', 'Invalid applicant ID.');
-        }
+public function create(Request $request, $uid)
+{
+    Log::info("UID received", ['uid' => $uid]);
 
-        // Fetch existing data if available
-        $applicantData = null;
-        $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/existing-applicants/' . $decryptedUid);
-
-        if ($response->successful()) {
-            $applicantData = $response->json('data');
-        }
-
-        return view('housingTheme.existing-applicant-vs-cs.create', [
-            'uid' => $uid,
-            'applicantData' => $applicantData,
+    try {
+        $decryptedUid = Crypt::decryptString($uid);
+    } catch (\Exception $e) {
+        Log::error("Decryption failed", [
+            "uid" => $uid,
+            "error" => $e->getMessage()
         ]);
+
+        return redirect()
+            ->route('existing-applicant-vs-cs.flat-wise-form')
+            ->with("error", "Invalid applicant ID.");
     }
+
+    Log::info("Decrypted UID OK", ['decrypted' => $decryptedUid]);
+
+    $response = $this->authorizedRequest()
+        ->get($this->backend . '/api/existing-applicants/' . $decryptedUid);
+
+    return view('housingTheme.existing-applicant-vs-cs.create', [
+        'uid' => $uid,
+        'applicantData' => $response->json('data'),
+    ]);
+}
+
 
     /**
      * Store VS/CS application
