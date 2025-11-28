@@ -1,0 +1,209 @@
+/* HRMS Login Styles - Matching Drupal Design */
+
+a {
+    text-decoration: none !important;
+}
+.hrms-login-bg {
+    background-image: url('../outerTheme/images/wblc-services-bg.jpg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    width: 100%;
+    height: 80%;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.hrms-login-bg .overlay-1 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(270deg, rgba(226, 224, 211, 0) 0%, rgb(0 0 0 / 51%) 100%);
+    z-index: 1;
+}
+
+.hrms-login-bg .overlay-2 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 250.625em;
+    height: 23.8em;
+    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+    z-index: 1;
+}
+
+.hrms-login-bg .position-absolute {
+    z-index: 2;
+}
+
+.hrms-login-bg .logo {
+    margin-bottom: 20px;
+}
+
+.hrms-login-bg .logo img {
+    max-width: 150px;
+    height: auto;
+}
+
+.hrms-login-bg .logo-text h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hrms-login-bg .logo-text h4 {
+    font-size: 1.2rem;
+    font-weight: 400;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.services h1 {
+    color: #0d5c6c;
+    font-weight: 700;
+}
+.poppins-regular {
+    font-family: "Poppins", serif;
+    font-style: normal;
+}
+.poppins-medium {
+    font-family: "Poppins", serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 1.5rem;
+}
+.abt-dept-heading {
+    background: linear-gradient(to right, #2286e8 0%, #64d154 100%);
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+}
+/* Search/Login Panel Styles - Matching Drupal housingtheme */
+.search {
+    display: flex;
+    align-items: center;
+    width: 550px;
+    height: 70px;
+    background-color: #fff;
+    border-radius: 40px;
+    padding: 10px;
+}
+
+.login-panel {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+}
+
+.search_input {
+    color: #000;
+    border: 0;
+    outline: 0;
+    background: none;
+    margin-top: 5px;
+    caret-color: transparent;
+    line-height: 40px;
+    padding: 0 10px;
+    width: 550px;
+    font-size: 16px;
+}
+
+.search_input::placeholder {
+    color: #999;
+}
+
+.search_icon {
+    height: 50px;
+    width: 50px;
+    float: right;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    color: white;
+    background-color: var(--theme-color, #667eea);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.search:hover > .search_icon {
+    background: var(--theme-btn, #764ba2);
+    color: #fff;
+}
+
+.search_icon:active {
+    transform: scale(0.95);
+}
+    
+.search_icon i {
+    font-size: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hrms-login-bg .logo-text h1 {
+        font-size: 1.5rem;
+    }
+    
+    .hrms-login-bg .logo-text h4 {
+        font-size: 1rem;
+    }
+    
+    .search {
+        max-width: 90%;
+        padding: 5px 5px 5px 15px;
+    }
+    
+    .search_input {
+        font-size: 14px;
+        padding: 0 5px;
+    }
+    
+    .search_icon {
+        height: 45px;
+        width: 45px;
+    }
+}
+
+/* SSO Processing Page Styles */
+.sso-processing {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+}
+
+.sso-processing .spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.sso-processing h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.sso-processing p {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
