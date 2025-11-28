@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\ExistingApplicantController;
 use App\Http\Controllers\Web\ExistingOccupantController;
 use App\Http\Controllers\Web\ExistingApplicantVsCsController;
 use App\Http\Controllers\Web\EstateTreasuryMappingController;
+use App\Http\Controllers\Web\UserSsoController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -34,6 +35,14 @@ Route::controller(FrontendController::class)->group(function () {
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// User SSO Login Routes (matching Drupal routes)
+Route::get('/user/sso/{token}', [UserSsoController::class, 'hrmsSsoLogin'])->where('token', '.*')->name('user-sso.hrms-sso');
+Route::get('/sso/ddo/{token}', [UserSsoController::class, 'ddoSsoLogin'])->where('token', '.*')->name('user-sso.ddo-sso');
+Route::get('/hrms-login', [UserSsoController::class, 'hrmsLoginForm'])->name('user-sso.hrms-login');
+Route::post('/hrms-login', [UserSsoController::class, 'hrmsLoginSubmit'])->name('user-sso.hrms-login-submit');
+Route::get('/get-key', [UserSsoController::class, 'getApiKey'])->name('user-sso.get-key');
+Route::get('/get-test-info/{hrmsId?}', [UserSsoController::class, 'getTestInfo'])->name('user-sso.get-test-info');
 
 Route::get('captcha/{config?}', '\Mews\Captcha\CaptchaController@getCaptcha');
 
