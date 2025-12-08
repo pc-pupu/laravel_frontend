@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use App\Helpers\AuthEncryptionHelper;
 
 class SsoDashboardController extends Controller
 {
@@ -160,11 +161,133 @@ class SsoDashboardController extends Controller
 
     /**
      * Fetch HRMS User Data
+     * For local: Returns dummy data
+     * For live: Fetches from HRMS API and decrypts response
      */
     private function getHRMSUserData($hrmsId)
     {
-        // This can be implemented later - for now return basic data
+        // ========== LOCAL DEVELOPMENT - DUMMY DATA ==========
+        // Comment this section when going live
+        if (config('app.env') === 'local' || config('app.env') === 'development') {
+            return [
+                'hrmsId' => $hrmsId,
+                'applicantName' => 'PRADIP KUMAR HANSDA',
+                'dateOfBirth' => '15/04/1980',
+                'dateOfJoining' => '10/06/2005',
+                'dateOfRetirement' => '30/04/2040',
+                'mobileNo' => '7278587028',
+                'gender' => 'Male',
+                'applicantDesignation' => 'Upper Division Assistant',
+                'officeName' => 'PANCHAYATS & RURAL DEVELOPMENT DEPARTMENT',
+                'ddoId' => 'CAFPNA001',
+                'permanentStreet' => 'Flat No R-5/1,Bidhan Abasan',
+                'permanentCityTownVillage' => 'F B Block,Sector-III',
+                'permanentPostOffice' => 'Bidhannagar',
+                'permanentPincode' => '700106',
+                'permanentDistrictCode' => '5',
+                'permanentPresentSame' => 'Y',
+                'presentStreet' => 'Flat No R-5/1,Bidhan Abasan',
+                'presentCityTownVillage' => 'F B Block,Sector-III',
+                'presentPostOffice' => 'Bidhannagar',
+                'presentPincode' => '700106',
+                'presentDistrictCode' => '5',
+                'guardianName' => 'Sri Nabin Chandra Hansda',
+                'applicantHeadquarter' => 'L1-DEPARTMENT',
+                'gradePay' => '3600',
+                'payBandId' => '3',
+                'payScaleId' => '',
+                'applicantPostingPlace' => 'JOINT ADMINISTRATIVE BUILDING, 6TH - 10TH FLOOR, BLOCK HC-7 SECTOR 3 Salt Lake City BIDHANNAGAR IB MARKET SO Bidhannagar South 24 Parganas( North ) West Bengal',
+                'payInThePayBand' => '10600',
+                'officeStreetCharacter' => 'JOINT ADMINISTRATIVE BUILDING, 6TH - 10TH FLOOR, BLOCK HC-7 SECTOR 3 Salt Lake City BIDHANNAGAR IB MARKET SO Bidhannagar South 24 Parganas( North ) West Bengal',
+                'officeCityTownVillage' => 'Salt Lake City',
+                'officePostOffice' => 'BIDHANNAGAR IB MARKET SO',
+                'officePinCode' => '700106',
+                'officeDistrict' => '5',
+                'officePhoneNo' => '',
+                'email' => '',
+            ];
+        }
+        // ========== END LOCAL DEVELOPMENT ==========
+
+        // ========== LIVE PRODUCTION - HRMS API CALL ==========
+        // Uncomment this section when going live
+        try {
+            // HRMS API URL (configure in config/services.php)
+            $hrmsApiUrl = config('services.hrms.api_url', 'https://uat.wbifms.gov.in/hrms-External/housing/fetchEmployeeDetails');
+            
+            // Prepare request data
+            $requestData = [
+                'req' => [
+                    'hrmsId' => $hrmsId
+                ]
+            ];
+
+            // Make API call to HRMS
+            $response = Http::timeout(30)
+                ->withOptions([
+                    'verify' => false, // SSL verification disabled (as in Drupal)
+                ])
+                ->post($hrmsApiUrl, $requestData);
+
+            if (!$response->successful()) {
+                Log::error('HRMS API Error', [
+                    'hrms_id' => $hrmsId,
+                    'status' => $response->status(),
+                    'response' => $response->body()
+                ]);
+                return $this->getDefaultData($hrmsId);
+            }
+
+            $responseData = $response->json();
+
+            // Check if response is valid
+            if (!isset($responseData['resp']['status']) || 
+                strtolower($responseData['resp']['status']) !== 's' ||
+                empty($responseData['resp']['data'])) {
+                Log::error('HRMS API Invalid Response', [
+                    'hrms_id' => $hrmsId,
+                    'response' => $responseData
+                ]);
+                return $this->getDefaultData($hrmsId);
+            }
+
+            // Decrypt the encrypted data
+            $encryptedData = $responseData['resp']['data'];
+            $decryptedData = AuthEncryptionHelper::decrypt($encryptedData);
+            
+            // Parse decrypted JSON
+            $userDataArray = json_decode($decryptedData, true);
+            
+            if (empty($userDataArray) || !is_array($userDataArray) || empty($userDataArray[0])) {
+                Log::error('HRMS Data Decryption Error', [
+                    'hrms_id' => $hrmsId,
+                    'decrypted_data' => $decryptedData
+                ]);
+                return $this->getDefaultData($hrmsId);
+            }
+
+            // Return first element (user data)
+            return $userDataArray[0];
+
+        } catch (\Exception $e) {
+            Log::error('HRMS User Data Fetch Error', [
+                'hrms_id' => $hrmsId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return $this->getDefaultData($hrmsId);
+        }
+        // ========== END LIVE PRODUCTION ==========
+    }
+
+    /**
+     * Get default/fallback data when HRMS API fails
+     */
+    private function getDefaultData($hrmsId)
+    {
         return [
+            'hrmsId' => $hrmsId,
             'applicantName' => $hrmsId,
             'email' => 'N/A',
             'applicantDesignation' => 'N/A',

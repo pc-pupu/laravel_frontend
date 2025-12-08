@@ -252,10 +252,20 @@ class UserTaggingController extends Controller
     private function getHRMSLogData($hrmsId)
     {
         try {
-            // This would fetch from housing_hrms_applicant_login_log table
-            // For now, return empty array
+            // Call backend API to get HRMS log data
+            $response = Http::get(config('services.api.base_url') . '/hrms-log-data/' . $hrmsId);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return $data['data'] ?? [];
+            }
+
             return [];
         } catch (\Exception $e) {
+            Log::error('Get HRMS Log Data Error', [
+                'error' => $e->getMessage(),
+                'hrms_id' => $hrmsId
+            ]);
             return [];
         }
     }
