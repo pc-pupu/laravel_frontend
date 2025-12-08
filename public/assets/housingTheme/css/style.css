@@ -618,6 +618,7 @@ footer a:hover {
         letter-spacing: 0.5px;
         color: white;
     }
+    
     .table tbody tr {
         transition: all 0.2s ease;
         border-bottom: 1px solid #f0f4ff;
@@ -783,4 +784,19 @@ footer a:hover {
     .info-value {
         color: #2c3e50;
         margin-bottom: 1rem;
+    }
+
+    /* flat wise user info and details table */
+    .flatWiseUser table thead {
+        background: linear-gradient(135deg, #4980f7 0%, #19bbd3 100%);
+        color: white;
+    }
+    .flatWiseUser table thead th {
+        border: none;
+        padding: 1.25rem 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        color: rgb(20, 18, 18);
     }

@@ -105,7 +105,7 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
         
         // Clear API token cookie
-        return redirect()->route('login')
+        return redirect()->route('homepage')
             ->with('success', 'You have been logged out successfully.')
             ->withCookie(cookie()->forget('api_token'));
     }

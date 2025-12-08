@@ -12,6 +12,8 @@ use App\Http\Controllers\Web\ExistingOccupantController;
 use App\Http\Controllers\Web\ExistingApplicantVsCsController;
 use App\Http\Controllers\Web\EstateTreasuryMappingController;
 use App\Http\Controllers\Web\UserSsoController;
+use App\Http\Controllers\Web\SsoDashboardController;
+use App\Http\Controllers\Web\UserTaggingController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -49,6 +51,21 @@ Route::get('captcha/{config?}', '\Mews\Captcha\CaptchaController@getCaptcha');
 Route::get('dashboard', DashboardController::class)
     ->name('dashboard')
     ->middleware(\App\Http\Middleware\CheckSessionAuth::class);
+
+// SSO Dashboard (for users logging in via SSO)
+Route::get('sso-dashboard', [SsoDashboardController::class, 'index'])
+    ->name('sso-dashboard')
+    ->middleware(\App\Http\Middleware\CheckSessionAuth::class);
+
+// User Tagging Routes (matching Drupal URLs)
+Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
+    Route::get('user-tagging', [UserTaggingController::class, 'create'])->name('user-tagging.create');
+    Route::post('user-tagging', [UserTaggingController::class, 'store'])->name('user-tagging.store');
+    Route::get('flat-wise-user-info', [UserTaggingController::class, 'flatWiseUserInfo'])->name('user-tagging.flat-wise-user-info');
+    Route::get('flat-wise-user-info-details/{flat_id}', [UserTaggingController::class, 'flatWiseUserDetails'])->name('user-tagging.flat-wise-user-details');
+    Route::post('flat-wise-user-info-details/{flat_id}', [UserTaggingController::class, 'updateStatus'])->name('user-tagging.update-status');
+    Route::get('tagged-user-list/{status?}', [UserTaggingController::class, 'taggedUserList'])->name('user-tagging.tagged-user-list');
+});
 
 Route::prefix('cms-content')
     ->middleware(\App\Http\Middleware\CheckSessionAuth::class)

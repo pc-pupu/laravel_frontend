@@ -20,10 +20,10 @@
             </a>
             
             <div class="d-flex justify-content-center h-100 end-0 mb-4">
-                <div class="search">
+                
                     <form method="POST" action="{{ route('user-sso.hrms-login-submit') }}" id="hrmsLoginForm">
                         @csrf
-                        <div id="hrms" class="login-panel">
+                        <div id="hrms" class="login-panel search">
                             <input type="text" 
                                    class="search_input" 
                                    id="hrms_id" 
@@ -40,7 +40,6 @@
                             <div class="text-danger mt-2">{{ $message }}</div>
                         @enderror
                     </form>
-                </div>
             </div>
         </div>
     </div>
