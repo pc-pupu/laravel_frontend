@@ -47,6 +47,7 @@ return [
         'hmac_secret_me' => env('HRMS_HMAC_SECRET_ME', '1Po/Pt8oRnNzy9QZ7NZJjA=='),
         'api_secret_token' => env('HRMS_API_SECRET_TOKEN', 'WBHOUSING12#$'),
         'uat_hrms_url' => env('HRMS_UAT_URL', 'https://uat.wbifms.gov.in'),
+        'api_url' => env('HRMS_API_URL', 'https://uat.wbifms.gov.in/hrms-External/housing/fetchEmployeeDetails'),
     ],
 
 ];

@@ -48,13 +48,9 @@ Route::get('/get-test-info/{hrmsId?}', [UserSsoController::class, 'getTestInfo']
 
 Route::get('captcha/{config?}', '\Mews\Captcha\CaptchaController@getCaptcha');
 
+// Unified Dashboard (role-based content)
 Route::get('dashboard', DashboardController::class)
     ->name('dashboard')
-    ->middleware(\App\Http\Middleware\CheckSessionAuth::class);
-
-// SSO Dashboard (for users logging in via SSO)
-Route::get('sso-dashboard', [SsoDashboardController::class, 'index'])
-    ->name('sso-dashboard')
     ->middleware(\App\Http\Middleware\CheckSessionAuth::class);
 
 // User Tagging Routes (matching Drupal URLs)

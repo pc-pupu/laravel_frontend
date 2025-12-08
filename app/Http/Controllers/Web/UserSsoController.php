@@ -35,7 +35,7 @@ class UserSsoController extends Controller
             // Check if current user is same as token user
             $currentUserSession = $request->session()->get('user');
             if ($currentUserSession && $currentUserSession['uid'] == $userData['uid']) {
-                return redirect()->route('sso-dashboard');
+                return redirect()->route('dashboard');
             }
 
             // Force logout if different user
@@ -51,7 +51,7 @@ class UserSsoController extends Controller
             $request->session()->put('api_token', null);
             $request->session()->regenerate();
 
-            return redirect()->route('sso-dashboard');
+            return redirect()->route('dashboard');
 
         } catch (\Exception $e) {
             Log::error('HRMS SSO Login Error', [
@@ -90,7 +90,7 @@ class UserSsoController extends Controller
             // Check if current user is same as token user
             $currentUserSession = $request->session()->get('user');
             if ($currentUserSession && $currentUserSession['uid'] == $userData['uid']) {
-                return redirect()->route('sso-dashboard');
+                return redirect()->route('dashboard');
             }
 
             // Force logout if different user
@@ -106,7 +106,7 @@ class UserSsoController extends Controller
             $request->session()->put('api_token', null);
             $request->session()->regenerate();
 
-            return redirect()->route('sso-dashboard');
+            return redirect()->route('dashboard');
 
         } catch (\Exception $e) {
             Log::error('DDO SSO Login Error', [
@@ -128,7 +128,7 @@ class UserSsoController extends Controller
     {
         // If already logged in, redirect to dashboard
         if (Auth::check() || $request->session()->has('user')) {
-            return redirect()->route('sso-dashboard');
+            return redirect()->route('dashboard');
         }
 
         return view('userSso.hrms-login');
