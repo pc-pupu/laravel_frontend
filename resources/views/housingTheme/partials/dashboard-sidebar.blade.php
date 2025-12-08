@@ -130,9 +130,15 @@
         <a href="#" class="nav-link text-white">
             <i class="fa fa-key"></i> Change Password
         </a>
-        <a href="{{ route('logout') }}" class="nav-link text-white mt-2">
+        {{-- <a href="{{ route('logout') }}" class="nav-link text-white mt-2">
+            <i class="fa fa-sign-out"></i> Logout
+        </a> --}}
+        <a class="nav-link text-white mt-2" href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
             <i class="fa fa-sign-out"></i> Logout
         </a>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+            @csrf
+        </form>
     </div>
 
 </div>

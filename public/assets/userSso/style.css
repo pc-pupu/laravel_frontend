@@ -82,7 +82,7 @@ a {
     -webkit-background-clip: text;
 }
 /* Search/Login Panel Styles - Matching Drupal housingtheme */
-.search {
+/* .search {
     display: flex;
     align-items: center;
     width: 550px;
@@ -90,7 +90,7 @@ a {
     background-color: #fff;
     border-radius: 40px;
     padding: 10px;
-}
+} */
 
 .login-panel {
     display: flex;
@@ -99,27 +99,42 @@ a {
     margin: 0;
 }
 
+.search {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    background: #fff;
+    border-radius: 30px;
+    padding: 5px 10px;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
+}
+
+/* .search_input { color: #000; border: 0; outline: 0; background: none; margin-top: 5px; caret-color: transparent; line-height: 40px; padding: 0 10px; width: 550px; font-size: 16px; } 
+.search_input::placeholder { color: #999; } */
+/* Input field fix */
 .search_input {
+    flex: 1;                    /* Input will auto-adjust full width */
     color: #000;
     border: 0;
     outline: 0;
     background: none;
-    margin-top: 5px;
-    caret-color: transparent;
+    margin-top: 5px;              /* Remove margin mismatch */
+    caret-color: #000;          /* cursor/blinking pointer visible */
     line-height: 40px;
-    padding: 0 10px;
-    width: 550px;
+    padding: 0 15px;
     font-size: 16px;
+    width: 600px;
 }
 
 .search_input::placeholder {
     color: #999;
 }
 
+/* Button design */
 .search_icon {
     height: 50px;
     width: 50px;
-    float: right;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -140,29 +155,21 @@ a {
 .search_icon:active {
     transform: scale(0.95);
 }
-    
+
 .search_icon i {
     font-size: 20px;
 }
 
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
-    .hrms-login-bg .logo-text h1 {
-        font-size: 1.5rem;
-    }
-    
-    .hrms-login-bg .logo-text h4 {
-        font-size: 1rem;
-    }
-    
     .search {
         max-width: 90%;
-        padding: 5px 5px 5px 15px;
+        padding: 5px 10px;
     }
     
     .search_input {
         font-size: 14px;
-        padding: 0 5px;
+        padding: 0 10px;
     }
     
     .search_icon {
@@ -170,6 +177,7 @@ a {
         width: 45px;
     }
 }
+
 
 /* SSO Processing Page Styles */
 .sso-processing {
