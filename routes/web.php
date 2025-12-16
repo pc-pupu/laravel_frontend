@@ -162,7 +162,7 @@ Route::prefix('cms-content')
         Route::delete('/{id}', [CmsContentManagerController::class, 'destroy'])->name('destroy');
     });
 
-// Existing Applicant (Legacy/Physical Applicants) - Matching Drupal URLs
+// Existing Applicant (Legacy/Physical Applicants) Routes
 Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
     // In Drupal, existing_applicant_entry is the form itself (create form)
     Route::get('existing_applicant_entry', [ExistingApplicantController::class, 'create'])->name('existing-applicant.create');
@@ -179,7 +179,7 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::post('physical-application-accept-declaration/{appId}/{hrmsId}/{uid}', [ExistingApplicantController::class, 'acceptDeclaration'])->name('existing-applicant.accept-declaration');
 });
 
-// Existing Occupant - Matching Drupal URLs
+// Existing Occupant Routes
 Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
     Route::get('rhewise_flatlist', [ExistingOccupantController::class, 'index'])->name('existing-occupant.index');
     Route::get('rhewise_flatlist_draft', [ExistingOccupantController::class, 'indexDraft'])->name('existing-occupant.index-draft');
@@ -202,17 +202,17 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::post('rhe-wise-flat-occupant-delete/{type}/{id}/{flat_id}', [ExistingOccupantController::class, 'destroy'])->name('existing-occupant.destroy');
 });
 
-// Existing Applicant VS/CS (Floor Shifting / Category Shifting) - Matching Drupal URLs exactly
+// Existing Applicant VS/CS (Floor Shifting / Category Shifting) Routes exactly
 Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
     Route::get('legacy-vs-cs', [ExistingApplicantVsCsController::class, 'flatWiseForm'])->name('existing-applicant-vs-cs.flat-wise-form');
     // Note: Drupal has typo "legay" instead of "legacy" - matching exactly
     Route::get('legay-vs-or-cs-form/{uid}',  
     [ExistingApplicantVsCsController::class, 'create']
-)->where('uid', '.*')->name('existing-applicant-vs-cs.create');
+    )->where('uid', '.*')->name('existing-applicant-vs-cs.create');
 
-Route::post('legay-vs-or-cs-form/{uid}',  
-    [ExistingApplicantVsCsController::class, 'store']
-)->where('uid', '.*')->name('existing-applicant-vs-cs.store');
+    Route::post('legay-vs-or-cs-form/{uid}',  
+        [ExistingApplicantVsCsController::class, 'store']
+    )->where('uid', '.*')->name('existing-applicant-vs-cs.store');
 
     // Generic edit/update routes (for merged form)
     Route::get('existing-applicant-vs-cs/edit/{id}', [ExistingApplicantVsCsController::class, 'edit'])->name('existing-applicant-vs-cs.edit');
@@ -237,7 +237,7 @@ Route::post('legay-vs-or-cs-form/{uid}',
     Route::put('legacy-cs-whrms-edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.cs-update-with-hrms.put');
 });
 
-// Estate Treasury Mapping - Matching Drupal URLs
+// Estate Treasury Mapping Routes
 Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
     Route::get('estate-treasury-selection', [EstateTreasuryMappingController::class, 'index'])->name('estate-treasury-selection.index');
     Route::get('estate-treasury-selection/add', [EstateTreasuryMappingController::class, 'create'])->name('estate-treasury-selection.create');
