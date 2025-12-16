@@ -28,66 +28,11 @@
                 <form method="POST" action="{{ route('estate-treasury-selection.store') }}" id="estateTreasuryMappingForm">
                     @csrf
                     
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-floating">
-                                <select class="form-control @error('estate_id') is-invalid @enderror" 
-                                    id="estate_dropdown" name="estate_id" required>
-                                    <option value="">- Select -</option>
-                                    @foreach($estates as $estateId => $estateName)
-                                        <option value="{{ $estateId }}" {{ old('estate_id') == $estateId ? 'selected' : '' }}>
-                                            {{ $estateName }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <label for="estate_dropdown">Select housing estate <span class="text-danger">*</span></label>
-                                @error('estate_id')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="form-floating">
-                                <select class="form-control @error('treasury_id') is-invalid @enderror" 
-                                    id="treasury_dropdown" name="treasury_id" required>
-                                    <option value="">- Select -</option>
-                                    @foreach($treasuries as $treasuryId => $treasuryName)
-                                        <option value="{{ $treasuryId }}" {{ old('treasury_id') == $treasuryId ? 'selected' : '' }}>
-                                            {{ $treasuryName }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <label for="treasury_dropdown">Select respective treasury <span class="text-danger">*</span></label>
-                                @error('treasury_id')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-floating">
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input @error('is_active') is-invalid @enderror" 
-                                            type="radio" name="is_active" id="is_active_1" value="1" 
-                                            {{ old('is_active', '1') == '1' ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="is_active_1">Active</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input @error('is_active') is-invalid @enderror" 
-                                            type="radio" name="is_active" id="is_active_0" value="0" 
-                                            {{ old('is_active') == '0' ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="is_active_0">Inactive</label>
-                                    </div>
-                                    <label class="d-block mb-2">Activation Status <span class="text-danger">*</span></label>
-                                    @error('is_active')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    @include('housingTheme.estate-treasury-mapping.form', [
+                        'mapping' => [],
+                        'estates' => $estates ?? [],
+                        'treasuries' => $treasuries ?? []
+                    ])
 
                     <div class="row mt-4">
                         <div class="col-md-6">

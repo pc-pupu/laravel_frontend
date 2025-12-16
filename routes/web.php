@@ -14,6 +14,10 @@ use App\Http\Controllers\Web\EstateTreasuryMappingController;
 use App\Http\Controllers\Web\UserSsoController;
 use App\Http\Controllers\Web\SsoDashboardController;
 use App\Http\Controllers\Web\UserTaggingController;
+use App\Http\Controllers\Web\CommonApplicationController;
+use App\Http\Controllers\Web\ApplicationListController;
+use App\Http\Controllers\Web\ApplicationStatusController;
+use App\Http\Controllers\Web\OnlineApplicationController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -52,6 +56,89 @@ Route::get('captcha/{config?}', '\Mews\Captcha\CaptchaController@getCaptcha');
 Route::get('dashboard', DashboardController::class)
     ->name('dashboard')
     ->middleware(\App\Http\Middleware\CheckSessionAuth::class);
+
+// New Application Form (extends common application)
+Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
+    Route::get('new-apply', [\App\Http\Controllers\Web\NewApplicationController::class, 'create'])->name('new-application.create');
+    Route::post('new-apply', [\App\Http\Controllers\Web\NewApplicationController::class, 'store'])->name('new-application.store');
+    
+    // AJAX endpoints for new application
+    Route::get('new-application/flat-type-categories', [\App\Http\Controllers\Web\NewApplicationController::class, 'getFlatTypeAndCategoriesAjax'])->name('new-application.flat-type-categories');
+    Route::get('new-application/housing-estates', [\App\Http\Controllers\Web\NewApplicationController::class, 'getHousingEstatesAjax'])->name('new-application.housing-estates');
+    
+    // Common Application AJAX endpoints (for other forms)
+    Route::get('common-application/ddo-designations', [CommonApplicationController::class, 'getDdoDesignationsAjax'])->name('common-application.ddo-designations');
+    Route::get('common-application/ddo-address', [CommonApplicationController::class, 'getDdoAddressAjax'])->name('common-application.ddo-address');
+
+    // Application List (for applicants)
+    Route::get('application-list', [ApplicationListController::class, 'index'])->name('application-list.index');
+    Route::get('view-application/{id}', [ApplicationListController::class, 'view'])->where('id', '.*')->name('application.view');
+
+    // View Application List Module Routes (matching Drupal routes)
+    Route::get('view_application_list/{status}/{url}', [ApplicationListController::class, 'dashboard'])
+        ->where(['status' => '.*', 'url' => '.*'])
+        ->name('view_application_list.dashboard');
+    Route::get('view_application/{status}/{entity}/{page_status}', [ApplicationListController::class, 'adminList'])
+        ->where(['status' => '.*', 'entity' => '.*', 'page_status' => '.*'])
+        ->name('view_application');
+    Route::get('application_detail/{id}/{page_status}/{status}', [ApplicationListController::class, 'adminView'])
+        ->where(['id' => '.*', 'page_status' => '.*', 'status' => '.*'])
+        ->name('application_detail');
+    Route::get('application_detail_pdf/{id}/{status}', [ApplicationListController::class, 'generateApplicationPdf'])
+        ->where(['id' => '.*', 'status' => '.*'])
+        ->name('application_detail_pdf');
+    Route::post('update_status/{id}/{new_status}/{status}/{entity}', [ApplicationListController::class, 'updateStatus'])
+        ->where(['id' => '.*', 'new_status' => '.*', 'status' => '.*', 'entity' => '.*'])
+        ->name('update_status');
+    Route::post('update_status/{id}/{new_status}/{status}/{entity}/{computer_serial_no}', [ApplicationListController::class, 'updateStatus'])
+        ->where(['id' => '.*', 'new_status' => '.*', 'status' => '.*', 'entity' => '.*', 'computer_serial_no' => '.*'])
+        ->name('update_status_with_serial');
+    Route::get('application-approve/{id}/{status}/{entity}/{page_status}/{computer_serial_no}/{flat_type}', [ApplicationListController::class, 'showApproveForm'])
+        ->where(['id' => '.*', 'status' => '.*', 'entity' => '.*', 'page_status' => '.*', 'computer_serial_no' => '.*', 'flat_type' => '.*'])
+        ->name('application-approve');
+    Route::post('application-approve/{id}/{status}/{entity}/{page_status}/{computer_serial_no}/{flat_type}', [ApplicationListController::class, 'storeApprove'])
+        ->where(['id' => '.*', 'status' => '.*', 'entity' => '.*', 'page_status' => '.*', 'computer_serial_no' => '.*', 'flat_type' => '.*'])
+        ->name('application-approve.store');
+    Route::post('reject-application', [ApplicationListController::class, 'rejectApplication'])->name('reject-application');
+    Route::get('download_licence_pdf/{id}', [ApplicationListController::class, 'downloadLicensePdf'])
+        ->where('id', '.*')
+        ->name('download_licence_pdf');
+
+    // Application List (for admins/officials) - Alternative routes
+    Route::get('view-application-list/{status}/{entity}', [ApplicationListController::class, 'adminList'])->where(['status' => '.*', 'entity' => '.*'])->name('application-list.admin-list');
+    Route::get('view-application-list/{status}/{entity}/{page_status}', [ApplicationListController::class, 'adminList'])->where(['status' => '.*', 'entity' => '.*'])->name('application-list.admin-list-with-status');
+    Route::get('application-detail/{id}/{page_status}/{status}', [ApplicationListController::class, 'adminView'])->where(['id' => '.*', 'status' => '.*'])->name('application-detail.admin-view');
+    Route::post('update-status/{id}/{new_status}/{status}/{entity}', [ApplicationListController::class, 'updateStatus'])->where(['id' => '.*', 'new_status' => '.*', 'status' => '.*', 'entity' => '.*'])->name('application-list.update-status');
+    Route::post('update-status/{id}/{new_status}/{status}/{entity}/{computer_serial_no}', [ApplicationListController::class, 'updateStatus'])->where(['id' => '.*', 'new_status' => '.*', 'status' => '.*', 'entity' => '.*', 'computer_serial_no' => '.*'])->name('application-list.update-status-with-serial');
+
+    // License Management
+    Route::get('generate-license/{id}/{page_status}/{status}', [ApplicationListController::class, 'generateLicense'])->where(['id' => '.*', 'status' => '.*'])->name('license.generate');
+    Route::get('view-generated-license', [ApplicationListController::class, 'licenseList'])->name('license.list');
+    Route::get('view-flat-possession-taken-ddo', [ApplicationListController::class, 'flatPossessionTaken'])->name('license.flat-possession-taken');
+    Route::get('view-flat-released-ddo', [ApplicationListController::class, 'flatReleased'])->name('license.flat-released');
+
+    // Application Status (for applicants)
+    Route::get('application_status', [ApplicationStatusController::class, 'index'])->name('application-status.index');
+
+    // Application Status Check (for officials)
+    Route::get('application_status_check', [ApplicationStatusController::class, 'checkIndex'])->name('application-status-check.index');
+    Route::post('application_status_check', [ApplicationStatusController::class, 'checkSearch'])->name('application-status-check.search');
+    Route::get('common-application-view/{id}/{status}', [ApplicationStatusController::class, 'viewList'])->where(['id' => '.*', 'status' => '.*'])->name('application-status-check.view-list');
+    Route::get('common-application-view-det/{id}/{status}', [ApplicationStatusController::class, 'viewDetail'])->where(['id' => '.*', 'status' => '.*'])->name('application-status-check.view-detail');
+    Route::get('add-possession-det/{id}/{status}', [ApplicationStatusController::class, 'showAddPossessionForm'])->where(['id' => '.*', 'status' => '.*'])->name('application-status-check.add-possession');
+    Route::post('add-possession-det/{id}/{status}', [ApplicationStatusController::class, 'storePossessionDate'])->where(['id' => '.*', 'status' => '.*'])->name('application-status-check.store-possession');
+    Route::get('add-release-date/{id}/{status}', [ApplicationStatusController::class, 'showAddReleaseForm'])->where(['id' => '.*', 'status' => '.*'])->name('application-status-check.add-release');
+    Route::post('add-release-date/{id}/{status}', [ApplicationStatusController::class, 'storeReleaseDate'])->where(['id' => '.*', 'status' => '.*'])->name('application-status-check.store-release');
+    Route::get('request-for-license-extension/{id}/{status}/{uid}/{official_detail_id}', [ApplicationStatusController::class, 'showLicenseExtensionForm'])->where(['id' => '.*', 'status' => '.*', 'uid' => '.*', 'official_detail_id' => '.*'])->name('application-status-check.license-extension');
+    Route::post('request-for-license-extension/{id}/{status}/{uid}/{official_detail_id}', [ApplicationStatusController::class, 'storeLicenseExtension'])->where(['id' => '.*', 'status' => '.*', 'uid' => '.*', 'official_detail_id' => '.*'])->name('application-status-check.store-license-extension');
+    Route::get('request-for-offer-letter-extension/{id}/{status}/{uid}/{official_detail_id}/{date_of_verified}', [ApplicationStatusController::class, 'showOfferLetterExtensionForm'])->where(['id' => '.*', 'status' => '.*', 'uid' => '.*', 'official_detail_id' => '.*', 'date_of_verified' => '.*'])->name('application-status-check.offer-letter-extension');
+    Route::post('request-for-offer-letter-extension/{id}/{status}/{uid}/{official_detail_id}/{date_of_verified}', [ApplicationStatusController::class, 'storeOfferLetterExtension'])->where(['id' => '.*', 'status' => '.*', 'uid' => '.*', 'official_detail_id' => '.*', 'date_of_verified' => '.*'])->name('application-status-check.store-offer-letter-extension');
+
+    // Online Application landing (parity with Drupal)
+    Route::get('online_application/{url?}', [OnlineApplicationController::class, 'index'])
+        ->where('url', '.*')
+        ->name('online_application');
+});
 
 // User Tagging Routes (matching Drupal URLs)
 Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
@@ -126,6 +213,11 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
 Route::post('legay-vs-or-cs-form/{uid}',  
     [ExistingApplicantVsCsController::class, 'store']
 )->where('uid', '.*')->name('existing-applicant-vs-cs.store');
+
+    // Generic edit/update routes (for merged form)
+    Route::get('existing-applicant-vs-cs/edit/{id}', [ExistingApplicantVsCsController::class, 'edit'])->name('existing-applicant-vs-cs.edit');
+    Route::post('existing-applicant-vs-cs/edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.update');
+    Route::put('existing-applicant-vs-cs/edit/{id}', [ExistingApplicantVsCsController::class, 'update'])->name('existing-applicant-vs-cs.update.put');
 
     Route::get('legacy-vs-list-wohrms', [ExistingApplicantVsCsController::class, 'vsListWithoutHrms'])->name('existing-applicant-vs-cs.vs-list-without-hrms');
     Route::get('legacy-vs-wohrms-edit/{id}', [ExistingApplicantVsCsController::class, 'edit'])->name('existing-applicant-vs-cs.vs-edit-without-hrms');

@@ -36,25 +36,11 @@
                             <strong>Note:</strong> Edit form implementation will be completed based on Drupal existing_occupant_edit_form logic.
                         </div>
 
-                        <div class="form-section">
-                            <h5 class="mb-3"><i class="fa fa-user me-2"></i> Personal Information</h5>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="applicant_name" name="applicant_name" 
-                                            value="{{ $occupant['applicant_name'] ?? '' }}" required>
-                                        <label for="applicant_name" class="required">Applicant's Name</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="guardian_name" name="guardian_name" 
-                                            value="{{ $occupant['guardian_name'] ?? '' }}" required>
-                                        <label for="guardian_name" class="required">Father / Husband Name</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        @include('housingTheme.existing-occupant._form', [
+                            'flatDetails' => $flatDetails ?? [],
+                            'metaData' => $metaData ?? [],
+                            'occupant' => $occupant ?? []
+                        ])
 
                         <div class="mt-4 d-flex justify-content-end gap-3">
                             <a href="{{ route('existing-occupant.index') }}" class="btn btn-outline-secondary px-4">Cancel</a>

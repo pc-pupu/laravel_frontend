@@ -150,10 +150,13 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label for="application_type" class="form-label">Application Type</label>
+                                    @php
+                                        $currentApplicationType = old('application_type', '');
+                                    @endphp
                                     <select class="form-select" id="application_type" name="application_type">
-                                        <option value="">-Select-</option>
-                                        <option value="VS" {{ old('application_type') == 'VS' ? 'selected' : '' }}>Floor Shifting</option>
-                                        <option value="CS" {{ old('application_type') == 'CS' ? 'selected' : '' }}>Category Shifting</option>
+                                        <option value="" {{ empty($currentApplicationType) ? 'selected' : '' }}>- Select -</option>
+                                        <option value="VS" {{ $currentApplicationType == 'VS' ? 'selected' : '' }}>Floor Shifting</option>
+                                        <option value="CS" {{ $currentApplicationType == 'CS' ? 'selected' : '' }}>Category Shifting</option>
                                     </select>
                                 </div>
                             </div>
@@ -164,20 +167,29 @@
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label for="rhe_name" class="form-label">Name of the RHE *</label>
+                                    @php
+                                        $currentRheName = old('rhe_name', '');
+                                    @endphp
                                     <select class="form-select" id="rhe_name" name="rhe_name" required>
-                                        <option value="">- Select -</option>
+                                        <option value="" {{ empty($currentRheName) ? 'selected' : '' }}>- Select -</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4" id="flat_type_container">
                                     <label for="flat_type" class="form-label">Flat Type *</label>
+                                    @php
+                                        $currentFlatType = old('flat_type', '');
+                                    @endphp
                                     <select class="form-select" id="flat_type" name="flat_type" disabled required>
-                                        <option value="">- Select -</option>
+                                        <option value="" {{ empty($currentFlatType) ? 'selected' : '' }}>- Select -</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4" id="block_name_container">
                                     <label for="block_name" class="form-label">Name of the Block *</label>
+                                    @php
+                                        $currentBlockName = old('block_name', '');
+                                    @endphp
                                     <select class="form-select" id="block_name" name="block_name" disabled required>
-                                        <option value="">- Select -</option>
+                                        <option value="" {{ empty($currentBlockName) ? 'selected' : '' }}>- Select -</option>
                                     </select>
                                 </div>
                             </div>
@@ -185,14 +197,20 @@
                             <div class="row mb-3">
                                 <div class="col-md-4" id="floor_no_container">
                                     <label for="floor_no" class="form-label">Floor No. *</label>
+                                    @php
+                                        $currentFloorNo = old('floor_no', '');
+                                    @endphp
                                     <select class="form-select" id="floor_no" name="floor_no" disabled required>
-                                        <option value="">- Select -</option>
+                                        <option value="" {{ empty($currentFloorNo) ? 'selected' : '' }}>- Select -</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4" id="flat_no_container">
                                     <label for="flat_no" class="form-label">Flat No. *</label>
+                                    @php
+                                        $currentFlatNo = old('flat_no', '');
+                                    @endphp
                                     <select class="form-select" id="flat_no" name="flat_no" disabled required>
-                                        <option value="">- Select -</option>
+                                        <option value="" {{ empty($currentFlatNo) ? 'selected' : '' }}>- Select -</option>
                                     </select>
                                 </div>
                             </div>
