@@ -86,11 +86,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             select.append('<option value="' + code + '">' + response.data[code] + '</option>');
                         }
                     }
+                    // Only set value if defaultValue is provided, otherwise select blank option
                     if (defaultValue) {
                         select.val(defaultValue);
-                    }
-                    if (elementId === 'permanent_district' || elementId === 'present_district' || elementId === 'office_district') {
-                        select.val(defaultValue || '17');
+                    } else {
+                        select.val('');
                     }
                 }
             }

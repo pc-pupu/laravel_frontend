@@ -208,8 +208,17 @@ function populateSelect(selector, options) {
     
     const currentValue = select.value;
     const oldValue = window.__oldInputs ? window.__oldInputs[select.name] : null;
+    const finalValue = currentValue || oldValue || '';
+    
     select.innerHTML = '';
     
+    // Always add blank option first
+    const blankOption = document.createElement('option');
+    blankOption.value = '';
+    blankOption.textContent = '- Select -';
+    select.appendChild(blankOption);
+    
+    // Add other options
     for (const [value, text] of Object.entries(options)) {
         const option = document.createElement('option');
         option.value = value;
@@ -217,10 +226,11 @@ function populateSelect(selector, options) {
         select.appendChild(option);
     }
     
-    if (currentValue && options[currentValue]) {
-        select.value = currentValue;
-    } else if (oldValue && options[oldValue]) {
-        select.value = oldValue;
+    // Set the value - if empty or not found, select blank option
+    if (finalValue && options[finalValue]) {
+        select.value = finalValue;
+    } else {
+        select.value = '';
     }
 
     if (typeof applyOldInputs === 'function') {

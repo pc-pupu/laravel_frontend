@@ -49,7 +49,7 @@
                     @csrf
 
                     
-                    @include('housingTheme.existing-applicant-vs-cs._form_fields', ['applicantData' => $applicantData ?? null])
+                    @include('housingTheme.existing-applicant-vs-cs.form', ['applicantData' => $applicantData ?? null])
 
                     <div class="mt-4 d-flex justify-content-end gap-3">
                         <a href="{{ route('existing-applicant-vs-cs.flat-wise-form') }}" class="btn btn-outline-secondary px-4">Cancel</a>

@@ -229,6 +229,13 @@ function populateSelect(selector, options) {
     const currentValue = select.value;
     select.innerHTML = '';
     
+    // Always add blank option first
+    const blankOption = document.createElement('option');
+    blankOption.value = '';
+    blankOption.textContent = '- Select -';
+    select.appendChild(blankOption);
+    
+    // Add other options
     for (const [value, text] of Object.entries(options)) {
         const option = document.createElement('option');
         option.value = value;
@@ -236,8 +243,11 @@ function populateSelect(selector, options) {
         select.appendChild(option);
     }
     
+    // Set the value - if empty or not found, select blank option
     if (currentValue && options[currentValue]) {
         select.value = currentValue;
+    } else {
+        select.value = '';
     }
 }
 

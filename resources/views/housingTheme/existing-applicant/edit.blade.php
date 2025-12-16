@@ -38,7 +38,7 @@
                         @csrf
                         @method('PUT')
                         
-                        @include('housingTheme.existing-applicant._form_fields_edit')
+                        @include('housingTheme.existing-applicant.form', ['applicant' => $applicant])
 
                         <div class="mt-4 d-flex justify-content-end gap-3">
                             <a href="{{ route('existing-applicant.index') }}" class="btn btn-outline-secondary px-4">Cancel</a>

@@ -37,7 +37,7 @@
                     enctype="multipart/form-data" onsubmit="return validate_existing_applicant_form()">
                     @csrf
                     
-                    @include('housingTheme.existing-applicant._form_fields')
+                    @include('housingTheme.existing-applicant.form', ['applicant' => []])
 
                     <div class="mt-4 d-flex justify-content-end gap-3">
                         <a href="{{ route('existing-applicant.index') }}" class="btn btn-outline-secondary px-4">Cancel</a>

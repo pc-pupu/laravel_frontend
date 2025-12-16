@@ -377,7 +377,7 @@
       <div class="row">
          <h4 class="mt-4">Application List</h4>
          <div class="col-md-9">
-            <div class="table-responsive rounded counter-box shadow-sm p-3">
+            <div class="table-responsive rounded counter-box shadow-sm p-3 flatWiseUser">
                @if(!empty($output['all-application-data']) && count($output['all-application-data']) > 0)
                   <table class="table table-list table-striped table-hover table-bordered">
                      <thead>
