@@ -15,6 +15,10 @@
     $currentRoute = request()->route()->getName();
     $currentUrl = request()->url();
 @endphp
+@php
+    $isUserTaggingPage = request()->is('user-tagging') || request()->is('user_tagging');
+@endphp
+
 
 <ul class="nav nav-pills flex-column mb-auto cus-dashboard">
 
@@ -27,136 +31,144 @@
     </li> --}}
 
     {{-- DYNAMIC MENUS --}}
-    @foreach ($menus as $menu)
+    @if($isUserTaggingPage)
 
-        @php
-            $children = $menu['children'] ?? [];
-            $hasSub = count($children) > 0;
-            $menuId = "menu-" . $menu['sidebar_menu_id'];
-
-            // Parent URL
-            $menuUrl = '#';
-            if (!empty($menu['url'])) {
-                $menuUrl = url($menu['url']);
-            } elseif (!empty($menu['route_name']) && Route::has($menu['route_name'])) {
-                try {
-                    $menuUrl = route($menu['route_name']);
-                } catch (\Illuminate\Routing\Exceptions\UrlGenerationException $e) {
-                    $menuUrl = url($menu['url'] ?? '#');
-                }
-            }
-
-            // Parent Active?
-            $isParentActive = false;
-
-            if (!empty($menu['route_name']) && $currentRoute === $menu['route_name']) {
-                $isParentActive = true;
-            }
-
-            foreach ($children as $child) {
-                if (!empty($child['route_name']) && $currentRoute === $child['route_name']) {
-                    $isParentActive = true;
-                }
-                if (!empty($child['url']) && $currentUrl === url($child['url'])) {
-                    $isParentActive = true;
-                }
-            }
-        @endphp
-
-        <li class="nav-item {{ $hasSub ? 'has-submenu' : '' }}">
-
-            {{-- MAIN MENU --}}
-            @if ($hasSub)
-                <a href="#"
-                   class="nav-link {{ $isParentActive ? 'active' : '' }}"
-                   data-bs-toggle="collapse"
-                   data-bs-target="#{{ $menuId }}">
-
-                    @if (!empty($menu['icon_class']))
-                        <i class="{{ $menu['icon_class'] }}"></i>
-                    @endif
-
-                    {{ $menu['menu_name'] }}
-
-                    <i class="fa fa-angle-down fa-lg float-end mt-1"></i>
-                </a>
-
-                {{-- SUBMENU --}}
-                <ul class="submenu collapse {{ $isParentActive ? 'show' : '' }}" id="{{ $menuId }}">
-                    @foreach ($children as $child)
-
-                        @php
-                            $childUrl = '#';
-                            
-                            // If URL is provided, use it (especially for routes with required parameters)
-                            if (!empty($child['url'])) {
-                                $childUrl = url($child['url']);
-                            } 
-                            // Otherwise, try to generate route if route_name exists and route is registered
-                            elseif (!empty($child['route_name']) && Route::has($child['route_name'])) {
-                                try {
-                                    // Try to generate route - if it requires parameters, this will fail
-                                    $childUrl = route($child['route_name']);
-                                } catch (\Illuminate\Routing\Exceptions\UrlGenerationException $e) {
-                                    // If route requires parameters, fall back to URL or use default
-                                    $childUrl = url($child['url'] ?? '#');
-                                }
-                            }
-
-                            $childActive =
-                                (!empty($child['route_name']) && $currentRoute === $child['route_name']) ||
-                                (!empty($child['url']) && $currentUrl === url($child['url']));
-                        @endphp
-
-                        <li>
-                            <a href="{{ $childUrl }}"
-                               class="nav-link {{ $childActive ? 'active' : '' }}">
-                                @if(!empty($child['icon_class']))
-                                    <i class="{{ $child['icon_class'] }}"></i>
-                                @endif
-                                {{ $child['menu_name'] }}
-                            </a>
-                        </li>
-
-                    @endforeach
-                </ul>
-
-            @else
-
-                {{-- SINGLE ITEM MENU --}}
-                <a href="{{ $menuUrl }}"
-                   class="nav-link {{ $isParentActive ? 'active' : '' }}">
-                    @if(!empty($menu['icon_class']))
-                        <i class="{{ $menu['icon_class'] }}"></i>
-                    @endif
-                    {{ $menu['menu_name'] }}
-                </a>
-
-            @endif
-
+        <li class="nav-item">
+            <a class="nav-link text-white mt-2" href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
+                <i class="fa fa-sign-out"></i> Logout
+            </a>
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                @csrf
+            </form>
         </li>
 
-    @endforeach
+    @else
+        @foreach ($menus as $menu)
 
+            @php
+                $children = $menu['children'] ?? [];
+                $hasSub = count($children) > 0;
+                $menuId = "menu-" . $menu['sidebar_menu_id'];
+
+                // Parent URL
+                $menuUrl = '#';
+                if (!empty($menu['url'])) {
+                    $menuUrl = url($menu['url']);
+                } elseif (!empty($menu['route_name']) && Route::has($menu['route_name'])) {
+                    try {
+                        $menuUrl = route($menu['route_name']);
+                    } catch (\Illuminate\Routing\Exceptions\UrlGenerationException $e) {
+                        $menuUrl = url($menu['url'] ?? '#');
+                    }
+                }
+
+                // Parent Active?
+                $isParentActive = false;
+
+                if (!empty($menu['route_name']) && $currentRoute === $menu['route_name']) {
+                    $isParentActive = true;
+                }
+
+                foreach ($children as $child) {
+                    if (!empty($child['route_name']) && $currentRoute === $child['route_name']) {
+                        $isParentActive = true;
+                    }
+                    if (!empty($child['url']) && $currentUrl === url($child['url'])) {
+                        $isParentActive = true;
+                    }
+                }
+            @endphp
+
+            <li class="nav-item {{ $hasSub ? 'has-submenu' : '' }}">
+
+                {{-- MAIN MENU --}}
+                @if ($hasSub)
+                    <a href="#"
+                    class="nav-link {{ $isParentActive ? 'active' : '' }}"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#{{ $menuId }}">
+
+                        @if (!empty($menu['icon_class']))
+                            <i class="{{ $menu['icon_class'] }}"></i>
+                        @endif
+
+                        {{ $menu['menu_name'] }}
+
+                        <i class="fa fa-angle-down fa-lg float-end mt-1"></i>
+                    </a>
+
+                    {{-- SUBMENU --}}
+                    <ul class="submenu collapse {{ $isParentActive ? 'show' : '' }}" id="{{ $menuId }}">
+                        @foreach ($children as $child)
+
+                            @php
+                                $childUrl = '#';
+                                
+                                // If URL is provided, use it (especially for routes with required parameters)
+                                if (!empty($child['url'])) {
+                                    $childUrl = url($child['url']);
+                                } 
+                                // Otherwise, try to generate route if route_name exists and route is registered
+                                elseif (!empty($child['route_name']) && Route::has($child['route_name'])) {
+                                    try {
+                                        // Try to generate route - if it requires parameters, this will fail
+                                        $childUrl = route($child['route_name']);
+                                    } catch (\Illuminate\Routing\Exceptions\UrlGenerationException $e) {
+                                        // If route requires parameters, fall back to URL or use default
+                                        $childUrl = url($child['url'] ?? '#');
+                                    }
+                                }
+
+                                $childActive =
+                                    (!empty($child['route_name']) && $currentRoute === $child['route_name']) ||
+                                    (!empty($child['url']) && $currentUrl === url($child['url']));
+                            @endphp
+
+                            <li>
+                                <a href="{{ $childUrl }}"
+                                class="nav-link {{ $childActive ? 'active' : '' }}">
+                                    @if(!empty($child['icon_class']))
+                                        <i class="{{ $child['icon_class'] }}"></i>
+                                    @endif
+                                    {{ $child['menu_name'] }}
+                                </a>
+                            </li>
+
+                        @endforeach
+                    </ul>
+
+                @else
+
+                    {{-- SINGLE ITEM MENU --}}
+                    <a href="{{ $menuUrl }}"
+                    class="nav-link {{ $isParentActive ? 'active' : '' }}">
+                        @if(!empty($menu['icon_class']))
+                            <i class="{{ $menu['icon_class'] }}"></i>
+                        @endif
+                        {{ $menu['menu_name'] }}
+                    </a>
+
+                @endif
+
+            </li>
+
+        @endforeach
+        <div class="sidebar-bottom mt-auto">
+            <a href="#" class="nav-link text-white">
+                <i class="fa fa-key"></i> Change Password
+            </a>
+            {{-- <a href="{{ route('logout') }}" class="nav-link text-white mt-2">
+                <i class="fa fa-sign-out"></i> Logout
+            </a> --}}
+            <a class="nav-link text-white mt-2" href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
+                <i class="fa fa-sign-out"></i> Logout
+            </a>
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                @csrf
+            </form>
+        </div>
+    @endif
 </ul>
-
-
-    
-
-    <div class="sidebar-bottom mt-auto">
-        <a href="#" class="nav-link text-white">
-            <i class="fa fa-key"></i> Change Password
-        </a>
-        {{-- <a href="{{ route('logout') }}" class="nav-link text-white mt-2">
-            <i class="fa fa-sign-out"></i> Logout
-        </a> --}}
-        <a class="nav-link text-white mt-2" href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-            <i class="fa fa-sign-out"></i> Logout
-        </a>
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-            @csrf
-        </form>
-    </div>
 
 </div>
 
