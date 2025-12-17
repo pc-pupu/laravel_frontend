@@ -46,9 +46,36 @@ class UserSsoController extends Controller
                 return redirect()->route('logout');
             }
 
+            // Generate Sanctum token for API access
+            // We need to create a token using the user's credentials
+            // Since we don't have the password, we'll call a backend endpoint to generate token
+            try {
+                $tokenResponse = Http::post(config('services.api.base_url') . '/generate-sso-token', [
+                    'uid' => $userData['uid'],
+                    'name' => $userData['name']
+                ]);
+
+                if ($tokenResponse->successful()) {
+                    $tokenData = $tokenResponse->json();
+                    $apiToken = $tokenData['token'] ?? null;
+                } else {
+                    Log::warning('Failed to generate SSO token', [
+                        'uid' => $userData['uid'],
+                        'response' => $tokenResponse->json()
+                    ]);
+                    $apiToken = null;
+                }
+            } catch (\Exception $e) {
+                Log::error('Error generating SSO token', [
+                    'error' => $e->getMessage(),
+                    'uid' => $userData['uid']
+                ]);
+                $apiToken = null;
+            }
+
             // Create session for the user
             $request->session()->put('user', $userData);
-            $request->session()->put('api_token', null);
+            $request->session()->put('api_token', $apiToken);
             $request->session()->regenerate();
 
             return redirect()->route('dashboard');
@@ -101,9 +128,36 @@ class UserSsoController extends Controller
                 return redirect()->route('logout');
             }
 
+            // Generate Sanctum token for API access
+            // We need to create a token using the user's credentials
+            // Since we don't have the password, we'll call a backend endpoint to generate token
+            try {
+                $tokenResponse = Http::post(config('services.api.base_url') . '/generate-sso-token', [
+                    'uid' => $userData['uid'],
+                    'name' => $userData['name']
+                ]);
+
+                if ($tokenResponse->successful()) {
+                    $tokenData = $tokenResponse->json();
+                    $apiToken = $tokenData['token'] ?? null;
+                } else {
+                    Log::warning('Failed to generate SSO token', [
+                        'uid' => $userData['uid'],
+                        'response' => $tokenResponse->json()
+                    ]);
+                    $apiToken = null;
+                }
+            } catch (\Exception $e) {
+                Log::error('Error generating SSO token', [
+                    'error' => $e->getMessage(),
+                    'uid' => $userData['uid']
+                ]);
+                $apiToken = null;
+            }
+
             // Create session for the user
             $request->session()->put('user', $userData);
-            $request->session()->put('api_token', null);
+            $request->session()->put('api_token', $apiToken);
             $request->session()->regenerate();
 
             return redirect()->route('dashboard');
