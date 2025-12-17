@@ -25,9 +25,11 @@ class UserTaggingController extends Controller
         $hrmsId = $user['name'];
         $uid = $user['uid'];
 
-        // Check if user has already submitted a tagging request
+        // Check if user has already submitted a tagging request (by hrms_id, matching Drupal)
         $hasSubmitted = $this->checkExistingSubmission($uid);
-        // dd($user);
+        
+        // Check if hrms_id exists in user_tagging table (matching Drupal template logic)
+        $checkExist = $this->checkHrmsExistsInTagging($hrmsId);
 
         // Get HRMS login log data (if available)
         $hrmsData = $this->getHRMSLogData($hrmsId);
@@ -35,7 +37,8 @@ class UserTaggingController extends Controller
         return view('userSso.user-tagging-form', [
             'hrmsData' => $hrmsData,
             'user' => $user,
-            'hasSubmitted' => $hasSubmitted
+            'hasSubmitted' => $hasSubmitted,
+            'checkExist' => $checkExist
         ]);
     }
 
@@ -287,6 +290,28 @@ class UserTaggingController extends Controller
             return false;
         } catch (\Exception $e) {
             Log::error('Check Existing Submission Error', [
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Check if hrms_id exists in user_tagging table (matching Drupal template logic)
+     */
+    private function checkHrmsExistsInTagging($hrmsId)
+    {
+        try {
+            $response = Http::get(config('services.api.base_url') . '/user-tagging/check-hrms/' . $hrmsId);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return $data['exists'] ?? false;
+            }
+
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Check HRMS in Tagging Error', [
                 'error' => $e->getMessage()
             ]);
             return false;

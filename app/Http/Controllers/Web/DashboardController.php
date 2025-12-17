@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\AuthEncryptionHelper;
+use Illuminate\Support\Facades\Cookie;
 
 class DashboardController extends Controller
 {
@@ -25,6 +26,16 @@ class DashboardController extends Controller
             return redirect()->route('homepage')->with('error', 'Please login first');
         }
 
+        // If coming from user-tagging page, set the cookie server-side (backup if JS cookie didn't work)
+        $cookie = null;
+        $referer = $request->header('Referer');
+        if ($referer && str_contains($referer, 'user-tagging')) {
+            // Check if cookie is already set, if not set it server-side
+            if (!$request->cookie('user_type')) {
+                $cookie = cookie('user_type', 'new', 60 * 24, '/', null, false, false, false, 'Lax');
+            }
+        }
+
         $user = $request->session()->get('user');
         $uid = $user['uid'];
         $username = $user['name'];
@@ -40,106 +51,194 @@ class DashboardController extends Controller
         // Roles 6, 7, 8, 10, 11, 13, 17: Admin roles
         // Other roles: Default/CMS dashboard
 
+        // Prepare response variable for cookie attachment
+        $response = null;
+        
         if (in_array($userRole, [4, 5])) {
             // Applicant Dashboard (SSO Dashboard logic)
-            return $this->applicantDashboard($request, $user, $uid, $username, $userRole);
+            $response = $this->applicantDashboard($request, $user, $uid, $username, $userRole);
         } elseif (in_array($userRole, [6, 7, 8, 10, 11, 13, 17])) {
             // Admin Dashboard (SSO Dashboard logic for admin roles)
-            return $this->adminDashboard($request, $user, $uid, $username, $userRole);
+            $response = $this->adminDashboard($request, $user, $uid, $username, $userRole);
         } else {
             // Default/CMS Dashboard (original logic)
-            return $this->defaultDashboard($request);
+            $response = $this->defaultDashboard($request);
         }
+
+        // Attach cookie if it was set
+        if ($cookie !== null) {
+            return $response->withCookie($cookie);
+        }
+
+        return $response;
     }
 
-    /**
-     * Applicant Dashboard (Roles 4, 5)
-     */
+
     private function applicantDashboard(Request $request, $user, $uid, $username, $userRole)
     {
         $output = [];
         $output['user_role'] = $userRole;
+        /* ======================================================
+        | ROLE 4 & 5 (Applicant)
+        ======================================================*/
+        if (in_array($userRole, [4, 5])) {
 
-        if ($userRole == 4) {
-            // Check user_type cookie
-            $userType = $request->cookie('user_type');
-            
-            if ($userType != 'new') {
-                // Check HRMS tagging
-                $hrmsTagging = DB::table('housing_user_tagging')
-                    ->where('hrms_id', $username)
-                    ->first();
+            /* ---------------- ROLE 4 ONLY ---------------- */
+            if ($userRole == 4) {
 
-                if (empty($hrmsTagging)) {
-                    // Check if any online application exists
-                    $onlineApp = DB::table('housing_applicant_official_detail')
-                        ->where('is_active', 1)
-                        ->where('hrms_id', $username)
+                $userType = $request->cookie('user_type');
+
+                if ($userType === 'new') {
+
+                    // clear cookie and continue
+                    Cookie::queue(Cookie::forget('user_type'));
+
+                } else {
+                    // print_r($user);die;
+                    $hrmsTagging = DB::table('housing_user_tagging')
+                        ->select('flag')
+                        ->where('hrms_id', trim($user['name']))
                         ->first();
 
-                    if (empty($onlineApp)) {
-                        return redirect('/user-tagging');
-                    }
-                } else {
-                    if (in_array($hrmsTagging->flag, ['new', 'pending'])) {
-                        return redirect('/user-tagging')
-                            ->with('message', 'Please wait for the departmental approval.');
+                    if (!$hrmsTagging) {
+
+                        $onlineApp = DB::table('housing_applicant_official_detail')
+                            ->where('is_active', 1)
+                            ->where('hrms_id', $user['name'])
+                            ->first();
+
+                        if (!$onlineApp) {
+                            return redirect('/user-tagging');
+                        }
+
+                    } else {
+                        if (in_array($hrmsTagging->flag, ['new', 'pending'])) {
+                            return redirect('/user-tagging')
+                                ->with('message', 'Please wait for the departmental approval.');
+                        }
                     }
                 }
             }
+
+            // Always clear cookie (Drupal behavior)
+            Cookie::queue(Cookie::forget('user_type'));
+
+            /* ---------------- USER INFO ---------------- */
+            $output['user_info'] = $this->getHRMSUserData($username);
+            $output['user_info']['email'] = $output['user_info']['email'] ?? 
+                DB::table('users')->where('uid', $uid)->value('mail') ?? 'N/A';
+
+            $uid = $user->id;
+
+            /* ---------------- USER STATUS ---------------- */
+            $data = DB::table('housing_online_application as hoa')
+                ->join('housing_applicant_official_detail as haod',
+                    'haod.applicant_official_detail_id', '=', 'hoa.applicant_official_detail_id')
+                ->where('haod.uid', $uid)
+                ->where('haod.is_active', 1)
+                ->whereIn('hoa.status', ['offer_letter_cancel', 'license_cancel'])
+                ->select('hoa.status')
+                ->first();
+
+            $output['user_status'] = $data->status ?? '';
+            $output['all-application-data'] = all_application_details_fetch($uid);
+
+            /* -------- Offer / Allotment Status -------- */
+            $output['fetch_current_status'] = DB::table('housing_process_flow as hpf')
+                ->join('housing_flat_occupant as hfo',
+                    'hfo.online_application_id', '=', 'hpf.online_application_id')
+                ->where('hpf.uid', $uid)
+                ->where('hpf.short_code', 'applicant_acceptance')
+                ->orderByDesc('hpf.online_application_id')
+                ->select('hpf.short_code', 'hpf.online_application_id', 'hfo.allotment_no')
+                ->first();
+
+            /* -------- License Status -------- */
+            $output['fetch_license_status'] = DB::table('housing_process_flow as hpf')
+                ->join('housing_online_application as hoa',
+                    'hoa.online_application_id', '=', 'hpf.online_application_id')
+                ->join('housing_applicant_official_detail as haod',
+                    'haod.applicant_official_detail_id', '=', 'hoa.applicant_official_detail_id')
+                ->where('hpf.short_code', 'license_generate')
+                ->where('haod.is_active', 1)
+                ->where('haod.uid', $uid)
+                ->select('hpf.short_code', 'hpf.online_application_id')
+                ->first();
         }
 
-        // Fetch HRMS user data
-        $output['user_info'] = $this->getHRMSUserData($username);
-        $output['user_info']['email'] = $output['user_info']['email'] ?? 
-            DB::table('users')->where('uid', $uid)->value('mail') ?? 'N/A';
+        /* ======================================================
+        | DEPARTMENT / OFFICIAL ROLES
+        ======================================================*/
+        else if (in_array($userRole, [6,7,8,10,11,13,17])) {
 
-        // Fetch user status
-        $userStatus = DB::table('housing_online_application as hoa')
-            ->join('housing_applicant_official_detail as haod', 'haod.applicant_official_detail_id', '=', 'hoa.applicant_official_detail_id')
-            ->where('haod.uid', $uid)
-            ->where('haod.is_active', 1)
-            ->whereIn('hoa.status', ['offer_letter_cancel', 'license_cancel'])
-            ->select('hoa.status')
-            ->first();
+            $roleArr = $user->roles; // same as Drupal
 
-        $output['user_status'] = $userStatus->status ?? '';
+            /* -------- ROLE 11 (DDO) -------- */
+            if ($userRole == 11) {
 
-        // Fetch all applications
-        $output['all-application-data'] = DB::table('housing_applicant_official_detail as haod')
-            ->join('housing_applicant as ha', 'ha.housing_applicant_id', '=', 'haod.housing_applicant_id')
-            ->join('housing_online_application as hoa', 'hoa.applicant_official_detail_id', '=', 'haod.applicant_official_detail_id')
-            ->join('housing_allotment_status_master as hasm', 'hasm.short_code', '=', 'hoa.status')
-            ->where('haod.uid', $uid)
-            ->select(
-                'hoa.application_no',
-                'hoa.date_of_application',
-                'hoa.online_application_id',
-                'haod.applicant_designation',
-                'ha.applicant_name',
-                'hasm.status_description'
-            )
-            ->orderBy('hoa.status', 'ASC')
-            ->get();
+                $result = DB::table('housing_ddo_hrms_mapping')
+                    ->where('ddo_code', $user->name)
+                    ->where('is_active', 'Y')
+                    ->select('hrms_id')
+                    ->first();
 
-        // Fetch current status
-        $output['fetch_current_status'] = DB::table('housing_process_flow as hpf')
-            ->join('housing_flat_occupant as hfo', 'hfo.online_application_id', '=', 'hpf.online_application_id')
-            ->where('hpf.uid', $uid)
-            ->where('hpf.short_code', 'applicant_acceptance')
-            ->select('hpf.short_code', 'hpf.online_application_id', 'hfo.allotment_no')
-            ->orderBy('hpf.online_application_id', 'DESC')
-            ->first();
+                if ($result) {
+                    $data = getHRMSUserData($result->hrms_id);
 
-        // Fetch license status
-        $output['fetch_license_status'] = DB::table('housing_process_flow as hpf')
-            ->join('housing_online_application as hoa', 'hoa.online_application_id', '=', 'hpf.online_application_id')
-            ->join('housing_applicant_official_detail as haod', 'haod.applicant_official_detail_id', '=', 'hoa.applicant_official_detail_id')
-            ->where('hpf.short_code', 'license_generate')
-            ->where('haod.is_active', 1)
-            ->where('haod.uid', $uid)
-            ->select('hpf.short_code', 'hpf.online_application_id')
-            ->first();
+                    $output['user_info'] = [
+                        'applicantName'        => $user->name . '(' . $data['applicantName'] . ')',
+                        'applicantDesignation' => $roleArr[$userRole] . '(' . $data['applicantDesignation'] . ')',
+                        'email'                => $user->email,
+                        'officeName'           => $data['officeName'],
+                        'mobileNo'             => $data['mobileNo'],
+                    ];
+                }
+
+            } else {
+
+                $output['user_info'] = [
+                    'applicantName'        => $user->name,
+                    'mobileNo'             => 'N/A',
+                    'applicantDesignation' => $roleArr[$userRole],
+                    'email'                => $user->email,
+                    'officeName'           => 'Housing Department',
+                ];
+            }
+
+            /* -------- DASHBOARD COUNTS -------- */
+            if ($userRole == 11) {
+                $output['new-apply']      = application_list_fetch('new-apply','applied')->rowCount();
+                $output['vs']             = application_list_fetch('vs','applied')->rowCount();
+                $output['cs']             = application_list_fetch('cs','applied')->rowCount();
+                $output['allotted-apply'] = application_list_fetch('new-apply','applicant_acceptance')->rowCount();
+                $output['allotted-vs']    = application_list_fetch('vs','applicant_acceptance')->rowCount();
+                $output['allotted-cs']    = application_list_fetch('cs','applicant_acceptance')->rowCount();
+
+            } elseif ($userRole == 10) {
+                $output['new-apply'] = application_list_fetch('new-apply','ddo_verified_1')->rowCount();
+                $output['vs']        = application_list_fetch('vs','ddo_verified_1')->rowCount();
+                $output['cs']        = application_list_fetch('cs','ddo_verified_1')->rowCount();
+
+            } elseif ($userRole == 13) {
+                $output['new-apply'] = application_list_fetch('new-apply','housing_sup_approved_1')->rowCount();
+
+            } elseif ($userRole == 6) {
+                $output['all-applications'] = pending_app_list_fetch_secy('allotted')->rowCount();
+
+            } elseif ($userRole == 7) {
+                $output['all-exsting-occupant'] = occupant_list_fetch()->rowCount();
+                $output['auto-cancellation']    = auto_cancellation_applicant_list_fetch()->rowCount();
+                $output['existing_occupant_data'] = fetch_withouthrms_data_count();
+
+            } elseif ($userRole == 8) {
+                $output['all-exsting-occupant'] = occupant_list_fetch()->rowCount();
+
+            } elseif ($userRole == 17) {
+                $output['all-applications'] = pending_app_list_fetch_secy('allotted')->rowCount();
+                $output['special-recommendation-list-data']
+                    = fetch_special_recommendation_list_data()->rowCount();
+            }
+        }
 
         return view('housingTheme.pages.dashboard', compact('output'));
     }

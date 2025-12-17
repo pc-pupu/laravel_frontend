@@ -28,7 +28,7 @@ class UserSsoController extends Controller
                 $error = $response->json()['message'] ?? 'Invalid Token';
                 return response()->json(['error' => $error], 400);
             }
-
+            
             $data = $response->json();
             $userData = $data['user'];
 
@@ -126,11 +126,12 @@ class UserSsoController extends Controller
      */
     public function hrmsLoginForm(Request $request)
     {
+    //   print_r($request->session());die;
         // If already logged in, redirect to dashboard
         if (Auth::check() || $request->session()->has('user')) {
             return redirect()->route('dashboard');
         }
-
+  
         return view('userSso.hrms-login');
     }
 
