@@ -19,12 +19,12 @@
 <ul class="nav nav-pills flex-column mb-auto cus-dashboard">
 
     {{-- DASHBOARD --}}
-    <li class="nav-item">
+    {{-- <li class="nav-item">
         <a href="{{ route('dashboard') }}"
            class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="fa fa-home me-2"></i> Dashboard
         </a>
-    </li>
+    </li> --}}
 
     {{-- DYNAMIC MENUS --}}
     @foreach ($menus as $menu)
@@ -35,10 +35,15 @@
             $menuId = "menu-" . $menu['sidebar_menu_id'];
 
             // Parent URL
-            if (!empty($menu['route_name']) && Route::has($menu['route_name'])) {
-                $menuUrl = route($menu['route_name']);
-            } else {
-                $menuUrl = url($menu['url'] ?? '#');
+            $menuUrl = '#';
+            if (!empty($menu['url'])) {
+                $menuUrl = url($menu['url']);
+            } elseif (!empty($menu['route_name']) && Route::has($menu['route_name'])) {
+                try {
+                    $menuUrl = route($menu['route_name']);
+                } catch (\Illuminate\Routing\Exceptions\UrlGenerationException $e) {
+                    $menuUrl = url($menu['url'] ?? '#');
+                }
             }
 
             // Parent Active?
@@ -81,14 +86,26 @@
                     @foreach ($children as $child)
 
                         @php
-                            if (!empty($child['route_name']) && Route::has($child['route_name'])) {
-                                $childUrl = route($child['route_name']);
-                            } else {
-                                $childUrl = url($child['url'] ?? '#');
+                            $childUrl = '#';
+                            
+                            // If URL is provided, use it (especially for routes with required parameters)
+                            if (!empty($child['url'])) {
+                                $childUrl = url($child['url']);
+                            } 
+                            // Otherwise, try to generate route if route_name exists and route is registered
+                            elseif (!empty($child['route_name']) && Route::has($child['route_name'])) {
+                                try {
+                                    // Try to generate route - if it requires parameters, this will fail
+                                    $childUrl = route($child['route_name']);
+                                } catch (\Illuminate\Routing\Exceptions\UrlGenerationException $e) {
+                                    // If route requires parameters, fall back to URL or use default
+                                    $childUrl = url($child['url'] ?? '#');
+                                }
                             }
 
                             $childActive =
-                                (!empty($child['route_name']) && $currentRoute === $child['route_name']);
+                                (!empty($child['route_name']) && $currentRoute === $child['route_name']) ||
+                                (!empty($child['url']) && $currentUrl === url($child['url']));
                         @endphp
 
                         <li>

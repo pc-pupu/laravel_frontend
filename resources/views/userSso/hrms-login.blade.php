@@ -29,6 +29,7 @@
                                    id="hrms_id" 
                                    name="hrms_id" 
                                    placeholder="Enter HRMS ID" 
+                                   maxlength="10"
                                    required 
                                    autocomplete="off"
                                    value="{{ old('hrms_id') }}">
