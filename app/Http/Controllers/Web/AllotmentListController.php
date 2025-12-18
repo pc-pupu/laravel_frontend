@@ -1,0 +1,263 @@
+<?php
+
+namespace App\Http\Controllers\Web;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use App\Helpers\UrlEncryptionHelper;
+
+class AllotmentListController extends Controller
+{
+    protected $backend;
+
+    public function __construct()
+    {
+        $this->backend = config('services.api.base_url');
+    }
+
+    /**
+     * Display the allotment list page
+     */
+    public function index(Request $request)
+    {
+        try {
+            $token = $request->session()->get('api_token');
+            
+            $httpClient = Http::acceptJson();
+            if ($token) {
+                $httpClient = $httpClient->withToken($token);
+            }
+
+            // Get process dates
+            $datesResponse = $httpClient->get($this->backend . '/api/allotment-list/process-dates');
+            $processDates = $datesResponse->successful() ? $datesResponse->json('data') : [];
+
+            // Get process types
+            $typesResponse = $httpClient->get($this->backend . '/api/allotment-list/process-types');
+            $processTypes = $typesResponse->successful() ? $typesResponse->json('data') : [];
+
+            $allotmentProcessDate = $request->get('allotment_process_date');
+            $allotmentProcessNo = $request->get('allotment_process_no');
+            $allotmentProcessType = $request->get('allotment_process_type');
+
+            $allottees = [];
+            $processNumbers = [];
+
+            if ($allotmentProcessDate) {
+                // Get process numbers
+                $processNosResponse = $httpClient->get($this->backend . '/api/allotment-list/process-numbers', [
+                    'allotment_process_date' => $allotmentProcessDate
+                ]);
+                $processNumbers = $processNosResponse->successful() ? $processNosResponse->json('data') : [];
+
+                if ($allotmentProcessDate && $allotmentProcessNo && $allotmentProcessType) {
+                    // Get allottee list
+                    $allotteesResponse = $httpClient->get($this->backend . '/api/allotment-list/allottees', [
+                        'allotment_process_date' => $allotmentProcessDate,
+                        'allotment_process_no' => $allotmentProcessNo,
+                        'allotment_process_type' => $allotmentProcessType
+                    ]);
+                    $allottees = $allotteesResponse->successful() ? $allotteesResponse->json('data') : [];
+                }
+            }
+
+            return view('housingTheme.allotment-list.index', [
+                'processDates' => $processDates,
+                'processNumbers' => $processNumbers,
+                'processTypes' => $processTypes,
+                'allotmentProcessDate' => $allotmentProcessDate,
+                'allotmentProcessNo' => $allotmentProcessNo,
+                'allotmentProcessType' => $allotmentProcessType,
+                'allottees' => $allottees
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Allotment List Index Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('dashboard')->with('error', 'Failed to load allotment list.');
+        }
+    }
+
+    /**
+     * Display the allotment approval page
+     */
+    public function approve(Request $request)
+    {
+        try {
+            $token = $request->session()->get('api_token');
+            
+            $httpClient = Http::acceptJson();
+            if ($token) {
+                $httpClient = $httpClient->withToken($token);
+            }
+
+            // Get process dates
+            $datesResponse = $httpClient->get($this->backend . '/api/allotment-list/process-dates');
+            $processDates = $datesResponse->successful() ? $datesResponse->json('data') : [];
+
+            $allotmentProcessDate = $request->get('allotment_process_date');
+            $allotmentProcessNo = $request->get('allotment_process_no');
+            $allotmentProcessType = $request->get('allotment_process_type');
+
+            $allottees = [];
+            $processNumbers = [];
+
+            if ($allotmentProcessDate) {
+                // Get process numbers
+                $processNosResponse = $httpClient->get($this->backend . '/api/allotment-list/process-numbers', [
+                    'allotment_process_date' => $allotmentProcessDate
+                ]);
+                $processNumbers = $processNosResponse->successful() ? $processNosResponse->json('data') : [];
+
+                if ($allotmentProcessDate && $allotmentProcessNo && $allotmentProcessType) {
+                    // Get allottee list for approval
+                    $allotteesResponse = $httpClient->get($this->backend . '/api/allotment-list/allottees-for-approve', [
+                        'allotment_process_date' => $allotmentProcessDate,
+                        'allotment_process_no' => $allotmentProcessNo,
+                        'allotment_process_type' => $allotmentProcessType
+                    ]);
+                    $allottees = $allotteesResponse->successful() ? $allotteesResponse->json('data') : [];
+                }
+            }
+
+            return view('housingTheme.allotment-list.approve', [
+                'processDates' => $processDates,
+                'processNumbers' => $processNumbers,
+                'allotmentProcessDate' => $allotmentProcessDate,
+                'allotmentProcessNo' => $allotmentProcessNo,
+                'allotmentProcessType' => $allotmentProcessType,
+                'allottees' => $allottees
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Allotment List Approve Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('dashboard')->with('error', 'Failed to load approval page.');
+        }
+    }
+
+    /**
+     * Handle approve/reject/hold actions
+     */
+    public function updateStatus(Request $request)
+    {
+        try {
+            $request->validate([
+                'action' => 'required|string|in:approve,reject,hold',
+                'online_application_ids' => 'required|string' // JSON string from form
+            ]);
+
+            $token = $request->session()->get('api_token');
+            
+            if (!$token) {
+                return redirect()->back()->with('error', 'Authentication required.');
+            }
+
+            // Parse JSON string to array
+            $onlineApplicationIds = json_decode($request->online_application_ids, true);
+            
+            if (!is_array($onlineApplicationIds) || empty($onlineApplicationIds)) {
+                return redirect()->back()->with('error', 'Please select at least one allottee.');
+            }
+
+            $action = $request->action;
+            $endpoint = $this->backend . '/api/allotment-list/' . $action;
+
+            $response = Http::withToken($token)
+                ->acceptJson()
+                ->post($endpoint, [
+                    'online_application_ids' => $onlineApplicationIds
+                ]);
+
+            if ($response->successful()) {
+                $message = $response->json('message') ?? ucfirst($action) . ' completed successfully.';
+                return redirect()->back()->with('success', $message);
+            } else {
+                $errorMessage = $response->json('message') ?? 'Failed to ' . $action . ' allotments.';
+                return redirect()->back()->with('error', $errorMessage);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Allotment List Update Status Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'An error occurred while processing the request.');
+        }
+    }
+
+    /**
+     * Display allotment detail page
+     */
+    public function detail($encryptedAppId)
+    {
+        try {
+            $token = request()->session()->get('api_token');
+            
+            $httpClient = Http::acceptJson();
+            if ($token) {
+                $httpClient = $httpClient->withToken($token);
+            }
+
+            $response = $httpClient->get($this->backend . '/api/allotment-list/detail/' . $encryptedAppId);
+
+            if (!$response->successful()) {
+                return redirect()->route('allotment-list.index')->with('error', 'Allotment not found.');
+            }
+
+            $allotment = $response->json('data');
+
+            return view('housingTheme.allotment-list.detail', [
+                'allotment' => $allotment
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Allotment Detail Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('allotment-list.index')->with('error', 'Failed to load allotment details.');
+        }
+    }
+
+    /**
+     * Display allottee list on hold
+     */
+    public function hold(Request $request)
+    {
+        try {
+            $token = $request->session()->get('api_token');
+            
+            $httpClient = Http::acceptJson();
+            if ($token) {
+                $httpClient = $httpClient->withToken($token);
+            }
+
+            $response = $httpClient->get($this->backend . '/api/allotment-list/allottees-on-hold');
+            $allottees = $response->successful() ? $response->json('data') : [];
+
+            return view('housingTheme.allotment-list.hold', [
+                'allottees' => $allottees
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Allotment List Hold Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('dashboard')->with('error', 'Failed to load hold list.');
+        }
+    }
+}
+

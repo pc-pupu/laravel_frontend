@@ -58,7 +58,9 @@ class DashboardController extends Controller
                 'username' => $username,
                 'user_type' => $userType,
             ]);
-            
+
+            // print_r($dashboardResponse->json());die;
+
             if (!$dashboardResponse->successful()) {
                 // echo 'Dashboard API Error';die;
                 Log::error('Failed to fetch dashboard data', [
@@ -79,7 +81,7 @@ class DashboardController extends Controller
                     $redirect->with('message', $output['redirect_message']);
                 }
                 // Clear user_type cookie if redirecting
-                if ($output['redirect'] === '/user-tagging') {
+                if ($output['redirect'] == '/user-tagging') {
                     Cookie::queue(Cookie::forget('user_type'));
                 }
                 if ($cookie !== null) {
