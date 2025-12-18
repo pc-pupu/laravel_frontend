@@ -229,38 +229,50 @@ class NewApplicationController extends Controller
      */
     private function getHRMSUserData($hrmsId)
     {
-        // Check if we should use local dummy data
-        $useLocalData = env('USE_LOCAL_HRMS_DATA', false);
-
-        if ($useLocalData) {
-            // Return dummy data for local development
-            return $this->getLocalHRMSData($hrmsId);
-        }
-
         try {
             // Call HRMS API
-            $hrmsUrl = config('services.hrms.uat_hrms_url', 'https://uat.wbifms.gov.in');
-            $apiSecretToken = config('services.hrms.api_secret_token', 'WBHOUSING12#$');
+            $hrmsApiUrl = config(
+                'services.hrms.api_url',
+                'https://uat.wbifms.gov.in/hrms-External/housing/fetchEmployeeDetails'
+            );
+            $requestData = [
+                'req' => [
+                    'hrmsId' => $hrmsId,
+                ],
+            ];
 
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'X-API-Key' => $apiSecretToken,
-            ])->post($hrmsUrl . '/api/get-user-data', [
-                'hrms_id' => $hrmsId,
-            ]);
+            $response = Http::timeout(30)
+                ->withOptions(['verify' => false])
+                ->post($hrmsApiUrl, $requestData);
+
+
+                
+            $responseData = $response->json();
+            
 
             if ($response->successful()) {
-                $data = $response->json();
-                
-                // Decrypt and validate the response
-                if (isset($data['encrypted_data']) && isset($data['checksum'])) {
-                    $decryptedData = AuthEncryptionHelper::decrypt($data['encrypted_data']);
-                    $expectedChecksum = AuthEncryptionHelper::checksumValidation($decryptedData);
-                    
-                    if (hash_equals($expectedChecksum, $data['checksum'])) {
-                        return json_decode($decryptedData, true);
-                    }
+                $encryptedData = $responseData['resp']['data'];
+                $decryptedJson = AuthEncryptionHelper::decrypt($encryptedData);
+                $userDataArray = json_decode($decryptedJson, true);
+
+                if (empty($userDataArray[0])) {
+                    Log::error('HRMS Decryption Failed', [
+                        'hrms_id' => $hrmsId,
+                        'data' => $decryptedJson,
+                    ]);
+
+                    return $this->getDefaultData($hrmsId);
                 }
+            }
+            return $userDataArray[0];
+            if (!$response->successful()) {
+                Log::error('HRMS API Error', [
+                    'hrms_id' => $hrmsId,
+                    'status'  => $response->status(),
+                    'body'    => $response->body(),
+                ]);
+
+                return $this->getDefaultData($hrmsId);
             }
         } catch (\Exception $e) {
             Log::error('HRMS API Error', ['error' => $e->getMessage()]);
@@ -793,5 +805,19 @@ class NewApplicationController extends Controller
             ], 500);
         }
     }
+
+        private function getDefaultData($hrmsId)
+    {
+        return [
+            'hrmsId' => $hrmsId,
+            'applicantName' => $hrmsId,
+            'email' => 'N/A',
+            'applicantDesignation' => 'N/A',
+            'officeName' => 'N/A',
+            'mobileNo' => 'N/A',
+        ];
+    }
 }
+
+
 

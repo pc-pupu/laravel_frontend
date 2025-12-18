@@ -62,6 +62,39 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::get('new-apply', [\App\Http\Controllers\Web\NewApplicationController::class, 'create'])->name('new-application.create');
     Route::post('new-apply', [\App\Http\Controllers\Web\NewApplicationController::class, 'store'])->name('new-application.store');
     
+    // Category Shifting (CS) Application
+    Route::get('cs', [\App\Http\Controllers\Web\CategoryShiftingController::class, 'create'])->name('category-shifting.create');
+    Route::post('cs', [\App\Http\Controllers\Web\CategoryShiftingController::class, 'store'])->name('category-shifting.store');
+    
+    // Vertical Shifting (VS) Application
+    Route::get('vs', [\App\Http\Controllers\Web\VerticalShiftingController::class, 'create'])->name('vertical-shifting.create');
+    Route::post('vs', [\App\Http\Controllers\Web\VerticalShiftingController::class, 'store'])->name('vertical-shifting.store');
+    
+    // Allotment List Routes (matching Drupal routes)
+    Route::get('allotment_list', [\App\Http\Controllers\Web\AllotmentListController::class, 'index'])->name('allotment-list.index');
+    Route::get('allotment_list_approve', [\App\Http\Controllers\Web\AllotmentListController::class, 'approve'])->name('allotment-list.approve');
+    Route::post('allotment_list_approve', [\App\Http\Controllers\Web\AllotmentListController::class, 'updateStatus'])->name('allotment-list.update-status');
+    Route::get('allotment_list_hold', [\App\Http\Controllers\Web\AllotmentListController::class, 'hold'])->name('allotment-list.hold');
+    Route::get('allotment_details/{encrypted_app_id}', [\App\Http\Controllers\Web\AllotmentListController::class, 'detail'])
+        ->where('encrypted_app_id', '.*')
+        ->name('allotment-list.detail');
+    
+    // Generate Allotment Letter Routes (matching Drupal routes)
+    Route::get('generate_allotment_letter', [\App\Http\Controllers\Web\GenerateAllotmentLetterController::class, 'index'])->name('generate-allotment-letter.index');
+    Route::post('generate_letter', [\App\Http\Controllers\Web\GenerateAllotmentLetterController::class, 'generate'])->name('generate-allotment-letter.generate');
+    
+    // View Allotment Details Routes (matching Drupal routes)
+    Route::get('view_allotment_details', [\App\Http\Controllers\Web\ViewAllotmentDetailsController::class, 'index'])->name('view-allotment-details.index');
+    Route::get('status_update/{encrypted_app_id}/{encrypted_status}', [\App\Http\Controllers\Web\ViewAllotmentDetailsController::class, 'updateStatus'])
+        ->where(['encrypted_app_id' => '.*', 'encrypted_status' => '.*'])
+        ->name('view-allotment-details.update-status');
+    
+    // View Allotment Letter Routes (matching Drupal routes)
+    Route::get('view_proposed_rhe', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'index'])->name('view-allotment-letter.index');
+    Route::get('update_allotment/{encrypted_app_id}/{encrypted_status}', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'updateAllotment'])
+        ->where(['encrypted_app_id' => '.*', 'encrypted_status' => '.*'])
+        ->name('view-allotment-letter.update-allotment');
+    
     // AJAX endpoints for new application
     Route::get('new-application/flat-type-categories', [\App\Http\Controllers\Web\NewApplicationController::class, 'getFlatTypeAndCategoriesAjax'])->name('new-application.flat-type-categories');
     Route::get('new-application/housing-estates', [\App\Http\Controllers\Web\NewApplicationController::class, 'getHousingEstatesAjax'])->name('new-application.housing-estates');
