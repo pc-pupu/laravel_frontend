@@ -34,25 +34,28 @@
         <div class="col-md-4">
             <div class="form-floating">
                 <input type="text" class="form-control" id="mobile" name="mobile" 
-                    value="{{ $mobile }}" placeholder="Mobile No" maxlength="10">
-                <label for="mobile">Mobile No</label>
+                    value="{{ $mobile }}" placeholder="Mobile no" maxlength="10" required>
+                <label for="mobile" class="required">Mobile no</label>
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-floating">
                 <input type="text" class="form-control" id="email" name="email" 
-                    value="{{ $email }}" placeholder="Email ID" oninput="this.value=this.value.toLowerCase()">
-                <label for="email">Email ID</label>
+                    value="{{ $email }}" placeholder="Email ID" oninput="this.value=this.value.toLowerCase()" required>
+                <label for="email" class="required">Email ID</label>
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-floating">
                 <input type="text" class="form-control" id="dob" name="dob" 
-                    value="{{ $dob }}" placeholder="DD/MM/YYYY" required 
-                    autocomplete="off" maxlength="10" {{ $isEdit && isset($data['dob']) ? 'readonly' : '' }}>
-                <label for="dob" class="required">Date of Birth (DD/MM/YYYY)</label>
+                    value="{{ $dob }}" placeholder="Date of Birth(According to Service Book)" required 
+                    autocomplete="off" maxlength="10" disabled>
+                <label for="dob" class="required">Date of Birth(According to Service Book)</label>
             </div>
         </div>
+    </div>
+    
+    <div class="row g-3 mt-2">
         <div class="col-md-4">
             <label class="required mb-2 d-block">Gender</label>
             <div class="form-check form-check-inline">

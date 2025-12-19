@@ -36,6 +36,7 @@ class VerticalShiftingController extends Controller
      */
     public function create(Request $request)
     {
+        
         // Check if user is logged in
         if (!$request->session()->has('user')) {
             return redirect()->route('login')->with('error', 'Please login first');
@@ -64,6 +65,11 @@ class VerticalShiftingController extends Controller
 
             if (!$occupationResponse->successful()) {
                 $errorMsg = $occupationResponse->json('message') ?? 'Failed to load current occupation details.';
+                // print_r($_COOKIE['user_type'] ?? 'no cookie');die;
+                // return [
+                //     'redirect' => route('dashboard'),
+                //     'redirect_message' => 'Failed to load current occupation details.'
+                // ];
                 return redirect()->route('dashboard')->with('error', $errorMsg);
             }
 

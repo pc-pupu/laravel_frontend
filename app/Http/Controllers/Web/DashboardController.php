@@ -28,31 +28,26 @@ class DashboardController extends Controller
         // If coming from user-tagging page, set the cookie server-side (backup if JS cookie didn't work)
         $cookie = null;
         $referer = $request->header('Referer');
-        
-        if ($referer && str_contains($referer, 'user-tagging')) {
+       
+        if ($referer && (str_contains($referer, 'user-tagging') || str_contains($referer, 'dashboard'))) {
             // Check if cookie is already set, if not set it server-side
             if (!$request->cookie('user_type')) {
                 $cookie = cookie('user_type', 'new', 60 * 24, '/', null, false, false, false, 'Lax');
             }
         }
-        
-
         $user = $request->session()->get('user');
         $uid = $user['uid'];
         $username = $user['name'];
         
-        // Get API token (may be null for SSO users who haven't generated token yet)
         $token = $request->session()->get('api_token');
-        
         try {
-            // Get dashboard data from API (includes all DB queries)
-            // Dashboard API accepts uid/username as parameters, so token is optional
+            
             $httpClient = Http::acceptJson();
             if ($token) {
                 $httpClient = $httpClient->withToken($token);
             }
-            $userType = $_COOKIE['user_type'] ?? null;
-
+            $userType = $_COOKIE['user_type'] ?? ($cookie ? 'new' : null);
+            // echo 'User Type Cookie: ' . ($userType ?? 'not set');die;
             $dashboardResponse = $httpClient->get($this->backend . '/api/dashboard', [
                 'uid' => $uid,
                 'username' => $username,
@@ -63,37 +58,41 @@ class DashboardController extends Controller
 
             if (!$dashboardResponse->successful()) {
                 // echo 'Dashboard API Error';die;
-                Log::error('Failed to fetch dashboard data', [
-                    'uid' => $uid,
-                    'response' => $dashboardResponse->json()
-                ]);
+                // Log::error('Failed to fetch dashboard data', [
+                //     'uid' => $uid,
+                //     'response' => $dashboardResponse->json()
+                // ]);
                 return redirect()->route('homepage')->with('error', 'Failed to load dashboard data');
             }
 
             $dashboardData = $dashboardResponse->json();
             $output = $dashboardData['data'] ?? [];
             $userRole = $output['user_role'] ?? null;
-            // print_r($output);die;
-            // Check for redirect (from applicant dashboard logic)
+            
             if (isset($output['redirect'])) {
-                $redirect = redirect($output['redirect']);
-                if (isset($output['redirect_message'])) {
-                    $redirect->with('message', $output['redirect_message']);
-                }
-                // Clear user_type cookie if redirecting
                 if ($output['redirect'] == '/user-tagging') {
+                    // echo 1254;die;
+                   $redirect = redirect($output['redirect']);
                     Cookie::queue(Cookie::forget('user_type'));
                 }
-                if ($cookie !== null) {
-                    return $redirect->withCookie($cookie);
+                if ($output['redirect'] == '/dashboard') {
+                    // echo 5678;die;
+                   $cookie = cookie('user_type', 'new', 60 * 24, '/', null, false, false, false, 'Lax');
+                   
                 }
-                return $redirect;
+                
+                // if ($cookie !== null) {
+                //     return $redirect->withCookie($cookie);
+                // }
+                
+                
             }
 
-            // Clear user_type cookie after processing (Drupal behavior)
-            if ($userRole == 4) {
-                Cookie::queue(Cookie::forget('user_type'));
-            }
+            
+
+            // if ($userRole == 4) {
+            //     Cookie::queue(Cookie::forget('user_type'));
+            // }
 
             // Role-based view selection
             if (in_array($userRole, [4, 5])) {
@@ -122,15 +121,17 @@ class DashboardController extends Controller
                 // Admin Dashboard
                 $response = view('housingTheme.pages.dashboard', compact('output'));
             } else {
-                // Default/CMS Dashboard
+                
                 $response = $this->defaultDashboard($request);
             }
 
             // Attach cookie if it was set
             if ($cookie !== null) {
+                
                 return $response->withCookie($cookie);
             }
-
+            // print_r($response);die;
+            // echo 'Redirecting to: ' . $output['redirect'];die;
             return $response;
 
         } catch (\Exception $e) {

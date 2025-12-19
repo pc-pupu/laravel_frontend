@@ -49,7 +49,6 @@
                     {{-- Applicant's Official Information --}}
                     <div class="form-section mt-4">
                         <h5 class="mb-3"><i class="fa fa-briefcase me-2"></i> Applicant's Official Information</h5>
-                        
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
                                 <div class="form-floating">
@@ -72,7 +71,7 @@
                                     <select class="form-select" id="pay_band" name="pay_band" required {{ isset($hrmsData['payBandId']) ? 'disabled' : '' }}>
                                         <option value="" {{ empty($officialInfo['pay_band_id'] ?? old('pay_band')) ? 'selected' : '' }}>- Select -</option>
                                         @foreach($payBands as $id => $label)
-                                            <option value="{{ $id }}" {{ ($officialInfo['pay_band_id'] ?? old('pay_band')) == $id ? 'selected' : '' }}>
+                                            <option value="{{ $id }}" {{ ($hrmsData['payBandId'] ?? old('pay_band')) == $id ? 'selected' : '' }}>
                                                 {{ $label }}
                                             </option>
                                         @endforeach
@@ -93,9 +92,8 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <textarea class="form-control" id="app_posting_place" name="app_posting_place" 
-                                        placeholder="Place of Posting" oninput="this.value=this.value.toUpperCase()" required readonly>{{ $officialInfo['applicant_posting_place'] ?? $hrmsData['applicantPostingPlace'] ?? old('app_posting_place', '') }}</textarea>
-                                    <label for="app_posting_place" class="required">Place of Posting</label>
+                                    <textarea class="form-control" id="app_posting_place" name="app_posting_place" rows="4" placeholder="Place of Posting" oninput="this.value=this.value.toUpperCase()" rows="4" required readonly style="height: 85px">{{ $officialInfo['applicant_posting_place'] ?? $hrmsData['applicantPostingPlace'] ?? old('app_posting_place', '') }}</textarea>
+                                    <label for="app_posting_place" class="required">Place of Posting2</label>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -111,18 +109,18 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="doj" name="doj" 
+                                    <input type="text" class="form-control numeric_positive" id="doj" name="doj" 
                                         value="{{ $officialInfo['doj'] ?? $hrmsData['dateOfJoining'] ?? old('doj', '') }}" 
-                                        placeholder="DD/MM/YYYY" required autocomplete="off" readonly>
-                                    <label for="doj" class="required">Date of Joining (DD/MM/YYYY)</label>
+                                        placeholder="Date of Joining" required autocomplete="off">
+                                    <label for="doj" class="required">Date of Joining</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="dor" name="dor" 
+                                    <input type="text" class="form-control numeric_positive" id="dor" name="dor" 
                                         value="{{ $officialInfo['dor'] ?? $hrmsData['dateOfRetirement'] ?? old('dor', '') }}" 
-                                        placeholder="DD/MM/YYYY" required autocomplete="off" readonly>
-                                    <label for="dor" class="required">Date of Retirement (DD/MM/YYYY)</label>
+                                        placeholder="Date of Retirement(According to Service Book)" required autocomplete="off">
+                                    <label for="dor" class="required">Date of Retirement(According to Service Book)</label>
                                 </div>
                             </div>
                         </div>
@@ -144,7 +142,7 @@
                             <div class="col-md-4">
                                 <div class="form-floating">
                                     <textarea class="form-control" id="office_street" name="office_street" 
-                                        placeholder="Address" oninput="this.value=this.value.toUpperCase()" required readonly>{{ $officialInfo['office_street'] ?? $hrmsData['officeStreetCharacter'] ?? old('office_street', '') }}</textarea>
+                                        placeholder="Address" oninput="this.value=this.value.toUpperCase()" rows="4" required readonly style="height: 85px">{{ $officialInfo['office_street'] ?? $hrmsData['officeStreetCharacter'] ?? old('office_street', '') }}</textarea>
                                     <label for="office_street" class="required">Address</label>
                                 </div>
                             </div>
@@ -206,10 +204,10 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <select class="form-select" id="district" name="district" required disabled>
-                                        <option value="" {{ empty($officialInfo['district_code'] ?? old('district')) ? 'selected' : '' }}>- Select -</option>
+                                    <select class="form-select" id="district" name="district" required>
+                                        <option value="" {{ empty($hrmsData['ddoDistrictCode'] ?? old('district')) ? 'selected' : '' }}>- Select -</option>
                                         @foreach($districts as $code => $name)
-                                            <option value="{{ $code }}" {{ ($officialInfo['district_code'] ?? old('district')) == $code ? 'selected' : '' }}>
+                                            <option value="{{ $code }}" {{ ($hrmsData['ddoDistrictCode'] ?? old('district')) == $code ? 'selected' : '' }}>
                                                 {{ $name }}
                                             </option>
                                         @endforeach
@@ -220,9 +218,9 @@
                             <div class="col-md-6">
                                 <div class="form-floating">
                                     <select class="form-select" id="designation" name="designation" required>
-                                        <option value="" {{ empty($officialInfo['ddo_id'] ?? old('designation')) ? 'selected' : '' }}>- Select -</option>
+                                        <option value="" {{ empty($officialInfo['designation'] ?? old('designation')) ? 'selected' : '' }}>- Select -</option>
                                         @foreach($ddoDesignations as $id => $name)
-                                            <option value="{{ $id }}" {{ ($officialInfo['ddo_id'] ?? old('designation')) == $id ? 'selected' : '' }}>
+                                            <option value="{{ $id }}" {{ ($officialInfo['designation'] ?? old('designation')) == $id ? 'selected' : '' }}>
                                                 {{ $name }}
                                             </option>
                                         @endforeach
@@ -337,8 +335,8 @@
                                 <div class="form-floating">
                                     <input type="text" class="form-control" id="rhe_flat_type" name="rhe_flat_type" 
                                         value="{{ $flatType ?? $existingAppData['rhe_flat_type'] ?? old('rhe_flat_type', '') }}" 
-                                        placeholder="Flat Type" readonly required>
-                                    <label for="rhe_flat_type" class="required">Flat Type</label>
+                                        placeholder="Flat TYPE" readonly required>
+                                    <label for="rhe_flat_type" class="required">Flat TYPE</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -419,6 +417,22 @@
             autoSize: true
         });
 
+        $("#doj").datepicker({
+            dateFormat: "dd/mm/yy",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1947:" + new Date().getFullYear(),
+            autoSize: true
+        });
+
+        $("#dor").datepicker({
+            dateFormat: "dd/mm/yy",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1947:" + (new Date().getFullYear() + 20),
+            autoSize: true
+        });
+
         // Numeric input restrictions
         $("#mobile").keypress(function (e) {
             if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
@@ -460,9 +474,10 @@
             const documentRequiredReasons = [
                 'Transfer',
                 'Legal Heir',
-                'Physically Handicaped or Serious Illness',
+                'Physically Handicaped Or Serious Illness',
                 'Recommended',
-                'Single Earning Lady'
+                'Single Earning Lady',
+                'Judicial Officer On Transfer'
             ];
             
             if (documentRequiredReasons.includes(reason)) {
@@ -618,14 +633,23 @@
         const documentRequiredReasons = [
             'Transfer',
             'Legal Heir',
-            'Physically Handicaped or Serious Illness',
+            'Physically Handicaped Or Serious Illness',
             'Recommended',
-            'Single Earning Lady'
+            'Single Earning Lady',
+            'Judicial Officer On Transfer'
         ];
         
-        if (documentRequiredReasons.includes(reason) && !$('#extra_doc').val()) {
-            alert('Please upload the required supporting document for the selected allotment reason.');
-            return false;
+        if (documentRequiredReasons.includes(reason)) {
+            if (!$('#extra_doc').val()) {
+                alert('Please Upload Allotment Reason Supporting Document.');
+                return false;
+            }
+        } else {
+            // If reason doesn't require document but document is uploaded, show error
+            if ($('#extra_doc').val()) {
+                alert('You have to choose Allotment Reason.');
+                return false;
+            }
         }
 
         return true;

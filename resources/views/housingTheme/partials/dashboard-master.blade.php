@@ -30,12 +30,12 @@
         {{-- <script src="{{ asset('/jquery/jquery.min.js') }}"></script> --}}
         {{-- <script src="{{ asset('/bootstrap-5.3.3/js/bootstrap.min.js') }}"></script> --}}
         {{-- <script src="{{ asset('/bootstrap-5.3.3/js/bootstrap.bundle.min.js') }}"></script> --}}
-        {{-- <script src="{{ asset('/themes/dashboard-theme/js/custome.js') }}"></script> --}}
+        {{-- <script src="{{ asset(assets/dashboard-theme/js/custome.js') }}"></script> --}}
 
         <script src="{{ asset('/assets/housingTheme/jquery/jquery.min.js') }}"></script>
         <script src="{{ asset('/assets/housingTheme/bootstrap/js/bootstrap.min.js') }}"></script>
         <script src="{{ asset('/assets/housingTheme/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-        <script src="{{ asset('/themes/dashboard-theme/js/custome.js') }}"></script>
+        <script src="{{ asset('/assets/dashboard-theme/js/custome.js') }}"></script>
     </body>
 </html>
 
