@@ -58,6 +58,7 @@ class NewApplicationController extends Controller
 
             // Step 2: Fetch HRMS data
             $hrmsData = $this->getHRMSUserData($hrmsId);
+            // echo '<pre>';print_r($hrmsData);die;
             
             if (empty($hrmsData)) {
                 return redirect()->route('dashboard')
@@ -67,18 +68,21 @@ class NewApplicationController extends Controller
             // Step 3: Fetch dropdown data
             $districts = $this->getDistricts();
             $payBands = $this->getPayBands();
+            // echo '<pre>';print_r($payBands);die;
             
             // Step 4: Get DDO data from HRMS
             $ddoData = $this->getDdoData($hrmsData['ddoId'] ?? '');
+           
             $treasuryId = $ddoData['treasury_id'] ?? null;
 
             // Step 5: Pre-fill form with HRMS data
             $formData = $this->prepareFormDataFromHRMS($hrmsData, $ddoData, $districts, $payBands);
-
+        //    echo '<pre>';print_r($ddoData);die;
             // Step 6: Get flat type based on pay band and basic pay
-            $flatType = $this->getFlatTypeByPayBand($formData['pay_band_id'] ?? null, $formData['pay_in'] ?? null);
-            $allotmentCategories = $this->getAllotmentCategories($flatType);
+            $flatType = $this->getFlatTypeByPayBand($formData['pay_band_id'],$formData['official']['pay_in']);
 
+            $allotmentCategories = $this->getAllotmentCategories($flatType);
+            
             // Step 7: Get housing estate preferences (if pay band and treasury available)
             $housingEstates = [];
             if ($formData['pay_band_id'] && $treasuryId) {
@@ -87,6 +91,10 @@ class NewApplicationController extends Controller
 
             // Step 8: Check for existing application data
             $existingAppData = $this->getExistingApplicationData($uid);
+
+            $hrmsData = array_merge($hrmsData, [
+                'payBandId' => $formData['pay_band_id'] ?? '', 'ddoDistrictCode' => $ddoData['district_code'] ?? '',
+            ]);
 
             return view('housingTheme.new-application.form', [
                 'districts' => $districts,
@@ -477,7 +485,7 @@ class NewApplicationController extends Controller
         if (isset($ddoData['ddo_id'])) {
             $formData['official']['designation'] = $ddoData['ddo_id'];
         }
-
+        
         return $formData;
     }
 
@@ -538,7 +546,7 @@ class NewApplicationController extends Controller
         if (!$payBandId || !$basicPay) {
             return null;
         }
-
+        // echo $payBandId;die;
         try {
             $response = $this->authorizedRequest()
                 ->get($this->backend . '/api/new-application/flat-type-by-payband', [

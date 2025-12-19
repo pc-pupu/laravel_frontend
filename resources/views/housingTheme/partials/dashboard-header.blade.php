@@ -70,7 +70,7 @@
     @if($user)
     <div class="profile-wrapper">
 
-    <img src="{{ asset('/themes/dashboard-theme/images/profile_icon.png') }}" 
+    <img src="{{ asset('/assets/dashboard-theme/images/profile_icon.png') }}" 
          width="42" height="42" class="rounded-circle">
 
     <div class="dropdown-container ms-2">

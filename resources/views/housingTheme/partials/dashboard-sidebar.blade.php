@@ -2,7 +2,7 @@
 <div class="sidebar d-flex flex-column p-3">
 
     <a href="{{ route('dashboard') }}" class="d-flex flex-column align-items-center mb-5 text-center text-white">
-        <img src="{{ asset('/themes/dashboard-theme/images/wb-logo.png') }}" class="img-fluid mb-3" width="120">
+        <img src="{{ asset('/assets/dashboard-theme/images/wb-logo.png') }}" class="img-fluid mb-3" width="120">
         
         <div class="dashboard-logo">
             <div class="fs-5 fw-semibold lh-1">e-Allotment of Rental Housing Estate</div>

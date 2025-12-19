@@ -29,7 +29,7 @@
         <script src="{{ asset('/assets/housingTheme/jquery/jquery.min.js') }}"></script>
         <script src="{{ asset('/assets/housingTheme/bootstrap/js/bootstrap.min.js') }}"></script>
         <script src="{{ asset('/assets/housingTheme/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-        <script src="{{ asset('/themes/dashboard-theme/js/custome.js') }}"></script>
+        <script src="{{ asset('/assets/dashboard-theme/js/custome.js') }}"></script>
         <script>
             window.__oldInputs = @json(session()->getOldInput());
             window.__formErrors = @json($errors->toArray());

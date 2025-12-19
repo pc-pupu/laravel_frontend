@@ -16,7 +16,7 @@
                 <p><strong>Email:</strong> {{ $user['mail'] ?? $user['email'] ?? 'N/A' }}</p>
             </div>
         </div>
-        <img src="{{ asset('/themes/dashboard-theme/images/profile_icon.png') }}"
+        <img src="{{ asset('/assets/dashboard-theme/images/profile_icon.png') }}"
              alt="Dashboard Illustration"
              class="dashboard-illustration">
     </div>
