@@ -57,11 +57,7 @@ class DashboardController extends Controller
             // print_r($dashboardResponse->json());die;
 
             if (!$dashboardResponse->successful()) {
-                // echo 'Dashboard API Error';die;
-                // Log::error('Failed to fetch dashboard data', [
-                //     'uid' => $uid,
-                //     'response' => $dashboardResponse->json()
-                // ]);
+                
                 return redirect()->route('homepage')->with('error', 'Failed to load dashboard data');
             }
 
@@ -70,6 +66,7 @@ class DashboardController extends Controller
             $userRole = $output['user_role'] ?? null;
             
             if (isset($output['redirect'])) {
+
                 if ($output['redirect'] == '/user-tagging') {
                     // echo 1254;die;
                    $redirect = redirect($output['redirect']);
@@ -80,19 +77,7 @@ class DashboardController extends Controller
                    $cookie = cookie('user_type', 'new', 60 * 24, '/', null, false, false, false, 'Lax');
                    
                 }
-                
-                // if ($cookie !== null) {
-                //     return $redirect->withCookie($cookie);
-                // }
-                
-                
             }
-
-            
-
-            // if ($userRole == 4) {
-            //     Cookie::queue(Cookie::forget('user_type'));
-            // }
 
             // Role-based view selection
             if (in_array($userRole, [4, 5])) {
@@ -109,12 +94,17 @@ class DashboardController extends Controller
                         session(['sidebar_menus' => $menus]);
                     }
                 }
-
-                // Applicant Dashboard
-                $response = view('housingTheme.pages.dashboard', [
-                    'output' => $output,
-                    'sidebar_menus' => $menus
-                ]);
+                
+                if (isset($output['redirect']) && $output['redirect'] == '/user-tagging') {
+                    $response = redirect($output['redirect']);
+                    Cookie::queue(Cookie::forget('user_type'));
+                } else {
+                    // Applicant Dashboard
+                    $response = view('housingTheme.pages.dashboard', [
+                        'output' => $output,
+                        'sidebar_menus' => $menus
+                    ]);
+                }
 
             }
             elseif (in_array($userRole, [6, 7, 8, 10, 11, 13, 17])) {

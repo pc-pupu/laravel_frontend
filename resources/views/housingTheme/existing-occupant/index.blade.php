@@ -15,11 +15,8 @@
                             <p>Manage existing occupants data</p>
                         </div>
                         <div class="mt-3 mt-md-0">
-                            <a href="{{ route('existing-occupant.flat-list') }}" class="btn btn-light me-2">
-                                <i class="fa fa-list me-2"></i> Select Flat
-                            </a>
-                            <a href="{{ route('existing-occupant.create') }}" class="btn btn-light">
-                                <i class="fa fa-plus me-2"></i> Add New
+                            <a href="{{ route('existing-occupant.flat-list') }}" class="btn btn-light">
+                                <i class="fa fa-plus me-2"></i> Add New Occupant
                             </a>
                         </div>
                     </div>
