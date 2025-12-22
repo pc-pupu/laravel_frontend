@@ -3,6 +3,19 @@
 @section('title', 'Application for New Allotment')
 
 @section('content')
+@php
+    // Helper function to check if a field has HRMS data
+    $hasHrmsField = function($hrmsKey) use ($hrmsData) {
+        return !empty($hrmsData[$hrmsKey] ?? null);
+    };
+    
+    // Check HRMS data for various fields
+    $hasHrmsDoj = $hasHrmsField('dateOfJoining');
+    $hasHrmsDor = $hasHrmsField('dateOfRetirement');
+    $hasHrmsOfficeDistrict = $hasHrmsField('officeDistrict');
+    $hasHrmsDdoId = $hasHrmsField('ddoId');
+    $hasHrmsPayBand = $hasHrmsField('payBandId') || !empty($hrmsData['payInThePayBand'] ?? null);
+@endphp
 <div class="cms-wrapper">
     <div class="row">
         <div class="col-md-12">
@@ -29,21 +42,24 @@
 
                     {{-- Personal Information Section --}}
                     @include('commonForm.personal-info', [
-                        'data' => array_merge($personalInfo ?? [], $hrmsData ?? [])
+                        'data' => array_merge($personalInfo ?? [], $hrmsData ?? []),
+                        'hrmsData' => $hrmsData ?? []
                     ])
 
                     {{-- Permanent Address --}}
                     @include('commonForm.address-fields', [
                         'data' => array_merge($personalInfo ?? [], $hrmsData ?? []),
                         'addressType' => 'permanent',
-                        'districts' => $districts ?? []
+                        'districts' => $districts ?? [],
+                        'hrmsData' => $hrmsData ?? []
                     ])
 
                     {{-- Present Address --}}
                     @include('commonForm.address-fields', [
                         'data' => array_merge($personalInfo ?? [], $hrmsData ?? []),
                         'addressType' => 'present',
-                        'districts' => $districts ?? []
+                        'districts' => $districts ?? [],
+                        'hrmsData' => $hrmsData ?? []
                     ])
 
                     {{-- Applicant's Official Information --}}
@@ -54,7 +70,7 @@
                                 <div class="form-floating">
                                     <input type="text" class="form-control numeric_positive" id="hrms_id" name="hrms_id" 
                                         value="{{ $officialInfo['hrms_id'] ?? $hrmsData['hrmsId'] ?? old('hrms_id', '') }}" 
-                                        placeholder="Employee HRMS ID" maxlength="10" required readonly>
+                                        placeholder="Employee HRMS ID" maxlength="10" required {{ (!empty($officialInfo['hrms_id']) || !empty($hrmsData['hrmsId'])) ? 'readonly' : '' }}>
                                     <label for="hrms_id" class="required">Employee HRMS ID</label>
                                 </div>
                             </div>
@@ -62,21 +78,25 @@
                                 <div class="form-floating">
                                     <input type="text" class="form-control" id="app_designation" name="app_designation" 
                                         value="{{ $officialInfo['applicant_designation'] ?? $hrmsData['applicantDesignation'] ?? old('app_designation', '') }}" 
-                                        placeholder="Designation" oninput="this.value=this.value.toUpperCase()" required readonly>
+                                        placeholder="Designation" oninput="this.value=this.value.toUpperCase()" required {{ (!empty($officialInfo['applicant_designation']) || !empty($hrmsData['applicantDesignation'])) ? 'readonly' : '' }}>
                                     <label for="app_designation" class="required">Designation</label>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <select class="form-select" id="pay_band" name="pay_band" required {{ isset($hrmsData['payBandId']) ? 'disabled' : '' }}>
+                                    <select class="form-select" id="pay_band" name="pay_band" required 
+                                        {{ $hasHrmsPayBand ? 'disabled' : '' }}>
                                         <option value="" {{ empty($officialInfo['pay_band_id'] ?? old('pay_band')) ? 'selected' : '' }}>- Select -</option>
                                         @foreach($payBands as $id => $label)
-                                            <option value="{{ $id }}" {{ ($hrmsData['payBandId'] ?? old('pay_band')) == $id ? 'selected' : '' }}>
+                                            <option value="{{ $id }}" {{ ($hrmsData['payBandId'] ?? $officialInfo['pay_band_id'] ?? old('pay_band')) == $id ? 'selected' : '' }}>
                                                 {{ $label }}
                                             </option>
                                         @endforeach
                                     </select>
                                     <label for="pay_band" class="required">Basic Pay Range</label>
+                                    @if($hasHrmsPayBand)
+                                        <input type="hidden" name="pay_band" value="{{ $hrmsData['payBandId'] ?? $officialInfo['pay_band_id'] ?? old('pay_band', '') }}">
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -86,13 +106,13 @@
                                 <div class="form-floating">
                                     <input type="text" class="form-control numeric_positive" id="pay_in" name="pay_in" 
                                         value="{{ $officialInfo['pay_in_the_pay_band'] ?? $hrmsData['payInThePayBand'] ?? old('pay_in', '') }}" 
-                                        placeholder="Basic Pay" required readonly>
+                                        placeholder="Basic Pay" required {{ (!empty($officialInfo['pay_in_the_pay_band']) || !empty($hrmsData['payInThePayBand'])) ? 'readonly' : '' }}>
                                     <label for="pay_in" class="required">Basic Pay</label>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <textarea class="form-control" id="app_posting_place" name="app_posting_place" rows="4" placeholder="Place of Posting" oninput="this.value=this.value.toUpperCase()" rows="4" required readonly style="height: 85px">{{ $officialInfo['applicant_posting_place'] ?? $hrmsData['applicantPostingPlace'] ?? old('app_posting_place', '') }}</textarea>
+                                    <textarea class="form-control" id="app_posting_place" name="app_posting_place" rows="4" placeholder="Place of Posting" oninput="this.value=this.value.toUpperCase()" rows="4" required {{ (!empty($officialInfo['applicant_posting_place']) || !empty($hrmsData['applicantPostingPlace'])) ? 'readonly' : '' }} style="height: 85px">{{ $officialInfo['applicant_posting_place'] ?? $hrmsData['applicantPostingPlace'] ?? old('app_posting_place', '') }}</textarea>
                                     <label for="app_posting_place" class="required">Place of Posting2</label>
                                 </div>
                             </div>
@@ -100,7 +120,7 @@
                                 <div class="form-floating">
                                     <input type="text" class="form-control" id="app_headquarter" name="app_headquarter" 
                                         value="{{ $officialInfo['applicant_headquarter'] ?? $hrmsData['applicantHeadquarter'] ?? old('app_headquarter', '') }}" 
-                                        placeholder="Headquarter" oninput="this.value=this.value.toUpperCase()" required readonly>
+                                        placeholder="Headquarter" oninput="this.value=this.value.toUpperCase()" required {{ (!empty($officialInfo['applicant_headquarter']) || !empty($hrmsData['applicantHeadquarter'])) ? 'readonly' : '' }}>
                                     <label for="app_headquarter" class="required">Headquarter</label>
                                 </div>
                             </div>
@@ -111,7 +131,8 @@
                                 <div class="form-floating">
                                     <input type="text" class="form-control numeric_positive" id="doj" name="doj" 
                                         value="{{ $officialInfo['doj'] ?? $hrmsData['dateOfJoining'] ?? old('doj', '') }}" 
-                                        placeholder="Date of Joining" required autocomplete="off">
+                                        placeholder="Date of Joining" required autocomplete="off" 
+                                        {{ $hasHrmsDoj ? 'readonly' : '' }}>
                                     <label for="doj" class="required">Date of Joining</label>
                                 </div>
                             </div>
@@ -119,7 +140,8 @@
                                 <div class="form-floating">
                                     <input type="text" class="form-control numeric_positive" id="dor" name="dor" 
                                         value="{{ $officialInfo['dor'] ?? $hrmsData['dateOfRetirement'] ?? old('dor', '') }}" 
-                                        placeholder="Date of Retirement(According to Service Book)" required autocomplete="off">
+                                        placeholder="Date of Retirement(According to Service Book)" required autocomplete="off" 
+                                        {{ $hasHrmsDor ? 'readonly' : '' }}>
                                     <label for="dor" class="required">Date of Retirement(According to Service Book)</label>
                                 </div>
                             </div>
@@ -135,14 +157,14 @@
                                 <div class="form-floating">
                                     <input type="text" class="form-control" id="office_name" name="office_name" 
                                         value="{{ $officialInfo['office_name'] ?? $hrmsData['officeName'] ?? old('office_name', '') }}" 
-                                        placeholder="Name of the Office" oninput="this.value=this.value.toUpperCase()" required readonly>
+                                        placeholder="Name of the Office" oninput="this.value=this.value.toUpperCase()" required {{ (!empty($officialInfo['office_name']) || !empty($hrmsData['officeName'])) ? 'readonly' : '' }}>
                                     <label for="office_name" class="required">Name of the Office</label>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
                                     <textarea class="form-control" id="office_street" name="office_street" 
-                                        placeholder="Address" oninput="this.value=this.value.toUpperCase()" rows="4" required readonly style="height: 85px">{{ $officialInfo['office_street'] ?? $hrmsData['officeStreetCharacter'] ?? old('office_street', '') }}</textarea>
+                                        placeholder="Address" oninput="this.value=this.value.toUpperCase()" rows="4" required {{ (!empty($officialInfo['office_street']) || !empty($hrmsData['officeStreetCharacter'])) ? 'readonly' : '' }} style="height: 85px">{{ $officialInfo['office_street'] ?? $hrmsData['officeStreetCharacter'] ?? old('office_street', '') }}</textarea>
                                     <label for="office_street" class="required">Address</label>
                                 </div>
                             </div>
@@ -150,7 +172,7 @@
                                 <div class="form-floating">
                                     <input type="text" class="form-control" id="office_city" name="office_city" 
                                         value="{{ $officialInfo['office_city_town_village'] ?? $hrmsData['officeCityTownVillage'] ?? old('office_city', '') }}" 
-                                        placeholder="City/Town/Village" oninput="this.value=this.value.toUpperCase()" required readonly>
+                                        placeholder="City/Town/Village" oninput="this.value=this.value.toUpperCase()" required {{ (!empty($officialInfo['office_city_town_village']) || !empty($hrmsData['officeCityTownVillage'])) ? 'readonly' : '' }}>
                                     <label for="office_city" class="required">City / Town / Village</label>
                                 </div>
                             </div>
@@ -161,13 +183,14 @@
                                 <div class="form-floating">
                                     <input type="text" class="form-control" id="office_post_office" name="office_post_office" 
                                         value="{{ $officialInfo['office_post_office'] ?? $hrmsData['officePostOffice'] ?? old('office_post_office', '') }}" 
-                                        placeholder="Post Office" oninput="this.value=this.value.toUpperCase()" required readonly>
+                                        placeholder="Post Office" oninput="this.value=this.value.toUpperCase()" required {{ (!empty($officialInfo['office_post_office']) || !empty($hrmsData['officePostOffice'])) ? 'readonly' : '' }}>
                                     <label for="office_post_office" class="required">Post Office</label>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-floating">
-                                    <select class="form-select" id="office_district" name="office_district" required disabled>
+                                    <select class="form-select" id="office_district" name="office_district" required 
+                                        {{ $hasHrmsOfficeDistrict ? 'disabled' : '' }}>
                                         <option value="" {{ empty($officialInfo['office_district'] ?? old('office_district')) ? 'selected' : '' }}>- Select -</option>
                                         @foreach($districts as $code => $name)
                                             <option value="{{ $code }}" {{ ($officialInfo['office_district'] ?? old('office_district')) == $code ? 'selected' : '' }}>
@@ -176,13 +199,16 @@
                                         @endforeach
                                     </select>
                                     <label for="office_district" class="required">District</label>
+                                    @if($hasHrmsOfficeDistrict)
+                                        <input type="hidden" name="office_district" value="{{ $officialInfo['office_district'] ?? old('office_district', '') }}">
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-floating">
                                     <input type="text" class="form-control numeric_positive" id="office_pincode" name="office_pincode" 
                                         value="{{ $officialInfo['office_pin_code'] ?? $hrmsData['officePinCode'] ?? old('office_pincode', '') }}" 
-                                        placeholder="Pincode" maxlength="6" required readonly>
+                                        placeholder="Pincode" maxlength="6" required {{ (!empty($officialInfo['office_pin_code']) || !empty($hrmsData['officePinCode'])) ? 'readonly' : '' }}>
                                     <label for="office_pincode" class="required">Pincode</label>
                                 </div>
                             </div>
@@ -190,7 +216,7 @@
                                 <div class="form-floating">
                                     <input type="text" class="form-control numeric_positive" id="office_phone_no" name="office_phone_no" 
                                         value="{{ $officialInfo['office_phone_no'] ?? $hrmsData['mobileNo'] ?? old('office_phone_no', '') }}" 
-                                        placeholder="Phone No (With STD Code)" maxlength="15" required readonly>
+                                        placeholder="Phone No (With STD Code)" maxlength="15" required {{ (!empty($officialInfo['office_phone_no']) || !empty($hrmsData['mobileNo'])) ? 'readonly' : '' }}>
                                     <label for="office_phone_no" class="required">Phone No. (With STD Code)</label>
                                 </div>
                             </div>
@@ -204,20 +230,25 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <select class="form-select" id="district" name="district" required>
-                                        <option value="" {{ empty($hrmsData['ddoDistrictCode'] ?? old('district')) ? 'selected' : '' }}>- Select -</option>
+                                    <select class="form-select" id="district" name="district" required 
+                                        {{ $hasHrmsDdoId ? 'disabled' : '' }}>
+                                        <option value="" {{ empty($hrmsData['ddoDistrictCode'] ?? $officialInfo['district'] ?? old('district')) ? 'selected' : '' }}>- Select -</option>
                                         @foreach($districts as $code => $name)
-                                            <option value="{{ $code }}" {{ ($hrmsData['ddoDistrictCode'] ?? old('district')) == $code ? 'selected' : '' }}>
+                                            <option value="{{ $code }}" {{ ($hrmsData['ddoDistrictCode'] ?? $officialInfo['district'] ?? old('district')) == $code ? 'selected' : '' }}>
                                                 {{ $name }}
                                             </option>
                                         @endforeach
                                     </select>
                                     <label for="district" class="required">DDO District</label>
+                                    @if($hasHrmsDdoId)
+                                        <input type="hidden" name="district" value="{{ $hrmsData['ddoDistrictCode'] ?? $officialInfo['district'] ?? old('district', '') }}">
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <select class="form-select" id="designation" name="designation" required>
+                                    <select class="form-select" id="designation" name="designation" required 
+                                        {{ $hasHrmsDdoId ? 'disabled' : '' }}>
                                         <option value="" {{ empty($officialInfo['designation'] ?? old('designation')) ? 'selected' : '' }}>- Select -</option>
                                         @foreach($ddoDesignations as $id => $name)
                                             <option value="{{ $id }}" {{ ($officialInfo['designation'] ?? old('designation')) == $id ? 'selected' : '' }}>
@@ -226,6 +257,9 @@
                                         @endforeach
                                     </select>
                                     <label for="designation" class="required">DDO Designation</label>
+                                    @if($hasHrmsDdoId)
+                                        <input type="hidden" name="designation" value="{{ $officialInfo['designation'] ?? old('designation', '') }}">
+                                    @endif
                                 </div>
                             </div>
                         </div>
