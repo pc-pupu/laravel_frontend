@@ -106,9 +106,11 @@ class ExistingOccupantController extends Controller
         ]);
     }
 
-    public function flatList()
+    public function flatList(Request $request)
     {
         // Fetch RHE list for dropdown
+        // The backend API should automatically filter by authenticated user's division/subdiv
+        // For now, we'll fetch all RHEs - backend can be updated to filter by auth user later
         $rheResponse = $this->authorizedRequest()
             ->get($this->backend . '/api/existing-occupants/meta/rhe-list');
 

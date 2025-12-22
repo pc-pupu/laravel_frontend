@@ -215,8 +215,9 @@ document.addEventListener('DOMContentLoaded', function() {
     proceedBtn.addEventListener('click', function() {
         const flatId = flatNoSelect.value;
         if (flatId) {
-            // Use Laravel's route helper with encrypted ID
-            window.location.href = `{{ url('existing-occupant/create') }}/${flatId}`;
+            // Use the correct route with flat_id parameter
+            // The controller handles both encrypted and plain IDs
+            window.location.href = `{{ url('rhewise_occupant_data_entry') }}/${flatId}`;
         }
     });
 });
