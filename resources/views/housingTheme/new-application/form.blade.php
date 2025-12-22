@@ -526,6 +526,7 @@
     });
 
     function toggleHousingPreferences() { // Function updated by Subham dt.22-12-2025
+    
         const selector = $('#preference_selector').val();
 
         if (selector === '1') {
