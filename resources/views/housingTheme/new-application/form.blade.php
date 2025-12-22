@@ -234,7 +234,6 @@
                     {{-- Housing Preference Section --}}
                     <div class="form-section mt-4">
                         <h5 class="mb-3"><i class="fa fa-home me-2"></i> Housing Preference</h5>
-                        
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
                                 <div class="form-floating">
@@ -250,7 +249,7 @@
                         <div id="housing-preference-wrapper" class="row g-3" style="{{ ($existingAppData['preference_selector'] ?? old('preference_selector', '0')) == '1' ? '' : 'display:none;' }}">
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <select class="form-select" id="first_preference" name="first_preference">
+                                    <select class="form-select" id="first_preference" name="first_preference" disabled>
                                         <option value="" {{ empty($existingAppData['preferences']['preference_1'] ?? old('first_preference')) ? 'selected' : '' }}>- Select -</option>
                                         @foreach($housingEstates as $id => $name)
                                             @if($id !== '')
@@ -265,7 +264,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <select class="form-select" id="second_preference" name="second_preference">
+                                    <select class="form-select" id="second_preference" name="second_preference" disabled>
                                         <option value="" {{ empty($existingAppData['preferences']['preference_2'] ?? old('second_preference')) ? 'selected' : '' }}>- Select -</option>
                                         @foreach($housingEstates as $id => $name)
                                             @if($id !== '')
@@ -280,7 +279,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <select class="form-select" id="third_preference" name="third_preference">
+                                    <select class="form-select" id="third_preference" name="third_preference" disabled>
                                         <option value="" {{ empty($existingAppData['preferences']['preference_3'] ?? old('third_preference')) ? 'selected' : '' }}>- Select -</option>
                                         @foreach($housingEstates as $id => $name)
                                             @if($id !== '')
@@ -295,7 +294,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <select class="form-select" id="fourth_preference" name="fourth_preference">
+                                    <select class="form-select" id="fourth_preference" name="fourth_preference" disabled>
                                         <option value="" {{ empty($existingAppData['preferences']['preference_4'] ?? old('fourth_preference')) ? 'selected' : '' }}>- Select -</option>
                                         @foreach($housingEstates as $id => $name)
                                             @if($id !== '')
@@ -310,7 +309,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <select class="form-select" id="fifth_preference" name="fifth_preference">
+                                    <select class="form-select" id="fifth_preference" name="fifth_preference" disabled>
                                         <option value="" {{ empty($existingAppData['preferences']['preference_5'] ?? old('fifth_preference')) ? 'selected' : '' }}>- Select -</option>
                                         @foreach($housingEstates as $id => $name)
                                             @if($id !== '')
@@ -323,7 +322,7 @@
                                     <label for="fifth_preference">Fifth Preference</label>
                                 </div>
                             </div>
-                        </div>
+                        </div>      
                     </div>
 
                     {{-- Allotment Category Section --}}
@@ -351,7 +350,7 @@
                                             @endif
                                         @endforeach
                                     </select>
-                                    <label for="reason" class="required">Allotment Categories</label>
+                                    <label for="reason" class="required">Allotment Reason</label>
                                 </div>
                             </div>
                         </div>
@@ -380,10 +379,6 @@
                     {{-- Submit Buttons --}}
                     <div class="row mt-4">
                         <div class="col-12 border-top pt-3">
-                            <button type="button" class="btn btn-secondary btn-sm px-5 rounded-pill text-white fw-bolder me-2" 
-                                onclick="saveAsDraft()">
-                                <i class="fa fa-save me-2"></i> Save as Draft
-                            </button>
                             <button type="button" class="btn bg-primary btn-sm px-5 rounded-pill text-white fw-bolder" 
                                 onclick="submitApplication()">
                                 <i class="fa fa-paper-plane me-2"></i> Apply
@@ -493,20 +488,130 @@
         // Trigger on page load if reason is already selected
         if ($('#reason').val()) {
             $('#reason').trigger('change');
-        }
+        }  
+    });
 
-        // Load housing estates when preference selector is enabled
-        if ($('#preference_selector').val() == '1') {
+    function toggleHousingPreferences() { // Function updated by Subham dt.22-12-2025
+        const selector = $('#preference_selector').val();
+
+        if (selector === '1') {
+            $('#housing-preference-wrapper').show();
+            $('#housing-preference-wrapper select').prop('disabled', false);
+            $('#first_preference').prop('required', true);
+            $('#second_preference, #third_preference, #fourth_preference, #fifth_preference').prop('required', false);
             loadHousingEstates();
+        } else {
+            $('#housing-preference-wrapper').hide();
+            $('#housing-preference-wrapper select')
+                .prop('disabled', true)
+                .val('');
+            $('#first_preference').prop('required', false);
         }
+    }
 
-        // Preference selector change - load housing estates
-        $('#preference_selector').on('change', function() {
-            if ($(this).val() == '1') {
-                loadHousingEstates();
+    $('#preference_selector').on('change', toggleHousingPreferences);
+
+    // Run once on page load (edit form support)
+    toggleHousingPreferences();     
+
+    function updatePreferenceOptions() {
+        const selectedValues = [];
+
+        // Collect selected values
+        $('#housing-preference-wrapper select').each(function () {
+            const val = $(this).val();
+            if (val) {
+                selectedValues.push(val);
             }
         });
+
+        // Update options in each dropdown
+        $('#housing-preference-wrapper select').each(function () {
+            const currentSelect = $(this);
+            const currentValue = currentSelect.val();
+
+            currentSelect.find('option').each(function () {
+                const optionValue = $(this).val();
+
+                if (!optionValue) return; // skip empty option
+
+                // Hide if selected in another dropdown
+                if (selectedValues.includes(optionValue) && optionValue !== currentValue) {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            });
+        });
+    }  
+    $('#housing-preference-wrapper select').on('change', updatePreferenceOptions); 
+    
+    function toggleDocumentUpload() {
+        const selectedReason = $('#reason').val();
+
+        // Array of reasons that require document upload
+        const reasonsRequiringDoc = [
+            'Transfer',
+            'Legal Heir',
+            'Physically Handicaped Or Serious Illness',
+            'Recommended',
+            'Single Earning Lady',
+            'Judicial Officer On Transfer'
+        ];
+
+        if (reasonsRequiringDoc.includes(selectedReason)) {
+            $('#document_upload_section').show();
+            $('#extra_doc').prop('required', true);
+        } else {
+            $('#document_upload_section').hide();
+            $('#extra_doc').prop('required', false);
+            $('#extra_doc').val('');
+            $('#file_error').hide();
+        }
+    }
+    $('#reason').on('change', toggleDocumentUpload);
+
+    toggleDocumentUpload(); 
+    
+    function loadDesignations(districtCode, selectedDesignation = '') {
+        if(!districtCode) {
+            $('#designation').html('<option value="">- Select -</option>');
+            return;
+        }
+
+        $.ajax({
+            url: '{{ route("common-application.ddo-designations") }}',
+            method: 'GET',
+            data: { district_code: districtCode },
+            success: function(response) {
+                if(response.status === 'success') {
+                    let options = '<option value="">- Select -</option>';
+                    $.each(response.data, function(id, name) {
+                        options += `<option value="${id}" ${id == selectedDesignation ? 'selected' : ''}>${name}</option>`;
+                    });
+                    $('#designation').html(options);
+                }
+            },
+            error: function() {
+                alert('Failed to load designations.');
+            }
+        });
+    }
+
+    // On district change
+    $('#district').on('change', function() {
+        const districtCode = $(this).val();
+        loadDesignations(districtCode);
     });
+
+    // On page load, if district is already selected, pre-fill designation
+    const districtCode = $('#district').val();
+    const selectedDesignation = '{{ $officialInfo["designation"] ?? old("designation") }}';
+    if(districtCode) {
+        loadDesignations(districtCode, selectedDesignation);
+    }
+    
+    // Added by Subham dt.22-12-2025 // End 
 
     function loadFlatTypeAndCategories(payBandId, basicPay) {
         $.ajax({
@@ -575,6 +680,7 @@
             }
         });
     }
+    updatePreferenceOptions();  // Added by Subham dt.22-12-2025
 
     function validateFileUpload(input) {
         const file = input.files[0];
@@ -600,13 +706,6 @@
         }
 
         errorDiv.hide();
-    }
-
-    function saveAsDraft() {
-        $('#form_action').val('draft');
-        if (confirm('Are you sure you want to save as draft?')) {
-            $('#new-application-form').submit();
-        }
     }
 
     function submitApplication() {
