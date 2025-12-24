@@ -134,12 +134,13 @@ class NewApplicationController extends Controller
 
         $user = $request->session()->get('user');
         $uid = $user['uid'];
-
+        // print('<pre>');print_r($request->all());die;
+        
         try {
             $formData = $request->all();
             $formData['uid'] = $uid;
-            $formData['app_type'] = 'NA';
-            $formData['action'] = $request->input('action', 'draft'); // 'draft' or 'applied'
+            // $formData['app_type'] = 'NA';
+            // $formData['action'] = $request->input('action', 'draft'); // 'draft' or 'applied'
             $formData['online_application_id'] = $request->input('online_application_id', 0);
 
             // Prepare multipart form data for file upload
@@ -162,6 +163,7 @@ class NewApplicationController extends Controller
                 ];
             }
 
+            // print('<pre>');print_r($multipartData);die;
             $token = session('api_token');
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,

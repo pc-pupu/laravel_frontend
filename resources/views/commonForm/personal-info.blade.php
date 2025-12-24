@@ -3,7 +3,7 @@
     $data = $data ?? [];
     $hrmsData = $hrmsData ?? [];
     $isEdit = isset($data['applicant_name']) || isset($data['applicant_id']);
-    
+
     // Get values from data or HRMS data
     $applicantName = $data['applicant_name'] ?? $data['applicantName'] ?? old('applicant_name', '');
     $fatherName = $data['guardian_name'] ?? $data['applicant_father_name'] ?? $data['guardianName'] ?? old('applicant_father_name', '');
@@ -11,7 +11,7 @@
     $email = $data['email'] ?? old('email', '');
     $dob = $data['dob'] ?? $data['date_of_birth'] ?? $data['dateOfBirth'] ?? old('dob', '');
     $gender = $data['gender'] ?? old('gender', 'M');
-    
+
     // Check if fields have HRMS data (check both $data array and $hrmsData array)
     // HRMS data uses camelCase field names
     $hasHrmsName = !empty($hrmsData['applicantName']) || !empty($data['applicantName']);
@@ -76,12 +76,12 @@
             <label class="required mb-2 d-block">Gender</label>
             <div class="form-check form-check-inline">
                 <input class="form-check-input" type="radio" name="gender" id="gender_m" value="M" required 
-                    {{ $gender == 'Male' ? 'checked' : '' }} {{ $hasHrmsGender ? 'disabled' : '' }}>
+                    {{ ($gender == 'M' || $hrmsData['gender'] == 'Male') ? 'checked' : '' }} {{ $hasHrmsGender ? 'disabled' : '' }}>
                 <label class="form-check-label" for="gender_m">Male</label>
             </div>
             <div class="form-check form-check-inline">
                 <input class="form-check-input" type="radio" name="gender" id="gender_f" value="F" required
-                    {{ $gender == 'Female' ? 'checked' : '' }} {{ $hasHrmsGender ? 'disabled' : '' }}>
+                    {{ ($gender == 'F' || $hrmsData['gender'] == 'Female') ? 'checked' : '' }} {{ $hasHrmsGender ? 'disabled' : '' }}>
                 <label class="form-check-label" for="gender_f">Female</label>
             </div>
         </div>
