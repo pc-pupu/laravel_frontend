@@ -1,25 +1,25 @@
 {{-- Common Personal Information Fields --}}
 @php
-    $data = $data ?? [];
-    $hrmsData = $hrmsData ?? [];
-    $isEdit = isset($data['applicant_name']) || isset($data['applicant_id']);
+$data = $data ?? [];
+$hrmsData = $hrmsData ?? [];
+$isEdit = isset($data['applicant_name']) || isset($data['applicant_id']);
 
-    // Get values from data or HRMS data
-    $applicantName = $data['applicant_name'] ?? $data['applicantName'] ?? old('applicant_name', '');
-    $fatherName = $data['guardian_name'] ?? $data['applicant_father_name'] ?? $data['guardianName'] ?? old('applicant_father_name', '');
-    $mobile = $data['mobile_no'] ?? $data['mobile'] ?? $data['mobileNo'] ?? old('mobile', '');
-    $email = $data['email'] ?? old('email', '');
-    $dob = $data['dob'] ?? $data['date_of_birth'] ?? $data['dateOfBirth'] ?? old('dob', '');
-    $gender = $data['gender'] ?? old('gender', 'M');
+// Get values from data or HRMS data
+$applicantName = $data['applicant_name'] ?? $data['applicantName'] ?? old('applicant_name', '');
+$fatherName = $data['guardian_name'] ?? $data['applicant_father_name'] ?? $data['guardianName'] ?? old('applicant_father_name', '');
+$mobile = $data['mobile_no'] ?? $data['mobile'] ?? $data['mobileNo'] ?? old('mobile', '');
+$email = $data['email'] ?? old('email', '');
+$dob = $data['dob'] ?? $data['date_of_birth'] ?? $data['dateOfBirth'] ?? old('dob', '');
+$gender = $data['gender'] ?? old('gender', 'M');
 
-    // Check if fields have HRMS data (check both $data array and $hrmsData array)
-    // HRMS data uses camelCase field names
-    $hasHrmsName = !empty($hrmsData['applicantName']) || !empty($data['applicantName']);
-    $hasHrmsFather = !empty($hrmsData['guardianName']) || !empty($data['guardianName']);
-    $hasHrmsMobile = !empty($hrmsData['mobileNo']) || !empty($data['mobileNo']);
-    $hasHrmsEmail = !empty($hrmsData['email']) || (!empty($data['email']) && isset($hrmsData['email']));
-    $hasHrmsDob = !empty($hrmsData['dateOfBirth']) || !empty($data['dateOfBirth']);
-    $hasHrmsGender = !empty($hrmsData['gender']) || (!empty($data['gender']) && isset($hrmsData['gender']));
+// Check if fields have HRMS data (check both $data array and $hrmsData array)
+// HRMS data uses camelCase field names
+$hasHrmsName = !empty($hrmsData['applicantName']) || !empty($data['applicantName']);
+$hasHrmsFather = !empty($hrmsData['guardianName']) || !empty($data['guardianName']);
+$hasHrmsMobile = !empty($hrmsData['mobileNo']) || !empty($data['mobileNo']);
+$hasHrmsEmail = !empty($hrmsData['email']) || (!empty($data['email']) && isset($hrmsData['email']));
+$hasHrmsDob = !empty($hrmsData['dateOfBirth']) || !empty($data['dateOfBirth']);
+$hasHrmsGender = !empty($hrmsData['gender']) || (!empty($data['gender']) && isset($hrmsData['gender']));
 @endphp
 
 <div class="form-section">
@@ -74,16 +74,27 @@
     <div class="row g-3 mt-2">
         <div class="col-md-4">
             <label class="required mb-2 d-block">Gender</label>
+
             <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="gender" id="gender_m" value="M" required 
-                    {{ ($gender == 'M' || $hrmsData['gender'] == 'Male') ? 'checked' : '' }} {{ $hasHrmsGender ? 'disabled' : '' }}>
+                <input class="form-check-input" type="radio" name="gender" id="gender_m" value="M"
+                    {{ ($gender == 'M' || $hrmsData['gender'] == 'Male') ? 'checked' : '' }}
+                    {{ $hasHrmsGender ? 'disabled' : '' }}>
                 <label class="form-check-label" for="gender_m">Male</label>
             </div>
+
             <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="gender" id="gender_f" value="F" required
-                    {{ ($gender == 'F' || $hrmsData['gender'] == 'Female') ? 'checked' : '' }} {{ $hasHrmsGender ? 'disabled' : '' }}>
+                <input class="form-check-input" type="radio" name="gender" id="gender_f" value="F"
+                    {{ ($gender == 'F' || $hrmsData['gender'] == 'Female') ? 'checked' : '' }}
+                    {{ $hasHrmsGender ? 'disabled' : '' }}>
                 <label class="form-check-label" for="gender_f">Female</label>
             </div>
+
+            {{-- Hidden input to ensure submission --}}
+            @if($hasHrmsGender)
+                <input type="hidden" name="gender" value="{{ in_array($hrmsData['gender'], ['Male', 'M']) ? 'M' : 'F' }}">
+            @else
+                <input type="hidden" name="gender" value="{{ in_array($gender, ['Male', 'M']) ? 'M' : 'F' }}">
+            @endif
         </div>
     </div>
 </div>

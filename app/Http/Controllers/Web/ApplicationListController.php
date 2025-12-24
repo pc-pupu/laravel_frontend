@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\UrlEncryptionHelper;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ApplicationListController extends Controller
 {
@@ -47,7 +48,7 @@ class ApplicationListController extends Controller
                 ->get($this->backend . '/api/application-list', [
                     'uid' => $uid,
                 ]);
-
+                print('<pre>');print_r($response->json());die;
             if (!$response->successful()) {
                 return redirect()->route('dashboard')
                     ->with('error', 'Failed to load application list.');
@@ -158,14 +159,15 @@ class ApplicationListController extends Controller
                 ->get($this->backend . '/api/application-list/' . $applicationId, [
                     'uid' => $uid,
                 ]);
-
+                
+                
             if (!$response->successful() || !$response->json('data')) {
                 return redirect()->route('application-list.index')
                     ->with('error', 'Application not found.');
             }
 
             $application = $response->json('data');
-
+            // print('<pre>');print_r($application);die;
             return view('housingTheme.application-list.view', [
                 'application' => $application,
                 'user' => $user,
@@ -651,6 +653,7 @@ class ApplicationListController extends Controller
             $response = $this->authorizedRequest()
                 ->get($this->backend . '/api/application-list/' . $applicationId);
 
+                
             if (!$response->successful() || !$response->json('data')) {
                 return redirect()->back()
                     ->with('error', 'Application not found.');
@@ -863,24 +866,50 @@ class ApplicationListController extends Controller
         try {
             $applicationId = UrlEncryptionHelper::decryptUrl($id);
             $decryptedStatus = UrlEncryptionHelper::decryptUrl($status);
+            $user = $request->session()->get('user');
+            $uid = $user['uid'];
 
-            // This would typically generate a PDF
-            // For now, we'll redirect to the detail page
-            // PDF generation can be implemented later using a library like DomPDF or TCPDF
+            // Fetch application data from API
+            $response = $this->authorizedRequest()
+                ->get($this->backend . '/api/application-list/' . $applicationId, [
+                    'uid' => $uid,
+                    'page_status' => '',
+                    'status' => $decryptedStatus,
+                ]);
 
-            return redirect()->route('application-detail.admin-view', [
-                'id' => $id,
-                'page_status' => 'action-list',
-                'status' => $status,
-            ])->with('info', 'PDF generation feature coming soon.');
+            if (!$response->successful() || !$response->json('data')) {
+                return redirect()->back()
+                    ->with('error', 'Application not found.');
+            }
+
+            $application = $response->json('data');
+            
+            // Generate filename
+            $filename = 'App_Details_' . ($application['application_no'] ?? $applicationId) . '.pdf';
+
+            // Load PDF view and generate PDF
+            $pdf = Pdf::loadView('housingTheme.application-list.pdf', [
+                'application' => $application,
+                'user' => $user,
+            ]);
+
+            // Set PDF options
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOption('enable-local-file-access', true);
+            $pdf->setOption('isHtml5ParserEnabled', true);
+            $pdf->setOption('isRemoteEnabled', true);
+
+            // Download PDF
+            return $pdf->download($filename);
 
         } catch (\Exception $e) {
             Log::error('Generate PDF Error', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->back()
-                ->with('error', 'Failed to generate PDF.');
+                ->with('error', 'Failed to generate PDF: ' . $e->getMessage());
         }
     }
 
