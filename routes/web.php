@@ -215,6 +215,7 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
 // Existing Occupant Routes
 Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
     Route::get('rhewise_flatlist', [ExistingOccupantController::class, 'index'])->name('existing-occupant.index');
+    Route::get('existing-occupant/flat-list', [ExistingOccupantController::class, 'flatList'])->name('existing-occupant.flat-list');
     Route::get('rhewise_flatlist_draft', [ExistingOccupantController::class, 'indexDraft'])->name('existing-occupant.index-draft');
     Route::get('rhewise_occupant_data_entry/{flat_id}', [ExistingOccupantController::class, 'create'])->name('existing-occupant.create');
     Route::get('rhewise_occupant_draft_data_entry/{flat_id}', [ExistingOccupantController::class, 'createDraft'])->name('existing-occupant.create-draft');
