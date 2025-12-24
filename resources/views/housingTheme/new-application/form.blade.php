@@ -38,7 +38,7 @@
                     @csrf
                     <input type="hidden" name="app_type" value="NA">
                     <input type="hidden" name="online_application_id" id="online_application_id" value="{{ $existingAppData['online_application_id'] ?? 0 }}">
-                    <input type="hidden" name="action" id="form_action" value="draft">
+                    <input type="hidden" name="action" id="form_action" value="applied">
 
                     {{-- Personal Information Section --}}
                     @include('commonForm.personal-info', [
