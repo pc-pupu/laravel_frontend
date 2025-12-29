@@ -616,7 +616,7 @@ footer a:hover {
         text-transform: uppercase;
         font-size: 0.85rem;
         letter-spacing: 0.5px;
-        color: white;
+        color: rgb(17, 17, 17);
     }
     
     .table tbody tr {
