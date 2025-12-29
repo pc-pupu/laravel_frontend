@@ -392,12 +392,12 @@
                      <tbody>
                         @foreach($output['all-application-data'] as $application)
                         <tr>
-                           <td><b>{{ $application->applicant_name }}</b></td>
-                           <td>{{ $application->application_no }}</td>
-                           <td>{{ !empty($application->date_of_application) ? \Carbon\Carbon::parse($application->date_of_application)->format('d-m-Y') : 'N/A' }}</td>
-                           <td>{{ $application->status_description }}</td>
+                           <td><b>{{ $application['applicant_name'] }}</b></td>
+                           <td>{{ $application['application_no'] }}</td>
+                           <td>{{ !empty($application['date_of_application']) ? \Carbon\Carbon::parse($application['date_of_application'])->format('d-m-Y') : 'N/A' }}</td>
+                           <td>{{ $application['status_description'] }}</td>
                            <td>
-                              <a href="{{ url('/view-application/' . \App\Helpers\UrlEncryptionHelper::encryptUrl($application->online_application_id)) }}" class="btn btn-outline-primary btn-sm px-5 rounded-pill fw-bolder">View</a>
+                              <a href="{{ url('/view-application/' . \App\Helpers\UrlEncryptionHelper::encryptUrl($application['online_application_id'])) }}" class="btn btn-outline-primary btn-sm px-5 rounded-pill fw-bolder">View</a>
                            </td>
                         </tr>
                         @endforeach
