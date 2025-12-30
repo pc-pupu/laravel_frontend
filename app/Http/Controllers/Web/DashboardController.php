@@ -108,10 +108,22 @@ class DashboardController extends Controller
                     'sidebar_menus' => $menus
                 ]);
             }elseif (in_array($userRole, [6, 7, 8, 10, 11, 13, 17])) {
+                // Fetch sidebar menus for admin roles
+                $menus = session('sidebar_menus', []);
+
+                if (empty($menus) && !empty($token)) {
+                    $apiResponse = Http::withToken($token)
+                        ->get(config('services.api.base_url') . '/sidebar-menus');
+
+                    if ($apiResponse->successful()) {
+                        $menus = $apiResponse->json('data') ?? [];
+                        session(['sidebar_menus' => $menus]);
+                    }
+                }
 
                 return view('housingTheme.pages.dashboard', [
                     'output' => $output,
-                    'sidebar_menus' => [] // keep key consistent
+                    'sidebar_menus' => $menus
                 ]);
             }else {
                 
