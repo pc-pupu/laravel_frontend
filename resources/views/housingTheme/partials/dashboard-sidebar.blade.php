@@ -52,15 +52,58 @@
 
                 // Parent URL
                 $menuUrl = '#';
-                if (!empty($menu['url'])) {
-                    $menuUrl = url($menu['url']);
-                } elseif (!empty($menu['route_name']) && Route::has($menu['route_name'])) {
+                // Prioritize route_params over url field to ensure encryption
+                if (!empty($menu['route_name']) && Route::has($menu['route_name'])) {
                     try {
-                        $menuUrl = route($menu['route_name']);
-                    } catch (\Illuminate\Routing\Exceptions\UrlGenerationException $e) {
-                        $menuUrl = url($menu['url'] ?? '#');
+                        $routeParams = $menu['route_params'] ?? [];
+                        
+                        // Handle array of parameter sets - use first set
+                        if (is_array($routeParams) && isset($routeParams[0]) && is_array($routeParams[0])) {
+                            $routeParams = $routeParams[0];
+                        }
+                        
+                        // Build URL manually with encrypted parameters
+                        if (!empty($routeParams) && is_array($routeParams)) {
+                            $route = Route::getRoutes()->getByName($menu['route_name']);
+                            if ($route) {
+                                $uri = $route->uri();
+                                
+                                // Replace each parameter placeholder with encrypted value
+                                foreach ($routeParams as $key => $value) {
+                                    $encryptedValue = \App\Helpers\UrlEncryptionHelper::encryptUrl($value);
+                                    $uri = str_replace('{' . $key . '}', $encryptedValue, $uri);
+                                }
+                                
+                                $menuUrl = url($uri);
+                            } else {
+                                // Fallback to route helper if route not found
+                                $encryptedParams = [];
+                                foreach ($routeParams as $key => $value) {
+                                    $encryptedParams[$key] = \App\Helpers\UrlEncryptionHelper::encryptUrl($value);
+                                }
+                                $menuUrl = route($menu['route_name'], $encryptedParams);
+                            }
+                        } else {
+                            // No parameters, use route helper directly or fallback to url field
+                            if (!empty($menu['url'])) {
+                                $menuUrl = url($menu['url']);
+                            } else {
+                                $menuUrl = route($menu['route_name']);
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // Fallback to url field if route generation fails
+                        if (!empty($menu['url'])) {
+                            $menuUrl = url($menu['url']);
+                        } else {
+                            $menuUrl = '#';
+                        }
                     }
+                } elseif (!empty($menu['url'])) {
+                    // Only use url field if route_name doesn't exist
+                    $menuUrl = url($menu['url']);
                 }
+
 
                 // Parent Active?
                 $isParentActive = false;
@@ -103,25 +146,69 @@
 
                             @php
                                 $childUrl = '#';
-                                
-                                // If URL is provided, use it (especially for routes with required parameters)
-                                if (!empty($child['url'])) {
-                                    $childUrl = url($child['url']);
-                                } 
-                                // Otherwise, try to generate route if route_name exists and route is registered
-                                elseif (!empty($child['route_name']) && Route::has($child['route_name'])) {
+
+                                // Prioritize route_params over url field to ensure encryption
+                                if (!empty($child['route_name']) && Route::has($child['route_name'])) {
                                     try {
-                                        // Try to generate route - if it requires parameters, this will fail
-                                        $childUrl = route($child['route_name']);
-                                    } catch (\Illuminate\Routing\Exceptions\UrlGenerationException $e) {
-                                        // If route requires parameters, fall back to URL or use default
-                                        $childUrl = url($child['url'] ?? '#');
+                                        $routeParams = $child['route_params'] ?? [];
+                                        
+                                        // Handle array of parameter sets - use first set
+                                        if (is_array($routeParams) && isset($routeParams[0]) && is_array($routeParams[0])) {
+                                            $routeParams = $routeParams[0];
+                                        }
+                                        
+                                        // Build URL manually with encrypted parameters
+                                        if (!empty($routeParams) && is_array($routeParams)) {
+                                            $route = Route::getRoutes()->getByName($child['route_name']);
+                                            if ($route) {
+                                                $uri = $route->uri();
+                                                
+                                                // Replace each parameter placeholder with encrypted value
+                                                foreach ($routeParams as $key => $value) {
+                                                    $encryptedValue = \App\Helpers\UrlEncryptionHelper::encryptUrl($value);
+                                                    $uri = str_replace('{' . $key . '}', $encryptedValue, $uri);
+                                                }
+                                                
+                                                $childUrl = url($uri);
+                                            } else {
+                                                // Fallback to route helper if route not found
+                                                $encryptedParams = [];
+                                                foreach ($routeParams as $key => $value) {
+                                                    $encryptedParams[$key] = \App\Helpers\UrlEncryptionHelper::encryptUrl($value);
+                                                }
+                                                $childUrl = route($child['route_name'], $encryptedParams);
+                                            }
+                                        } else {
+                                            // No parameters, use route helper directly or fallback to url field
+                                            if (!empty($child['url'])) {
+                                                $childUrl = url($child['url']);
+                                            } else {
+                                                $childUrl = route($child['route_name']);
+                                            }
+                                        }
+                                    } catch (\Exception $e) {
+                                        // Fallback to url field if route generation fails
+                                        if (!empty($child['url'])) {
+                                            $childUrl = url($child['url']);
+                                        } else {
+                                            $childUrl = '#';
+                                        }
                                     }
+                                } elseif (!empty($child['url'])) {
+                                    // Only use url field if route_name doesn't exist
+                                    $childUrl = url($child['url']);
                                 }
 
+
                                 $childActive =
-                                    (!empty($child['route_name']) && $currentRoute === $child['route_name']) ||
-                                    (!empty($child['url']) && $currentUrl === url($child['url']));
+                                    (!empty($child['route_name']) && $currentRoute === $child['route_name']) &&
+                                    (
+                                        empty($child['route_params']) ||
+                                        request()->fullUrlIs(
+                                            route($child['route_name'], $child['route_params'])
+                                        )
+                                    );
+
                             @endphp
 
                             <li>

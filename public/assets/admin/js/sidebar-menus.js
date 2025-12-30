@@ -44,7 +44,16 @@ function displayMenus(menus) {
 
     tbody.innerHTML = menus.map(menu => {
         const parentName = menu.parent_name || '-';
-        const routeUrl = menu.route_name || menu.url || '-';
+        let routeUrl = menu.route_name || menu.url || '-';
+        
+        // Show route_params if they exist
+        if (menu.route_params && Object.keys(menu.route_params).length > 0) {
+            const paramsStr = Object.entries(menu.route_params)
+                .map(([key, val]) => `${key}: ${val}`)
+                .join(', ');
+            routeUrl += `<br><small class="text-muted" style="font-size: 0.85em;">Params: ${paramsStr}</small>`;
+        }
+        
         const icon = menu.icon_class ? `<i class="${menu.icon_class}"></i>` : '-';
         const roles = menu.roles && menu.roles.length > 0 
             ? menu.roles.map(r => r.name).join(', ') 
@@ -146,6 +155,10 @@ async function openMenuModal() {
     document.getElementById('menu-id').value = '';
     document.getElementById('menu-order').value = '0';
     document.getElementById('menu-active-1').checked = true;
+    document.getElementById('menu-route-params').value = '';
+    document.getElementById('menu-route-pattern').value = '';
+    document.getElementById('route-params-inputs').innerHTML = '';
+    document.getElementById('route-params-inputs').style.display = 'none';
     clearMenuErrors();
     await loadAllMenusForParent();
     await loadAllRoles();
@@ -167,6 +180,79 @@ async function editMenu(menuId, button = null) {
             document.getElementById('menu-url').value = menu.url || '';
             document.getElementById('menu-icon').value = menu.icon_class || '';
             document.getElementById('menu-order').value = menu.order_no || 0;
+            
+            // Set route_params and pattern
+            const routeParamsField = document.getElementById('menu-route-params');
+            const patternField = document.getElementById('menu-route-pattern');
+            const inputsContainer = document.getElementById('route-params-inputs');
+            
+            if (menu.route_params && typeof menu.route_params === 'object') {
+                // Handle both array and object
+                let params = menu.route_params;
+                if (Array.isArray(menu.route_params) && menu.route_params.length > 0) {
+                    params = menu.route_params[0];
+                }
+                
+                // Extract parameter names and try to construct pattern
+                const paramNames = Object.keys(params);
+                if (paramNames.length > 0) {
+                    // Construct pattern from route_name if possible, or just show params
+                    let pattern = '';
+                    if (menu.route_name) {
+                        // Try to construct full pattern: route_base/{param1}/{param2}
+                        // For now, we'll show just the params part and user can enter full pattern
+                        pattern = paramNames.map(name => `{${name}}`).join('/');
+                    } else {
+                        pattern = paramNames.map(name => `{${name}}`).join('/');
+                    }
+                    
+                    if (patternField) {
+                        // If route_name exists, try to prepend it
+                        if (menu.route_name) {
+                            const routeBase = menu.route_name.replace('.dashboard', '').replace(/\./g, '_');
+                            patternField.value = routeBase + '/' + pattern;
+                        } else {
+                            patternField.value = pattern;
+                        }
+                    }
+                    
+                    // Create input fields
+                    if (inputsContainer) {
+                        inputsContainer.innerHTML = '';
+                        inputsContainer.style.display = 'block';
+                        
+                        paramNames.forEach(paramName => {
+                            const div = document.createElement('div');
+                            div.className = 'mb-2';
+                            div.innerHTML = `
+                                <label class="form-label small">${paramName}</label>
+                                <input type="text" class="form-control form-control-sm route-param-input" 
+                                       data-param="${paramName}" 
+                                       value="${params[paramName] || ''}"
+                                       placeholder="Enter value for ${paramName}"
+                                       oninput="updateRouteParamsFromInputs()">
+                            `;
+                            inputsContainer.appendChild(div);
+                        });
+                    }
+                }
+                
+                // Set JSON field
+                if (routeParamsField) {
+                    if (Array.isArray(menu.route_params)) {
+                        routeParamsField.value = JSON.stringify(menu.route_params[0], null, 2);
+                    } else {
+                        routeParamsField.value = JSON.stringify(menu.route_params, null, 2);
+                    }
+                }
+            } else {
+                if (patternField) patternField.value = '';
+                if (inputsContainer) {
+                    inputsContainer.innerHTML = '';
+                    inputsContainer.style.display = 'none';
+                }
+                if (routeParamsField) routeParamsField.value = '';
+            }
             
             if (menu.is_active) {
                 document.getElementById('menu-active-1').checked = true;
@@ -230,6 +316,54 @@ async function saveMenu() {
         return;
     }
     
+    // Parse route_params - try from inputs first, then from textarea
+    let routeParams = null;
+    
+    // Check if we have input fields (pattern-based entry)
+    const inputsContainer = document.getElementById('route-params-inputs');
+    if (inputsContainer && inputsContainer.style.display !== 'none') {
+        const inputs = inputsContainer.querySelectorAll('.route-param-input');
+        const params = {};
+        
+        inputs.forEach(input => {
+            const paramName = input.getAttribute('data-param');
+            const value = input.value.trim();
+            if (paramName && value) {
+                params[paramName] = value;
+            }
+        });
+        
+        if (Object.keys(params).length > 0) {
+            routeParams = params;
+        }
+    }
+    
+    // If no params from inputs, try textarea
+    if (!routeParams) {
+        const routeParamsStr = formData.get('route_params')?.trim();
+        if (routeParamsStr) {
+            try {
+                routeParams = JSON.parse(routeParamsStr);
+                if (typeof routeParams !== 'object' || Array.isArray(routeParams)) {
+                    throw new Error('Route params must be a JSON object');
+                }
+            } catch (e) {
+                H.showError('Invalid JSON in Route Parameters: ' + e.message);
+                if (saveButton) H.setButtonLoading(saveButton, false);
+                const routeParamsField = document.getElementById('menu-route-params');
+                if (routeParamsField) {
+                    routeParamsField.classList.add('is-invalid');
+                    const err = document.getElementById('menu-route-params-error');
+                    if (err) {
+                        err.textContent = 'Invalid JSON format: ' + e.message;
+                        err.style.display = 'block';
+                    }
+                }
+                return;
+            }
+        }
+    }
+    
     const menuData = {
         menu_name: formData.get('menu_name'),
         route_name: formData.get('route_name') || null,
@@ -238,6 +372,7 @@ async function saveMenu() {
         parent_id: formData.get('parent_id') || null,
         order_no: parseInt(formData.get('order_no')) || 0,
         is_active: formData.get('is_active') === '1',
+        route_params: routeParams,
         roles: selectedRoles
     };
     
@@ -288,7 +423,7 @@ async function deleteMenu(menuId, button = null) {
 
 // Validation helpers
 function clearMenuErrors() {
-    ['menu-name', 'menu-route', 'menu-url', 'menu-icon', 'menu-parent', 'menu-order'].forEach(id => {
+    ['menu-name', 'menu-route', 'menu-url', 'menu-icon', 'menu-parent', 'menu-order', 'menu-route-params'].forEach(id => {
         const f = document.getElementById(id);
         if (f) f.classList.remove('is-invalid');
         const e = document.getElementById(id + '-error');
@@ -329,6 +464,84 @@ function clearFieldError(fieldId) {
     if (err) { err.textContent = ''; err.style.display = 'none'; }
 }
 
+// Update route params inputs from pattern
+function updateRouteParamsFromPattern() {
+    const patternField = document.getElementById('menu-route-pattern');
+    const inputsContainer = document.getElementById('route-params-inputs');
+    const jsonField = document.getElementById('menu-route-params');
+    
+    if (!patternField || !inputsContainer) return;
+    
+    const pattern = patternField.value.trim();
+    const paramMatches = pattern.match(/\{([^}]+)\}/g);
+    
+    if (paramMatches && paramMatches.length > 0) {
+        inputsContainer.innerHTML = '';
+        inputsContainer.style.display = 'block';
+        
+        // Hide JSON field when using pattern
+        if (jsonField) jsonField.style.display = 'none';
+        
+        // Get existing values from JSON field if any
+        let existingValues = {};
+        if (jsonField && jsonField.value.trim()) {
+            try {
+                existingValues = JSON.parse(jsonField.value) || {};
+            } catch (e) {
+                // Ignore parse errors
+            }
+        }
+        
+        paramMatches.forEach(match => {
+            const paramName = match.replace(/[{}]/g, '');
+            const div = document.createElement('div');
+            div.className = 'mb-2';
+            div.innerHTML = `
+                <label class="form-label small">${paramName}</label>
+                <input type="text" class="form-control form-control-sm route-param-input" 
+                       data-param="${paramName}" 
+                       value="${existingValues[paramName] || ''}"
+                       placeholder="Enter value for ${paramName}"
+                       oninput="updateRouteParamsFromInputs()">
+            `;
+            inputsContainer.appendChild(div);
+        });
+        
+        updateRouteParamsFromInputs();
+    } else {
+        inputsContainer.innerHTML = '';
+        inputsContainer.style.display = 'none';
+        // Show JSON field if pattern is empty
+        if (jsonField && !pattern) jsonField.style.display = 'block';
+    }
+}
+
+
+// Update JSON field from input fields
+function updateRouteParamsFromInputs() {
+    const inputsContainer = document.getElementById('route-params-inputs');
+    const jsonField = document.getElementById('menu-route-params');
+    
+    if (!inputsContainer || !jsonField) return;
+    
+    const inputs = inputsContainer.querySelectorAll('.route-param-input');
+    const params = {};
+    
+    inputs.forEach(input => {
+        const paramName = input.getAttribute('data-param');
+        const value = input.value.trim();
+        if (paramName && value) {
+            params[paramName] = value;
+        }
+    });
+    
+    if (Object.keys(params).length > 0) {
+        jsonField.value = JSON.stringify(params, null, 2);
+    } else {
+        jsonField.value = '';
+    }
+}
+
 // Export functions globally
 window.loadMenus = loadMenus;
 window.openMenuModal = openMenuModal;
@@ -337,6 +550,8 @@ window.saveMenu = saveMenu;
 window.deleteMenu = deleteMenu;
 window.searchMenus = searchMenus;
 window.clearFieldError = clearFieldError;
+window.updateRouteParamsFromPattern = updateRouteParamsFromPattern;
+window.updateRouteParamsFromInputs = updateRouteParamsFromInputs;
 
 // Init on DOM ready
 document.addEventListener('DOMContentLoaded', () => {

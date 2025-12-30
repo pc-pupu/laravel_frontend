@@ -147,8 +147,10 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     // License Management
     Route::get('generate-license/{id}/{page_status}/{status}', [ApplicationListController::class, 'generateLicense'])->where(['id' => '.*', 'status' => '.*'])->name('license.generate');
     Route::get('view-generated-license', [ApplicationListController::class, 'licenseList'])->name('license.list');
-    Route::get('view-flat-possession-taken-ddo', [ApplicationListController::class, 'flatPossessionTaken'])->name('license.flat-possession-taken');
-    Route::get('view-flat-released-ddo', [ApplicationListController::class, 'flatReleased'])->name('license.flat-released');
+    
+    //DDO Specific Application Lists
+    Route::get('view-flat-possession-taken-ddo', [ApplicationListController::class, 'flatPossessionTaken'])->name('flat-possession-taken');
+    Route::get('view-flat-released-ddo', [ApplicationListController::class, 'flatReleased'])->name('flat-released');
 
     // Application Status (for applicants)
     Route::get('application_status', [ApplicationStatusController::class, 'index'])->name('application-status.index');
