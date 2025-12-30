@@ -78,7 +78,7 @@ class DashboardController extends Controller
                    
                 }
             }
-
+                // echo '<pre>';print_r($output);die;
             // Role-based view selection
             if (in_array($userRole, [4, 5])) {
 
@@ -94,23 +94,26 @@ class DashboardController extends Controller
                         session(['sidebar_menus' => $menus]);
                     }
                 }
-                
-                if (isset($output['redirect']) && $output['redirect'] == '/user-tagging') {
-                    $response = redirect($output['redirect']);
+
+                if (isset($output['redirect']) && $output['redirect'] === '/user-tagging') {
+
                     Cookie::queue(Cookie::forget('user_type'));
-                } else {
-                    // Applicant Dashboard
-                    $response = view('housingTheme.pages.dashboard', [
-                        'output' => $output,
-                        'sidebar_menus' => $menus
-                    ]);
+                    return redirect($output['redirect']);
+
                 }
 
-            }
-            elseif (in_array($userRole, [6, 7, 8, 10, 11, 13, 17])) {
-                // Admin Dashboard
-                $response = view('housingTheme.pages.dashboard', compact('output'));
-            } else {
+                // Applicant Dashboard
+                return view('housingTheme.pages.dashboard', [
+                    'output' => $output,
+                    'sidebar_menus' => $menus
+                ]);
+            }elseif (in_array($userRole, [6, 7, 8, 10, 11, 13, 17])) {
+
+                return view('housingTheme.pages.dashboard', [
+                    'output' => $output,
+                    'sidebar_menus' => [] // keep key consistent
+                ]);
+            }else {
                 
                 $response = $this->defaultDashboard($request);
             }

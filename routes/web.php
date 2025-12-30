@@ -42,7 +42,7 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// User SSO Login Routes (matching Drupal routes)
+// User SSO Login Routes
 Route::get('/user/sso/{token}', [UserSsoController::class, 'hrmsSsoLogin'])->where('token', '.*')->name('user-sso.hrms-sso');
 Route::get('/sso/ddo/{token}', [UserSsoController::class, 'ddoSsoLogin'])->where('token', '.*')->name('user-sso.ddo-sso');
 Route::get('/hrms-login', [UserSsoController::class, 'hrmsLoginForm'])->name('user-sso.hrms-login');
@@ -70,7 +70,7 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::get('vs', [\App\Http\Controllers\Web\VerticalShiftingController::class, 'create'])->name('vertical-shifting.create');
     Route::post('vs', [\App\Http\Controllers\Web\VerticalShiftingController::class, 'store'])->name('vertical-shifting.store');
     
-    // Allotment List Routes (matching Drupal routes)
+    // Allotment List Routes
     Route::get('allotment_list', [\App\Http\Controllers\Web\AllotmentListController::class, 'index'])->name('allotment-list.index');
     Route::get('allotment_list_approve', [\App\Http\Controllers\Web\AllotmentListController::class, 'approve'])->name('allotment-list.approve');
     Route::post('allotment_list_approve', [\App\Http\Controllers\Web\AllotmentListController::class, 'updateStatus'])->name('allotment-list.update-status');
@@ -79,17 +79,17 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
         ->where('encrypted_app_id', '.*')
         ->name('allotment-list.detail');
     
-    // Generate Allotment Letter Routes (matching Drupal routes)
+    // Generate Allotment Letter Routes
     Route::get('generate_allotment_letter', [\App\Http\Controllers\Web\GenerateAllotmentLetterController::class, 'index'])->name('generate-allotment-letter.index');
     Route::post('generate_letter', [\App\Http\Controllers\Web\GenerateAllotmentLetterController::class, 'generate'])->name('generate-allotment-letter.generate');
     
-    // View Allotment Details Routes (matching Drupal routes)
+    // View Allotment Details Routes
     Route::get('view_allotment_details', [\App\Http\Controllers\Web\ViewAllotmentDetailsController::class, 'index'])->name('view-allotment-details.index');
     Route::get('status_update/{encrypted_app_id}/{encrypted_status}', [\App\Http\Controllers\Web\ViewAllotmentDetailsController::class, 'updateStatus'])
         ->where(['encrypted_app_id' => '.*', 'encrypted_status' => '.*'])
         ->name('view-allotment-details.update-status');
     
-    // View Allotment Letter Routes (matching Drupal routes)
+    // View Allotment Letter Routes
     Route::get('view_proposed_rhe', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'index'])->name('view-allotment-letter.index');
     Route::get('update_allotment/{encrypted_app_id}/{encrypted_status}', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'updateAllotment'])
         ->where(['encrypted_app_id' => '.*', 'encrypted_status' => '.*'])
@@ -107,9 +107,9 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::get('application-list', [ApplicationListController::class, 'index'])->name('application-list.index');
     Route::get('view-application/{id}', [ApplicationListController::class, 'view'])->where('id', '.*')->name('application.view');
 
-    // View Application List Module Routes (matching Drupal routes)
-    Route::get('view_application_list/{status}/{url}', [ApplicationListController::class, 'dashboard'])
-        ->where(['status' => '.*', 'url' => '.*'])
+    // View Application List Module Routes
+    Route::get('view_application_list/{status}/{url}/{page_status}', [ApplicationListController::class, 'dashboard'])
+        ->where(['status' => '.*', 'url' => '.*', 'page_status' => '.*'])
         ->name('view_application_list.dashboard');
     Route::get('view_application/{status}/{entity}/{page_status}', [ApplicationListController::class, 'adminList'])
         ->where(['status' => '.*', 'entity' => '.*', 'page_status' => '.*'])
