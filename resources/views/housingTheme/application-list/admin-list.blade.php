@@ -133,29 +133,36 @@
                                         @if($pageStatus == 'action-list')
                                             <td>
                                                 @php
+                                                    $user = session('user');    // added by Subham dt.02/02/2024
+                                                    $encryptedUid = \App\Helpers\UrlEncryptionHelper::encryptUrl($user['uid']); // added by Subham dt.02/02/2024
                                                     $encryptedId = \App\Helpers\UrlEncryptionHelper::encryptUrl($app['online_application_id']);
                                                     $encryptedStatus = \App\Helpers\UrlEncryptionHelper::encryptUrl($status);
                                                     $encryptedEntity = \App\Helpers\UrlEncryptionHelper::encryptUrl($entity);
                                                     $encryptedComputerSerial = isset($app['computer_serial_no']) ? \App\Helpers\UrlEncryptionHelper::encryptUrl($app['computer_serial_no']) : '';
-
+                                                    $encryptedFlatType = isset($app['flat_type']) ? \App\Helpers\UrlEncryptionHelper::encryptUrl($app['flat_type']) : ''; // added by Subham dt.02/02/2024
                                                 @endphp
                                                 @if(isset($verifiedStatus) && $verifiedStatus)
-                                                    @php
-                                                        $encryptedFlatType = isset($app['flat_type']) ? \App\Helpers\UrlEncryptionHelper::encryptUrl($app['flat_type']) : '';
-                                                    @endphp
-                                                    <a href="{{ route('application-approve', [
-                                                        'id' => $encryptedId,
-                                                        'status' => $encryptedStatus,
-                                                        'entity' => $encryptedEntity,
-                                                        'page_status' => $pageStatus,
-                                                        'computer_serial_no' => $encryptedComputerSerial,
-                                                        'flat_type' => $encryptedFlatType
-                                                    ]) }}" 
-                                                       class="btn btn-sm btn-success me-1"
-                                                       onclick="return confirm('Are you sure you want to approve this application?')">
-                                                        <i class="fa fa-check"></i> Approve
-                                                    </a>
+                                                    <form action="{{ route('application-approve.store') }}"
+                                                        method="POST"
+                                                        class="d-inline"
+                                                        onsubmit="return confirm('Are you sure you want to approve this application?')">
+
+                                                        @csrf
+                            
+                                                        <input type="hidden" name="id" value="{{ $encryptedId }}">
+                                                        <input type="hidden" name="status" value="{{ $encryptedStatus }}">
+                                                        <input type="hidden" name="entity" value="{{ $encryptedEntity }}">
+                                                        <input type="hidden" name="page_status" value="{{ $pageStatus }}">
+                                                        <input type="hidden" name="computer_serial_no" value="{{ $encryptedComputerSerial }}">
+                                                        <input type="hidden" name="flat_type" value="{{ $encryptedFlatType }}">
+                                                        <input type="hidden" name="uid" value="{{ $encryptedUid }}">
+
+                                                        <button type="submit" class="btn btn-sm btn-success me-1">
+                                                            <i class="fa fa-check"></i> Accept
+                                                        </button>
+                                                    </form>
                                                 @endif
+
                                                 @if(isset($rejectedStatus) && $rejectedStatus)
                                                     <button type="button" 
                                                             class="btn btn-sm btn-danger"
