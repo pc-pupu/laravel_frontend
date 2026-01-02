@@ -126,12 +126,10 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::post('update_status/{id}/{new_status}/{status}/{entity}/{computer_serial_no}', [ApplicationListController::class, 'updateStatus'])
         ->where(['id' => '.*', 'new_status' => '.*', 'status' => '.*', 'entity' => '.*', 'computer_serial_no' => '.*'])
         ->name('update_status_with_serial');
-    Route::get('application-approve/{id}/{status}/{entity}/{page_status}/{computer_serial_no}/{flat_type}', [ApplicationListController::class, 'showApproveForm'])
-        ->where(['id' => '.*', 'status' => '.*', 'entity' => '.*', 'page_status' => '.*', 'computer_serial_no' => '.*', 'flat_type' => '.*'])
-        ->name('application-approve');
-    Route::post('application-approve/{id}/{status}/{entity}/{page_status}/{computer_serial_no}/{flat_type}', [ApplicationListController::class, 'storeApprove'])
-        ->where(['id' => '.*', 'status' => '.*', 'entity' => '.*', 'page_status' => '.*', 'computer_serial_no' => '.*', 'flat_type' => '.*'])
-        ->name('application-approve.store');
+    // Route::get('application-approve/{id}/{status}/{entity}/{page_status}/{computer_serial_no}/{flat_type}', [ApplicationListController::class, 'showApproveForm'])
+    //     ->where(['id' => '.*', 'status' => '.*', 'entity' => '.*', 'page_status' => '.*', 'computer_serial_no' => '.*', 'flat_type' => '.*'])
+    //     ->name('application-approve');
+    Route::post('application-approve', [ApplicationListController::class, 'ddoAcceptStore'])->name('application-approve.store');
     Route::post('reject-application', [ApplicationListController::class, 'rejectApplication'])->name('reject-application');
     Route::get('download_licence_pdf/{id}', [ApplicationListController::class, 'downloadLicensePdf'])
         ->where('id', '.*')
