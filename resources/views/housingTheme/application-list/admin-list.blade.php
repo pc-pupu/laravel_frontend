@@ -22,13 +22,13 @@
                     @include('housingTheme.partials.alerts')
                     
                     {{-- Counter Boxes --}}
-                    @if($pageStatus == 'action-list')
+                    {{-- @if($pageStatus == 'action-list' || $pageStatus == 'verified-list' || $pageStatus == 'reject-list')
                     <div class="row mt-4">
                         <div class="col-md-4">
                             <div class="counter-box p-3 rounded mb-3 position-relative color-box1">
                                 <span class="counter">{{ $counts['total'] ?? 0 }}</span>
                                 <p>Action List</p>
-                                <a href="{{ route('application-list.admin-list', [
+                                <a href="{{ route('application-list.admin-list-with-status', [
                                     'status' => \App\Helpers\UrlEncryptionHelper::encryptUrl($status),
                                     'entity' => \App\Helpers\UrlEncryptionHelper::encryptUrl($entity),
                                     'page_status' => 'action-list'
@@ -42,7 +42,7 @@
                                 <span class="counter">{{ $counts['verified'] ?? 0 }}</span>
                                 <p>Verified List</p>
                                 @if(isset($verifiedStatus) && $verifiedStatus)
-                                    <a href="{{ route('application-list.admin-list', [
+                                    <a href="{{ route('application-list.admin-list-with-status', [
                                         'status' => \App\Helpers\UrlEncryptionHelper::encryptUrl($verifiedStatus),
                                         'entity' => \App\Helpers\UrlEncryptionHelper::encryptUrl($entity),
                                         'page_status' => 'verified-list'
@@ -57,7 +57,7 @@
                                 <span class="counter">{{ $counts['rejected'] ?? 0 }}</span>
                                 <p>Rejected List</p>
                                 @if(isset($rejectedStatus) && $rejectedStatus)
-                                    <a href="{{ route('application-list.admin-list', [
+                                    <a href="{{ route('application-list.admin-list-with-status', [
                                         'status' => \App\Helpers\UrlEncryptionHelper::encryptUrl($rejectedStatus),
                                         'entity' => \App\Helpers\UrlEncryptionHelper::encryptUrl($entity),
                                         'page_status' => 'reject-list'
@@ -67,7 +67,7 @@
                             </div>
                         </div>
                     </div>
-                    @endif
+                    @endif --}}
 
                     {{-- Application Table --}}
                     <div class="table-responsive mt-4">

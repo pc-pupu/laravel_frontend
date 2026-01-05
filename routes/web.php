@@ -105,7 +105,7 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
 
     // Application List (for applicants)
     Route::get('application-list', [ApplicationListController::class, 'index'])->name('application-list.index');
-    Route::get('view-application/{id}', [ApplicationListController::class, 'view'])->where('id', '.*')->name('application.view');
+    Route::get('view-application-details/{id}', [ApplicationListController::class, 'view'])->where('id', '.*')->name('application.view');
 
     // View Application List Module Routes
     Route::get('view_application_list/{status}/{url}/{page_status}', [ApplicationListController::class, 'dashboard'])
@@ -136,7 +136,7 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
         ->name('download_licence_pdf');
 
     // Application List (for admins/officials) - Alternative routes
-    Route::get('view-application-list/{status}/{entity}', [ApplicationListController::class, 'adminList'])->where(['status' => '.*', 'entity' => '.*'])->name('application-list.admin-list');
+    // Route::get('view-application-list/{status}/{entity}', [ApplicationListController::class, 'adminList'])->where(['status' => '.*', 'entity' => '.*'])->name('application-list.admin-list');
     Route::get('view-application-list/{status}/{entity}/{page_status}', [ApplicationListController::class, 'adminList'])->where(['status' => '.*', 'entity' => '.*'])->name('application-list.admin-list-with-status');
     Route::get('application-detail/{id}/{page_status}/{status}', [ApplicationListController::class, 'adminView'])->where(['id' => '.*', 'status' => '.*'])->name('application-detail.admin-view');
     Route::post('update-status/{id}/{new_status}/{status}/{entity}', [ApplicationListController::class, 'updateStatus'])->where(['id' => '.*', 'new_status' => '.*', 'status' => '.*', 'entity' => '.*'])->name('application-list.update-status');
