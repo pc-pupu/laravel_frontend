@@ -105,7 +105,7 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
 
     // Application List (for applicants)
     Route::get('application-list', [ApplicationListController::class, 'index'])->name('application-list.index');
-    Route::get('view-application/{id}', [ApplicationListController::class, 'view'])->where('id', '.*')->name('application.view');
+    Route::get('view-application-details/{id}', [ApplicationListController::class, 'view'])->where('id', '.*')->name('application.view');
 
     // View Application List Module Routes
     Route::get('view_application_list/{status}/{url}/{page_status}', [ApplicationListController::class, 'dashboard'])
@@ -126,19 +126,17 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::post('update_status/{id}/{new_status}/{status}/{entity}/{computer_serial_no}', [ApplicationListController::class, 'updateStatus'])
         ->where(['id' => '.*', 'new_status' => '.*', 'status' => '.*', 'entity' => '.*', 'computer_serial_no' => '.*'])
         ->name('update_status_with_serial');
-    Route::get('application-approve/{id}/{status}/{entity}/{page_status}/{computer_serial_no}/{flat_type}', [ApplicationListController::class, 'showApproveForm'])
-        ->where(['id' => '.*', 'status' => '.*', 'entity' => '.*', 'page_status' => '.*', 'computer_serial_no' => '.*', 'flat_type' => '.*'])
-        ->name('application-approve');
-    Route::post('application-approve/{id}/{status}/{entity}/{page_status}/{computer_serial_no}/{flat_type}', [ApplicationListController::class, 'storeApprove'])
-        ->where(['id' => '.*', 'status' => '.*', 'entity' => '.*', 'page_status' => '.*', 'computer_serial_no' => '.*', 'flat_type' => '.*'])
-        ->name('application-approve.store');
+    // Route::get('application-approve/{id}/{status}/{entity}/{page_status}/{computer_serial_no}/{flat_type}', [ApplicationListController::class, 'showApproveForm'])
+    //     ->where(['id' => '.*', 'status' => '.*', 'entity' => '.*', 'page_status' => '.*', 'computer_serial_no' => '.*', 'flat_type' => '.*'])
+    //     ->name('application-approve');
+    Route::post('application-approve', [ApplicationListController::class, 'ddoAcceptStore'])->name('application-approve.store');
     Route::post('reject-application', [ApplicationListController::class, 'rejectApplication'])->name('reject-application');
     Route::get('download_licence_pdf/{id}', [ApplicationListController::class, 'downloadLicensePdf'])
         ->where('id', '.*')
         ->name('download_licence_pdf');
 
     // Application List (for admins/officials) - Alternative routes
-    Route::get('view-application-list/{status}/{entity}', [ApplicationListController::class, 'adminList'])->where(['status' => '.*', 'entity' => '.*'])->name('application-list.admin-list');
+    // Route::get('view-application-list/{status}/{entity}', [ApplicationListController::class, 'adminList'])->where(['status' => '.*', 'entity' => '.*'])->name('application-list.admin-list');
     Route::get('view-application-list/{status}/{entity}/{page_status}', [ApplicationListController::class, 'adminList'])->where(['status' => '.*', 'entity' => '.*'])->name('application-list.admin-list-with-status');
     Route::get('application-detail/{id}/{page_status}/{status}', [ApplicationListController::class, 'adminView'])->where(['id' => '.*', 'status' => '.*'])->name('application-detail.admin-view');
     Route::post('update-status/{id}/{new_status}/{status}/{entity}', [ApplicationListController::class, 'updateStatus'])->where(['id' => '.*', 'new_status' => '.*', 'status' => '.*', 'entity' => '.*'])->name('application-list.update-status');
@@ -147,8 +145,10 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     // License Management
     Route::get('generate-license/{id}/{page_status}/{status}', [ApplicationListController::class, 'generateLicense'])->where(['id' => '.*', 'status' => '.*'])->name('license.generate');
     Route::get('view-generated-license', [ApplicationListController::class, 'licenseList'])->name('license.list');
-    Route::get('view-flat-possession-taken-ddo', [ApplicationListController::class, 'flatPossessionTaken'])->name('license.flat-possession-taken');
-    Route::get('view-flat-released-ddo', [ApplicationListController::class, 'flatReleased'])->name('license.flat-released');
+    
+    //DDO Specific Application Lists
+    Route::get('view-flat-possession-taken-ddo', [ApplicationListController::class, 'flatPossessionTaken'])->name('flat-possession-taken');
+    Route::get('view-flat-released-ddo', [ApplicationListController::class, 'flatReleased'])->name('flat-released');
 
     // Application Status (for applicants)
     Route::get('application_status', [ApplicationStatusController::class, 'index'])->name('application-status.index');

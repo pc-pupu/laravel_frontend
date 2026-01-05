@@ -75,8 +75,9 @@ class ApplicationListController extends Controller
      * Show application list for admins/officials
      * GET /view-application-list/{status}/{entity}
      */
-    public function adminList(Request $request, $status, $entity, $pageStatus = 'action-list')
+    public function adminList(Request $request, $status, $entity, $pageStatus = null)
     {
+        
         if (!$request->session()->has('user')) {
             return redirect()->route('login')->with('error', 'Please login first');
         }
@@ -84,12 +85,13 @@ class ApplicationListController extends Controller
         $user = $request->session()->get('user');
         $userRole = $user['role'] ?? null;
         $ddoCode = $user['name'] ?? null; // DDO code is stored in name field
+        
 
         try {
             // Decrypt status and entity if encrypted
             $status = $this->decryptIfEncrypted($status);
             $entity = $this->decryptIfEncrypted($entity);
-
+            
             $response = $this->authorizedRequest()
                 ->get($this->backend . '/api/application-list/admin', [
                     'status' => $status,
@@ -97,9 +99,8 @@ class ApplicationListController extends Controller
                     'page_status' => $pageStatus,
                     'user_role' => $userRole,
                     'ddo_code' => $ddoCode,
-                    'uid' => $user['uid'],
                 ]);
-
+                // print('<pre>');print_r($response->json());die;
             if (!$response->successful()) {
                 return redirect()->route('dashboard')
                     ->with('error', 'Failed to load application list.');
@@ -107,16 +108,14 @@ class ApplicationListController extends Controller
 
             $data = $response->json('data') ?? [];
             $counts = $response->json('counts') ?? [];
-
+            // print('<pre>');print_r($counts);die;
             // Get status message
             $statusMsg = $this->getStatusMessage($status);
             $entityMsg = $this->getEntityMessage($entity);
 
             // Get verified and rejected statuses for action buttons
-            // echo '<pre>';print_r($user);die;
             $verifiedStatus = $this->getVerifiedStatus($status, $userRole);
             $rejectedStatus = $this->getRejectedStatus($status, $userRole);
-            // echo '<pre>';print_r($verifiedStatus);die;
 
             return view('housingTheme.application-list.admin-list', [
                 'applications' => $data,
@@ -202,14 +201,14 @@ class ApplicationListController extends Controller
         try {
             $applicationId = UrlEncryptionHelper::decryptUrl($id);
             $decryptedStatus = $status ? UrlEncryptionHelper::decryptUrl($status) : '';
-            // echo $applicationId;die;
+
             $response = $this->authorizedRequest()
                 ->get($this->backend . '/api/application-list/' . $applicationId, [
                     'uid' => $uid,
                     'page_status' => $pageStatus,
                     'status' => $decryptedStatus,
                 ]);
-                // print('<pre>');print_r($response->json());die;
+
             if (!$response->successful() || !$response->json('data')) {
                 return redirect()->back()
                     ->with('error', 'Application not found.');
@@ -273,7 +272,7 @@ class ApplicationListController extends Controller
             $encryptedStatus = UrlEncryptionHelper::encryptUrl($decryptedStatus);
             $encryptedEntity = UrlEncryptionHelper::encryptUrl($decryptedEntity);
 
-            return redirect()->route('application-list.admin-list', [
+            return redirect()->route('aapplication-list.admin-list-with-status', [
                 'status' => $encryptedStatus,
                 'entity' => $encryptedEntity,
                 'page_status' => 'action-list',
@@ -574,17 +573,18 @@ class ApplicationListController extends Controller
 
     /**
      * Dashboard page for view_application_list
-     * GET /view_application_list/{status}/{url}/{page_status?}
+     * GET /view_application_list/{status}/{url}
      */
-    public function dashboard(Request $request, $status, $url = '', $pageStatus = 'action-list')
+    public function dashboard(Request $request, $status, $url = '')
     {
         if (!$request->session()->has('user')) {
             return redirect()->route('login')->with('error', 'Please login first');
         }
-            ;
+
         $user = $request->session()->get('user');
         $userRole = $user['role'] ?? null;
         $ddoCode = $user['name'] ?? null;
+
         try {
             // Decrypt status and url if encrypted
             $status = $this->decryptIfEncrypted($status);
@@ -597,11 +597,8 @@ class ApplicationListController extends Controller
                     'entity' => $url,
                     'user_role' => $userRole,
                     'ddo_code' => $ddoCode,
-                    'uid' => $user['uid'],
-                    'userName'=> $user['name'],
-
                 ]);
-            // echo '<pre>';print_r($response->json());die;
+
             if (!$response->successful()) {
                 return redirect()->route('dashboard')
                     ->with('error', 'Failed to load dashboard.');
@@ -699,14 +696,21 @@ class ApplicationListController extends Controller
      * Store approve application
      * POST /application-approve/{id}/{status}/{entity}/{page_status}/{computer_serial_no}/{flat_type}
      */
-    public function storeApprove(Request $request, $id, $status, $entity, $pageStatus, $computerSerialNo, $flatType)
-    {
+    public function ddoAcceptStore(Request $request)
+    { 
         if (!$request->session()->has('user')) {
             return redirect()->route('login')->with('error', 'Please login first');
         }
 
         $user = $request->session()->get('user');
         $uid = $user['uid'];
+        // print_r($user);die;
+        $id = $request->input('id');
+        $status = $request->input('status');
+        $entity = $request->input('entity');
+        $computerSerialNo = $request->input('computer_serial_no');
+        $flatType = $request->input('flat_type');
+        $pageStatus = $request->input('page_status');
 
         try {
             $applicationId = UrlEncryptionHelper::decryptUrl($id);
@@ -718,51 +722,24 @@ class ApplicationListController extends Controller
             $statusNew = $this->getVerifiedStatus($decryptedStatus, $user['role']);
 
             // Prepare multipart form data for file upload
-            $multipart = [
-                [
-                    'name' => 'online_application_id',
-                    'contents' => $applicationId,
-                ],
-                [
-                    'name' => 'status_new',
-                    'contents' => $statusNew,
-                ],
-                [
-                    'name' => 'status',
-                    'contents' => $decryptedStatus,
-                ],
-                [
-                    'name' => 'entity',
-                    'contents' => $decryptedEntity,
-                ],
-                [
-                    'name' => 'computer_serial_no',
-                    'contents' => $decryptedComputerSerialNo,
-                ],
-                [
-                    'name' => 'flat_type',
-                    'contents' => $decryptedFlatType,
-                ],
-                [
-                    'name' => 'uid',
-                    'contents' => $uid,
-                ],
+            $dataArr = [
+                'online_application_id' => $applicationId,
+                'status_new' => $statusNew,
+                'entity' => $decryptedEntity,
+                'status' => $decryptedStatus,
+                'computer_serial_no' => $decryptedComputerSerialNo,
+                'flat_type' => $decryptedFlatType,
+                'uid' => $uid,
+                'role' => $user['role'],
+                'userName' => $user['name'],    
             ];
 
-            // Add file if uploaded
-            if ($request->hasFile('application_form_file')) {
-                $multipart[] = [
-                    'name' => 'application_form_file',
-                    'contents' => fopen($request->file('application_form_file')->getRealPath(), 'r'),
-                    'filename' => $request->file('application_form_file')->getClientOriginalName(),
-                ];
-            }
-
             $response = $this->authorizedRequest()
-                ->asMultipart()
-                ->post($this->backend . '/api/view-application-list/approve', $multipart);
+                ->post($this->backend . '/api/view-application-list/approve', $dataArr);
 
-            if (!$response->successful()) {
+            
+          
+            if ($response->json('status') !== 'success') {
                 $message = $response->json('message') ?? 'Failed to approve application.';
                 return redirect()->back()
                     ->withInput()
@@ -771,8 +748,8 @@ class ApplicationListController extends Controller
 
             $encryptedStatus = UrlEncryptionHelper::encryptUrl($decryptedStatus);
             $encryptedEntity = UrlEncryptionHelper::encryptUrl($decryptedEntity);
-
-            return redirect()->route('view-application', [
+            // echo $encryptedStatus;die;
+            return redirect()->route('view_application', [
                 'status' => $encryptedStatus,
                 'entity' => $encryptedEntity,
                 'page_status' => 'action-list',

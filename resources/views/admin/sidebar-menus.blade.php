@@ -124,6 +124,37 @@
                         </div>
                     </div>
 
+                    <div class="form-group mb-2">
+                        <label class="form-label">Route Pattern (for parameter inputs)</label>
+                        <input type="text" id="menu-route-pattern" 
+                               class="form-control"
+                               placeholder="e.g., view_application_list/{status}/{url}/{page_status}"
+                               oninput="updateRouteParamsFromPattern()">
+                        <small class="text-muted">
+                            Enter route pattern to generate parameter input fields.<br>
+                            Example: <code>view_application_list/{status}/{url}/{page_status}</code><br>
+                            <strong>Note:</strong> This is only for generating input fields. Make sure Route Name above matches this route.
+                        </small>
+                        <div class="invalid-feedback" id="menu-route-pattern-error"></div>
+                    </div>
+                    
+                    <div class="form-group mb-2">
+                        <label class="form-label">Route Parameter Values</label>
+                        <div id="route-params-inputs" class="mb-2">
+                            <!-- Dynamic inputs will be added here based on pattern -->
+                        </div>
+                        <textarea id="menu-route-params" name="route_params"
+                                  class="form-control" rows="3"
+                                  placeholder='{"status": "applied", "url": "new-apply", "page_status": "action-list"}'
+                                  oninput="clearFieldError('menu-route-params')"
+                                  style="display: none;"></textarea>
+                        <small class="text-muted">
+                            Values will be automatically encrypted when generating menu URLs.<br>
+                            Example: <code>status: applied</code> will become <code>lr2xuMiemw%3D%3D</code> in URL.
+                        </small>
+                        <div class="invalid-feedback" id="menu-route-params-error"></div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group mb-2">
