@@ -3,6 +3,7 @@
     <head>
        <meta charset="utf-8">
        <meta name="viewport" content="width=device-width, initial-scale=1">
+       <meta name="csrf-token" content="{{ csrf_token() }}">
        <title>@yield('title', 'Welcome to e-Allotment of Rental Housing Estate') | e-Allotment of Rental Housing Estate</title>
        <link rel="stylesheet" href="{{ asset('/assets/housingTheme/bootstrap/css/bootstrap.min.css') }}">
        <link rel="stylesheet" href="{{ asset('/assets/housingTheme/bootstrap/css/bootstrap-icons.min.css') }}">

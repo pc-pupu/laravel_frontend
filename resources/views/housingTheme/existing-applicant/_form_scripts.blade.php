@@ -325,8 +325,26 @@ function setupEventListeners() {
 // Setup numeric inputs
 function setupNumericInputs() {
     document.querySelectorAll('.numeric_positive').forEach(input => {
+        // Skip computer_serial_no fields - they should be alphanumeric
+        if (input.id === 'computer_serial_no' || input.id === 'confirm_computer_serial_no') {
+            return;
+        }
         input.addEventListener('keypress', function(e) {
             if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    // Setup alphanumeric inputs for computer_serial_no (allows numbers and letters)
+    document.querySelectorAll('#computer_serial_no, #confirm_computer_serial_no').forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            // Allow: backspace (8), delete (46), tab (9), escape (27), enter (13)
+            if (e.which === 8 || e.which === 46 || e.which === 9 || e.which === 27 || e.which === 13) {
+                return;
+            }
+            // Allow: numbers (48-57), letters (65-90 for uppercase, 97-122 for lowercase)
+            if (!((e.which >= 48 && e.which <= 57) || (e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122))) {
                 e.preventDefault();
             }
         });
