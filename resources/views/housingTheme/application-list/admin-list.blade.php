@@ -20,7 +20,7 @@
                     </div>
 
                     @include('housingTheme.partials.alerts')
-                    
+
                     {{-- Counter Boxes --}}
                     {{-- @if($pageStatus == 'action-list' || $pageStatus == 'verified-list' || $pageStatus == 'reject-list')
                     <div class="row mt-4">
@@ -121,10 +121,10 @@
                                         @endif
                                         <td>
                                             <a href="{{ route('application-detail.admin-view', [
-                                                'id' => \App\Helpers\UrlEncryptionHelper::encryptUrl($app['online_application_id']),
-                                                'page_status' => $pageStatus,
-                                                'status' => \App\Helpers\UrlEncryptionHelper::encryptUrl($status)
-                                            ]) }}" 
+        'id' => \App\Helpers\UrlEncryptionHelper::encryptUrl($app['online_application_id']),
+        'page_status' => $pageStatus,
+        'status' => \App\Helpers\UrlEncryptionHelper::encryptUrl($status)
+    ]) }}" 
                                                target="_blank" 
                                                class="btn btn-sm btn-primary">
                                                 <i class="fa fa-eye"></i> View
@@ -133,13 +133,13 @@
                                         @if($pageStatus == 'action-list')
                                             <td>
                                                 @php
-                                                    $user = session('user');    // added by Subham dt.02/02/2024
-                                                    $encryptedUid = \App\Helpers\UrlEncryptionHelper::encryptUrl($user['uid']); // added by Subham dt.02/02/2024
-                                                    $encryptedId = \App\Helpers\UrlEncryptionHelper::encryptUrl($app['online_application_id']);
-                                                    $encryptedStatus = \App\Helpers\UrlEncryptionHelper::encryptUrl($status);
-                                                    $encryptedEntity = \App\Helpers\UrlEncryptionHelper::encryptUrl($entity);
-                                                    $encryptedComputerSerial = isset($app['computer_serial_no']) ? \App\Helpers\UrlEncryptionHelper::encryptUrl($app['computer_serial_no']) : '';
-                                                    $encryptedFlatType = isset($app['flat_type']) ? \App\Helpers\UrlEncryptionHelper::encryptUrl($app['flat_type']) : ''; // added by Subham dt.02/02/2024
+        $user = session('user');    // added by Subham dt.02/02/2024
+        $encryptedUid = \App\Helpers\UrlEncryptionHelper::encryptUrl($user['uid']); // added by Subham dt.02/02/2024
+        $encryptedId = \App\Helpers\UrlEncryptionHelper::encryptUrl($app['online_application_id']);
+        $encryptedStatus = \App\Helpers\UrlEncryptionHelper::encryptUrl($status);
+        $encryptedEntity = \App\Helpers\UrlEncryptionHelper::encryptUrl($entity);
+        $encryptedComputerSerial = isset($app['computer_serial_no']) ? \App\Helpers\UrlEncryptionHelper::encryptUrl($app['computer_serial_no']) : '';
+        $encryptedFlatType = isset($app['flat_type']) ? \App\Helpers\UrlEncryptionHelper::encryptUrl($app['flat_type']) : ''; // added by Subham dt.02/02/2024
                                                 @endphp
                                                 @if(isset($verifiedStatus) && $verifiedStatus)
                                                     <form action="{{ route('application-approve.store') }}"
@@ -148,7 +148,7 @@
                                                         onsubmit="return confirm('Are you sure you want to approve this application?')">
 
                                                         @csrf
-                            
+
                                                         <input type="hidden" name="id" value="{{ $encryptedId }}">
                                                         <input type="hidden" name="status" value="{{ $encryptedStatus }}">
                                                         <input type="hidden" name="entity" value="{{ $encryptedEntity }}">
@@ -198,12 +198,12 @@
                     <h5 class="modal-title" id="rejectModalLabel">Reject Application</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="rejectForm" method="POST">
+                <form action="{{ route('reject-application') }}" id="rejectForm" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="reject_remarks" class="form-label">Remarks (Optional)</label>
-                            <textarea class="form-control" id="reject_remarks" name="remarks" rows="3" placeholder="Enter rejection remarks..."></textarea>
+                            <label for="reject_remarks" class="form-label">Remarks <span style="color: red">*</span></label>
+                            <textarea class="form-control" id="reject_remarks" name="reject_remarks" rows="3" placeholder="Enter rejection remarks..." required></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -234,11 +234,28 @@
 
     function showRejectModal(id, newStatus, status, entity, computerSerialNo) {
         const form = document.getElementById('rejectForm');
-        form.action = '{{ route('reject-application') }}';
         
-        // Add hidden fields
+        // Get CSRF token from meta tag or existing form field
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = form.querySelector('input[name="_token"]');
+        const csrfValue = csrfToken ? csrfToken.value : (csrfMeta ? csrfMeta.getAttribute('content') : '');
+        
+        // Remove all hidden fields except CSRF token
         let hiddenFields = form.querySelectorAll('input[type="hidden"]');
-        hiddenFields.forEach(field => field.remove());
+        hiddenFields.forEach(field => {
+            if (field.name !== '_token') {
+                field.remove();
+            }
+        });
+        
+        // Ensure CSRF token exists
+        if (!form.querySelector('input[name="_token"]') && csrfValue) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = csrfValue;
+            form.insertBefore(csrfInput, form.firstChild);
+        }
         
         const fields = [
             { name: 'online_application_id', value: id },
