@@ -75,8 +75,9 @@ class ApplicationListController extends Controller
      * Show application list for admins/officials
      * GET /view-application-list/{status}/{entity}
      */
-    public function adminList(Request $request, $status, $entity, $pageStatus = 'action-list')
+    public function adminList(Request $request, $status, $entity, $pageStatus = null)
     {
+        
         if (!$request->session()->has('user')) {
             return redirect()->route('login')->with('error', 'Please login first');
         }
@@ -84,12 +85,13 @@ class ApplicationListController extends Controller
         $user = $request->session()->get('user');
         $userRole = $user['role'] ?? null;
         $ddoCode = $user['name'] ?? null; // DDO code is stored in name field
+        
 
         try {
             // Decrypt status and entity if encrypted
             $status = $this->decryptIfEncrypted($status);
             $entity = $this->decryptIfEncrypted($entity);
-
+            
             $response = $this->authorizedRequest()
                 ->get($this->backend . '/api/application-list/admin', [
                     'status' => $status,
@@ -98,7 +100,7 @@ class ApplicationListController extends Controller
                     'user_role' => $userRole,
                     'ddo_code' => $ddoCode,
                 ]);
-
+                // print('<pre>');print_r($response->json());die;
             if (!$response->successful()) {
                 return redirect()->route('dashboard')
                     ->with('error', 'Failed to load application list.');
@@ -106,7 +108,7 @@ class ApplicationListController extends Controller
 
             $data = $response->json('data') ?? [];
             $counts = $response->json('counts') ?? [];
-
+            // print('<pre>');print_r($counts);die;
             // Get status message
             $statusMsg = $this->getStatusMessage($status);
             $entityMsg = $this->getEntityMessage($entity);
@@ -270,7 +272,7 @@ class ApplicationListController extends Controller
             $encryptedStatus = UrlEncryptionHelper::encryptUrl($decryptedStatus);
             $encryptedEntity = UrlEncryptionHelper::encryptUrl($decryptedEntity);
 
-            return redirect()->route('application-list.admin-list', [
+            return redirect()->route('aapplication-list.admin-list-with-status', [
                 'status' => $encryptedStatus,
                 'entity' => $encryptedEntity,
                 'page_status' => 'action-list',
@@ -702,7 +704,7 @@ class ApplicationListController extends Controller
 
         $user = $request->session()->get('user');
         $uid = $user['uid'];
-        
+        // print_r($user);die;
         $id = $request->input('id');
         $status = $request->input('status');
         $entity = $request->input('entity');
@@ -728,12 +730,16 @@ class ApplicationListController extends Controller
                 'computer_serial_no' => $decryptedComputerSerialNo,
                 'flat_type' => $decryptedFlatType,
                 'uid' => $uid,
+                'role' => $user['role'],
+                'userName' => $user['name'],    
             ];
 
             $response = $this->authorizedRequest()
                 ->post($this->backend . '/api/view-application-list/approve', $dataArr);
 
-            if (!$response->successful()) {
+            
+          
+            if ($response->json('status') !== 'success') {
                 $message = $response->json('message') ?? 'Failed to approve application.';
                 return redirect()->back()
                     ->withInput()
@@ -742,8 +748,8 @@ class ApplicationListController extends Controller
 
             $encryptedStatus = UrlEncryptionHelper::encryptUrl($decryptedStatus);
             $encryptedEntity = UrlEncryptionHelper::encryptUrl($decryptedEntity);
-
-            return redirect()->route('view-application', [
+            // echo $encryptedStatus;die;
+            return redirect()->route('view_application', [
                 'status' => $encryptedStatus,
                 'entity' => $encryptedEntity,
                 'page_status' => 'action-list',
