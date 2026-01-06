@@ -215,7 +215,7 @@ class ApplicationListController extends Controller
             }
 
             $application = $response->json('data');
-
+            // print_r($application);die;
             return view('housingTheme.application-list.admin-view', [
                 'application' => $application,
                 'pageStatus' => $pageStatus,
@@ -788,6 +788,7 @@ class ApplicationListController extends Controller
             'reject_remarks' => 'nullable|string',
         ]);
 
+       
         try {
             $applicationId = UrlEncryptionHelper::decryptUrl($request->input('online_application_id'));
             $rejectedStatus = UrlEncryptionHelper::decryptUrl($request->input('rejected_status'));
@@ -797,7 +798,7 @@ class ApplicationListController extends Controller
                 ? UrlEncryptionHelper::decryptUrl($request->input('computer_serial_no')) 
                 : $applicationId;
             $remarks = $request->input('reject_remarks', '');
-
+            // echo $remarks;die;
             $response = $this->authorizedRequest()
                 ->post($this->backend . '/api/application-list/' . $applicationId . '/update-status', [
                     'new_status' => $rejectedStatus,
@@ -807,7 +808,7 @@ class ApplicationListController extends Controller
                     'remarks' => $remarks,
                     'uid' => $uid,
                 ]);
-
+ 
             if (!$response->successful()) {
                 $message = $response->json('message') ?? 'Failed to reject application.';
                 return redirect()->back()
@@ -818,7 +819,7 @@ class ApplicationListController extends Controller
             $encryptedStatus = UrlEncryptionHelper::encryptUrl($status);
             $encryptedEntity = UrlEncryptionHelper::encryptUrl($entity);
 
-            return redirect()->route('view-application', [
+            return redirect()->route('view_application', [
                 'status' => $encryptedStatus,
                 'entity' => $encryptedEntity,
                 'page_status' => 'action-list',

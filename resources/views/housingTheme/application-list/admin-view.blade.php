@@ -15,26 +15,39 @@
     $flatDetails = $application['allotment_flat_details'] ?? null;
     $documents = $application['documents'] ?? null;
     
-    // Determine entity type
+    // Determine entity type added by Subham dt.05-01-2026
     $entityType = '';
-    if (isset($app['application_type'])) {
-        switch($app['application_type']) {
-            case 'new-apply':
-                $entityType = 'New Allotment';
-                break;
-            case 'vs':
-                $entityType = 'Vertical Shifting';
-                break;
-            case 'cs':
-                $entityType = 'Category Shifting';
-                break;
-            case 'license':
-                $entityType = 'New Licence';
-                break;
-            default:
-                $entityType = ucfirst($app['application_type'] ?? 'Application');
-        }
+    if (isset($app['application_no'])) {
+      if (strpos($app['application_no'], 'NA') !== false) {
+          $entityType = 'New Application';
+      } elseif (strpos($app['application_no'], 'VS') !== false) {
+          $entityType = 'Floor Shifting';
+      } elseif (strpos($app['application_no'], 'CS') !== false) {
+          $entityType = 'Category Shifting';
+      } elseif (strpos($app['application_no'], 'PA') !== false) {
+          $entityType = 'Physical Application';
+      }elseif (strpos($app['application_no'], 'EO') !== false) {
+          $entityType = 'Existing Occupant Application';
+      }  
     }
+    // if (isset($app['application_type'])) {
+    //     switch($app['application_type']) {
+    //         case 'new-apply':
+    //             $entityType = 'New Allotment';
+    //             break;
+    //         case 'vs':
+    //             $entityType = 'Vertical Shifting';
+    //             break;
+    //         case 'cs':
+    //             $entityType = 'Category Shifting';
+    //             break;
+    //         case 'license':
+    //             $entityType = 'New Licence';
+    //             break;
+    //         default:
+    //             $entityType = ucfirst($app['application_type'] ?? 'Application');
+    //     }
+    // }
     
     // Determine heading based on entity type
     $heading = 'Information for Allotment';
@@ -228,7 +241,7 @@
                             </tr>
                             <tr>
                                 <th style="background-color:#00000000">Application Status</th>
-                                <td>{{ $statusDescription }}</td>
+                                <td>{{ $statusDesc['status_description'] }}</td> {{-- <td> Modified by Subham dt.05-01-2025 </td>  --}}
                             </tr>
                             <tr>
                                 <th style="background-color:#00000000">Date of Last Action</th>
