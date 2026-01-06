@@ -68,9 +68,15 @@ class ApplicationStatusController extends Controller
      * Show application status check form (for officials)
      * GET /application_status_check
      */
-    public function checkIndex(Request $request)
+    public function checkIndex(Request $request) // Modified by Subham dt.06-01-2026
     {
-        return view('housingTheme.application-status-check.index');
+        if (!$request->session()->has('user')) {
+            return redirect()->route('login')->with('error', 'Please login first');
+        }
+
+        $user = $request->session()->get('user');
+        $userRole = $user['role'] ?? null;
+        return view('housingTheme.application-status-check.index', compact('userRole'));
     }
 
     /**
@@ -99,11 +105,12 @@ class ApplicationStatusController extends Controller
             }
 
             $data = $response->json('data');
+            // print_r($data); die;
             $application = $data['application'] ?? $data; // Handle both formats
             $encryptedId = UrlEncryptionHelper::encryptUrl($application['online_application_id']);
             $encryptedStatus = UrlEncryptionHelper::encryptUrl($application['status']);
 
-            return redirect()->route('application-status-check.view', [
+            return redirect()->route('application-status-check.view-list', [
                 'id' => $encryptedId,
                 'status' => $encryptedStatus,
             ]);
