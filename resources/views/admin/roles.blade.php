@@ -37,6 +37,7 @@
                         <th>Guard</th>
                         <th>Permissions</th>
                         <th>Users</th>
+                        <th>Is Active?</th>
                         <th style="width: 160px;">Actions</th>
                     </tr>
                 </thead>
@@ -103,6 +104,25 @@
                         </div>
 
                         <div class="invalid-feedback d-block" id="permissions-error"></div>
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <label class="form-label d-block">Status</label>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="is_active" id="status-active" value="1" checked onclick="clearFieldError('role-status')">
+                            <label class="form-check-label" for="status-active">Active</label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="is_active" id="status-inactive" value="0" onclick="clearFieldError('role-status')">
+                            <label class="form-check-label" for="status-inactive">Inactive</label>
+                        </div>
+
+                        <!-- Hidden input for validation handling -->
+                        <input type="hidden" id="role-status">
+
+                        <div class="invalid-feedback d-block" id="role-status-error"></div>
                     </div>
 
                 </form>

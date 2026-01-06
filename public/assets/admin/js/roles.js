@@ -41,6 +41,7 @@ function displayRoles(roles) {
     tbody.innerHTML = roles.map(role => {
         const permissions = role.permissions ? role.permissions.length : 0;
         const users = role.users ? role.users.length : 0;
+        const isActive = role.is_active ? 'Yes' : 'No';
         return `
             <tr>
                 <td>${role.id}</td>
@@ -48,6 +49,7 @@ function displayRoles(roles) {
                 <td>${role.guard_name || 'web'}</td>
                 <td>${permissions} permission(s)</td>
                 <td>${users} user(s)</td>
+                <td>${isActive}</td>
                 <td>
                     <button class="btn-admin btn-admin-sm btn-admin-primary" onclick="editRole(${role.id}, this)">
                         <i class="fas fa-edit"></i> Edit
@@ -140,6 +142,9 @@ async function editRole(roleId, button = null) {
             document.getElementById('role-id').value = role.id;
             document.getElementById('role-name').value = role.name || '';
             document.getElementById('role-guard-name').value = role.guard_name || 'web';
+
+            document.querySelector(`input[name="is_active"][value="${role.is_active}"]`).checked = true;
+
             const selectedIds = role.permissions ? role.permissions.map(p => p.id) : [];
             await loadAllPermissions(); // ensure allPermissions set
             displayPermissionsCheckboxes(selectedIds);
