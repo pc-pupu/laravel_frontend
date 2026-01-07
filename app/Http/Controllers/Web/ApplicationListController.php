@@ -589,7 +589,7 @@ class ApplicationListController extends Controller
             // Decrypt status and url if encrypted
             $status = $this->decryptIfEncrypted($status);
             $url = $url ? $this->decryptIfEncrypted($url) : 'new-apply';
-
+            
             // Get dashboard counts
             $response = $this->authorizedRequest()
                 ->get($this->backend . '/api/view-application-list/dashboard', [
@@ -603,7 +603,7 @@ class ApplicationListController extends Controller
                 return redirect()->route('dashboard')
                     ->with('error', 'Failed to load dashboard.');
             }
-
+            // print_r($response->json());die;
             $data = $response->json('data') ?? [];
             $verifiedStatus = $data['verified_status'] ?? null;
             $rejectedStatus = $data['rejected_status'] ?? null;

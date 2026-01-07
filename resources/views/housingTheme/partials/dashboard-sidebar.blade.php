@@ -14,6 +14,8 @@
     $menus = session('sidebar_menus', []);
     $currentRoute = request()->route()->getName();
     $currentUrl = request()->url();
+    $currentPath = trim(request()->path(), '/');
+    $currentFullUrl = request()->fullUrl();
 @endphp
 @php
     $isUserTaggingPage = request()->is('user-tagging') || request()->is('user_tagging');
@@ -22,13 +24,15 @@
 
 <ul class="nav nav-pills flex-column mb-auto cus-dashboard">
 
-    {{-- DASHBOARD --}}
-    {{-- <li class="nav-item">
-        <a href="{{ route('dashboard') }}"
-           class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <i class="fa fa-home me-2"></i> Dashboard
-        </a>
-    </li> --}}
+    {{-- DASHBOARD - Available for all logged in users --}}
+    @if(!$isUserTaggingPage)
+        <li class="nav-item">
+            <a href="{{ route('dashboard') }}"
+               class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <i class="fa fa-home me-2"></i> Dashboard
+            </a>
+        </li>
+    @endif
 
     {{-- DYNAMIC MENUS --}}
     @if($isUserTaggingPage)
@@ -109,15 +113,38 @@
                 $isParentActive = false;
 
                 if (!empty($menu['route_name']) && $currentRoute === $menu['route_name']) {
-                    $isParentActive = true;
+                    // If route name matches, also check URL to ensure exact match
+                    if (!empty($menu['url'])) {
+                        $menuPath = trim(parse_url($menu['url'], PHP_URL_PATH), '/');
+                        if ($currentPath === $menuPath) {
+                            $isParentActive = true;
+                        }
+                    } else {
+                        $isParentActive = true;
+                    }
                 }
 
                 foreach ($children as $child) {
+                    $childIsActive = false;
                     if (!empty($child['route_name']) && $currentRoute === $child['route_name']) {
-                        $isParentActive = true;
-                    }
-                    if (!empty($child['url']) && $currentUrl === url($child['url'])) {
-                        $isParentActive = true;
+                        // If route name matches, also check URL to ensure exact match
+                        if (!empty($child['url'])) {
+                            $childPath = trim(parse_url($child['url'], PHP_URL_PATH), '/');
+                            if ($currentPath === $childPath) {
+                                $childIsActive = true;
+                                $isParentActive = true;
+                            }
+                        } else {
+                            $childIsActive = true;
+                            $isParentActive = true;
+                        }
+                    } elseif (!empty($child['url'])) {
+                        // Fallback: check URL directly
+                        $childPath = trim(parse_url($child['url'], PHP_URL_PATH), '/');
+                        if ($currentPath === $childPath) {
+                            $childIsActive = true;
+                            $isParentActive = true;
+                        }
                     }
                 }
             @endphp
@@ -200,14 +227,52 @@
                                 }
 
 
-                                $childActive =
-                                    (!empty($child['route_name']) && $currentRoute === $child['route_name']) &&
-                                    (
-                                        empty($child['route_params']) ||
-                                        request()->fullUrlIs(
-                                            route($child['route_name'], $child['route_params'])
-                                        )
-                                    );
+                                // Check if child is active - must match route name AND URL path
+                                $childActive = false;
+                                
+                                // First check if route name matches
+                                if (!empty($child['route_name']) && $currentRoute === $child['route_name']) {
+                                    // Route name matches, now check URL path
+                                    $generatedChildPath = trim(parse_url($childUrl, PHP_URL_PATH), '/');
+                                    
+                                    // Compare current path with generated child URL path
+                                    if ($currentPath === $generatedChildPath) {
+                                        $childActive = true;
+                                    } elseif (!empty($child['url'])) {
+                                        // Also check database URL path as fallback
+                                        $childUrlPath = trim(parse_url($child['url'], PHP_URL_PATH), '/');
+                                        if ($currentPath === $childUrlPath) {
+                                            $childActive = true;
+                                        }
+                                    } elseif (!empty($child['route_params'])) {
+                                        // If no URL but has route_params, try to match
+                                        try {
+                                            $expectedUrl = route($child['route_name'], $child['route_params']);
+                                            $expectedPath = trim(parse_url($expectedUrl, PHP_URL_PATH), '/');
+                                            if ($currentPath === $expectedPath) {
+                                                $childActive = true;
+                                            }
+                                        } catch (\Exception $e) {
+                                            // If route generation fails, just check route name
+                                            $childActive = true;
+                                        }
+                                    } else {
+                                        // If no URL and no route_params, just check route name
+                                        $childActive = true;
+                                    }
+                                } elseif (!empty($child['url'])) {
+                                    // Fallback: check URL directly if route name doesn't match
+                                    $childUrlPath = trim(parse_url($child['url'], PHP_URL_PATH), '/');
+                                    if ($currentPath === $childUrlPath) {
+                                        $childActive = true;
+                                    } else {
+                                        // Also check generated URL
+                                        $generatedChildPath = trim(parse_url($childUrl, PHP_URL_PATH), '/');
+                                        if ($currentPath === $generatedChildPath) {
+                                            $childActive = true;
+                                        }
+                                    }
+                                }
 
                             @endphp
 

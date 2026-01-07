@@ -27,12 +27,16 @@
                             <div class="counter-box p-3 rounded mb-3 position-relative color-box1">
                                 <span class="counter">{{ $actionCount ?? 0 }}</span>
                                 <p>Action List</p>
-                                <a href="{{ route('view_application', [
-                                    'status' => \App\Helpers\UrlEncryptionHelper::encryptUrl($status),
-                                    'entity' => \App\Helpers\UrlEncryptionHelper::encryptUrl($url),
-                                    'page_status' => 'action-list'
-                                ]) }}" class="badge rounded-pill text-bg-success">View Details</a>
-                                <img src="{{ asset('assets/housingTheme/images/allotment-icon.png') }}" class="position-absolute end-0 counter-box-icon top-0" />
+                                @if($actionCount>0)
+                                    <a href="{{ route('view_application', [
+                                        'status' => \App\Helpers\UrlEncryptionHelper::encryptUrl($status),
+                                        'entity' => \App\Helpers\UrlEncryptionHelper::encryptUrl($url),
+                                        'page_status' => 'action-list'
+                                    ]) }}" class="badge rounded-pill text-bg-success">View Details</a>
+                                    <img src="{{ asset('assets/housingTheme/images/allotment-icon.png') }}" class="position-absolute end-0 counter-box-icon top-0" />
+                                @else
+                                    <span class="badge rounded-pill text-bg-secondary">No Details Available</span>    
+                                @endif
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -46,6 +50,8 @@
                                         'entity' => \App\Helpers\UrlEncryptionHelper::encryptUrl($url),
                                         'page_status' => 'verified-list'
                                     ]) }}" class="badge rounded-pill text-bg-success">View Details</a>
+                                @else
+                                    <span class="badge rounded-pill text-bg-secondary">No Details Available</span>    
                                 @endif
                                 <img src="{{ asset('assets/housingTheme/images/floor-icon.png') }}" class="position-absolute end-0 counter-box-icon top-0" />
                             </div>
@@ -61,6 +67,8 @@
                                         'entity' => \App\Helpers\UrlEncryptionHelper::encryptUrl($url),
                                         'page_status' => 'reject-list'
                                     ]) }}" class="badge rounded-pill text-bg-success">View Details</a>
+                                @else
+                                    <span class="badge rounded-pill text-bg-secondary">No Details Available</span> 
                                 @endif
                                 <img src="{{ asset('assets/housingTheme/images/allotment-icon.png') }}" class="position-absolute end-0 counter-box-icon top-0" />
                             </div>
