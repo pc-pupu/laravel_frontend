@@ -43,7 +43,7 @@
                 </thead>
                 <tbody id="roles-table-body">
                     <tr>
-                        <td colspan="6" class="text-center">
+                        <td colspan="7" class="text-center">
                             <div class="spinner"></div>
                         </td>
                     </tr>
@@ -110,12 +110,12 @@
                         <label class="form-label d-block">Status</label>
 
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="is_active" id="status-active" value="1" checked onclick="clearFieldError('role-status')">
+                            <input class="form-check-input" type="radio" name="is_active" id="status-active" value="1" checked >
                             <label class="form-check-label" for="status-active">Active</label>
                         </div>
 
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="is_active" id="status-inactive" value="0" onclick="clearFieldError('role-status')">
+                            <input class="form-check-input" type="radio" name="is_active" id="status-inactive" value="0" >
                             <label class="form-check-label" for="status-inactive">Inactive</label>
                         </div>
 

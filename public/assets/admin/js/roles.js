@@ -173,7 +173,8 @@ async function saveRole() {
     const roleData = {
         name: fd.get('name')?.trim(),
         guard_name: fd.get('guard_name') || 'web',
-        permissions: selectedPermissions
+        permissions: selectedPermissions,
+        is_active: fd.get('is_active') === '1' ? 1 : 0
     };
 
     const id = rolesEditingId;
