@@ -95,6 +95,11 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
         ->where(['encrypted_app_id' => '.*', 'encrypted_status' => '.*'])
         ->name('view-allotment-letter.update-allotment');
     
+    // RHE Allotment Routes
+    Route::get('rhe_allotment', [\App\Http\Controllers\Web\RheAllotmentController::class, 'index'])->name('rhe-allotment.index');
+    Route::post('rhe_allotment/show-vacancy', [\App\Http\Controllers\Web\RheAllotmentController::class, 'showVacancy'])->name('rhe-allotment.show-vacancy');
+    Route::post('rhe_allotment/process', [\App\Http\Controllers\Web\RheAllotmentController::class, 'processAllotment'])->name('rhe-allotment.process');
+    
     // AJAX endpoints for new application
     Route::get('new-application/flat-type-categories', [\App\Http\Controllers\Web\NewApplicationController::class, 'getFlatTypeAndCategoriesAjax'])->name('new-application.flat-type-categories');
     Route::get('new-application/housing-estates', [\App\Http\Controllers\Web\NewApplicationController::class, 'getHousingEstatesAjax'])->name('new-application.housing-estates');
