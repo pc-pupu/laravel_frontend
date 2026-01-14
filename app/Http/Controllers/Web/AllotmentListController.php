@@ -31,11 +31,11 @@ class AllotmentListController extends Controller
             }
 
             // Get process dates
-            $datesResponse = $httpClient->get($this->backend . '/api/allotment-list/process-dates');
+            $datesResponse = $httpClient->get($this->backend . '/allotment-list/process-dates');
             $processDates = $datesResponse->successful() ? $datesResponse->json('data') : [];
 
             // Get process types
-            $typesResponse = $httpClient->get($this->backend . '/api/allotment-list/process-types');
+            $typesResponse = $httpClient->get($this->backend . '/allotment-list/process-types');
             $processTypes = $typesResponse->successful() ? $typesResponse->json('data') : [];
 
             $allotmentProcessDate = $request->get('allotment_process_date');
@@ -47,19 +47,23 @@ class AllotmentListController extends Controller
 
             if ($allotmentProcessDate) {
                 // Get process numbers
-                $processNosResponse = $httpClient->get($this->backend . '/api/allotment-list/process-numbers', [
+                $processNosResponse = $httpClient->get($this->backend . '/allotment-list/process-numbers', [
                     'allotment_process_date' => $allotmentProcessDate
                 ]);
                 $processNumbers = $processNosResponse->successful() ? $processNosResponse->json('data') : [];
 
                 if ($allotmentProcessDate && $allotmentProcessNo && $allotmentProcessType) {
                     // Get allottee list
-                    $allotteesResponse = $httpClient->get($this->backend . '/api/allotment-list/allottees', [
+                    $allotteesResponse = $httpClient->get($this->backend . '/allotment-list/allottees', [
                         'allotment_process_date' => $allotmentProcessDate,
                         'allotment_process_no' => $allotmentProcessNo,
                         'allotment_process_type' => $allotmentProcessType
                     ]);
-                    $allottees = $allotteesResponse->successful() ? $allotteesResponse->json('data') : [];
+                    // Convert array to objects for Blade template compatibility
+                    $allotteesData = $allotteesResponse->successful() ? $allotteesResponse->json('data') : [];
+                    $allottees = array_map(function($item) {
+                        return (object) $item;
+                    }, $allotteesData);
                 }
             }
 
@@ -97,7 +101,7 @@ class AllotmentListController extends Controller
             }
 
             // Get process dates
-            $datesResponse = $httpClient->get($this->backend . '/api/allotment-list/process-dates');
+            $datesResponse = $httpClient->get($this->backend . '/allotment-list/process-dates');
             $processDates = $datesResponse->successful() ? $datesResponse->json('data') : [];
 
             $allotmentProcessDate = $request->get('allotment_process_date');
@@ -109,19 +113,23 @@ class AllotmentListController extends Controller
 
             if ($allotmentProcessDate) {
                 // Get process numbers
-                $processNosResponse = $httpClient->get($this->backend . '/api/allotment-list/process-numbers', [
+                $processNosResponse = $httpClient->get($this->backend . '/allotment-list/process-numbers', [
                     'allotment_process_date' => $allotmentProcessDate
                 ]);
                 $processNumbers = $processNosResponse->successful() ? $processNosResponse->json('data') : [];
 
                 if ($allotmentProcessDate && $allotmentProcessNo && $allotmentProcessType) {
                     // Get allottee list for approval
-                    $allotteesResponse = $httpClient->get($this->backend . '/api/allotment-list/allottees-for-approve', [
+                    $allotteesResponse = $httpClient->get($this->backend . '/allotment-list/allottees-for-approve', [
                         'allotment_process_date' => $allotmentProcessDate,
                         'allotment_process_no' => $allotmentProcessNo,
                         'allotment_process_type' => $allotmentProcessType
                     ]);
-                    $allottees = $allotteesResponse->successful() ? $allotteesResponse->json('data') : [];
+                    // Convert array to objects for Blade template compatibility
+                    $allotteesData = $allotteesResponse->successful() ? $allotteesResponse->json('data') : [];
+                    $allottees = array_map(function($item) {
+                        return (object) $item;
+                    }, $allotteesData);
                 }
             }
 
@@ -169,7 +177,7 @@ class AllotmentListController extends Controller
             }
 
             $action = $request->action;
-            $endpoint = $this->backend . '/api/allotment-list/' . $action;
+            $endpoint = $this->backend . '/allotment-list/' . $action;
 
             $response = Http::withToken($token)
                 ->acceptJson()
@@ -208,13 +216,16 @@ class AllotmentListController extends Controller
                 $httpClient = $httpClient->withToken($token);
             }
 
-            $response = $httpClient->get($this->backend . '/api/allotment-list/detail/' . $encryptedAppId);
+            $response = $httpClient->get($this->backend . '/allotment-list/detail/' . $encryptedAppId);
 
+            // print_r($response->body()); exit;
             if (!$response->successful()) {
                 return redirect()->route('allotment-list.index')->with('error', 'Allotment not found.');
             }
 
-            $allotment = $response->json('data');
+            // Convert array to object for Blade template compatibility
+            $allotmentData = $response->json('data');
+            $allotment = $allotmentData ? (object) $allotmentData : null;
 
             return view('housingTheme.allotment-list.detail', [
                 'allotment' => $allotment
@@ -243,8 +254,12 @@ class AllotmentListController extends Controller
                 $httpClient = $httpClient->withToken($token);
             }
 
-            $response = $httpClient->get($this->backend . '/api/allotment-list/allottees-on-hold');
-            $allottees = $response->successful() ? $response->json('data') : [];
+            $response = $httpClient->get($this->backend . '/allotment-list/allottees-on-hold');
+            // Convert array to objects for Blade template compatibility
+            $allotteesData = $response->successful() ? $response->json('data') : [];
+            $allottees = array_map(function($item) {
+                return (object) $item;
+            }, $allotteesData);
 
             return view('housingTheme.allotment-list.hold', [
                 'allottees' => $allottees
