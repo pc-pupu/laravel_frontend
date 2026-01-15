@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\AdminController;
+use App\Http\Controllers\Web\DocumentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\FrontendController;
 use App\Http\Controllers\Web\HomeController;
@@ -72,6 +73,7 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     
     // Allotment List Routes
     Route::get('allotment_list', [\App\Http\Controllers\Web\AllotmentListController::class, 'index'])->name('allotment-list.index');
+    Route::post('allotment_list', [\App\Http\Controllers\Web\AllotmentListController::class, 'show'])->name('allotment-list.show');
     Route::get('allotment_list_approve', [\App\Http\Controllers\Web\AllotmentListController::class, 'approve'])->name('allotment-list.approve');
     Route::post('allotment_list_approve', [\App\Http\Controllers\Web\AllotmentListController::class, 'updateStatus'])->name('allotment-list.update-status');
     Route::get('allotment_list_hold', [\App\Http\Controllers\Web\AllotmentListController::class, 'hold'])->name('allotment-list.hold');
@@ -88,6 +90,12 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::get('status_update/{encrypted_app_id}/{encrypted_status}', [\App\Http\Controllers\Web\ViewAllotmentDetailsController::class, 'updateStatus'])
         ->where(['encrypted_app_id' => '.*', 'encrypted_status' => '.*'])
         ->name('view-allotment-details.update-status');
+    Route::get('download-and-upload/{encrypted_app_id}', [\App\Http\Controllers\Web\ViewAllotmentDetailsController::class, 'declaration'])
+        ->where('encrypted_app_id', '.*')
+        ->name('view-allotment-details.declaration');
+    Route::post('download-and-upload/{encrypted_app_id}', [\App\Http\Controllers\Web\ViewAllotmentDetailsController::class, 'submitDeclaration'])
+        ->where('encrypted_app_id', '.*')
+        ->name('view-allotment-details.submit-declaration');
     
     // View Allotment Letter Routes
     Route::get('view_proposed_rhe', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'index'])->name('view-allotment-letter.index');
@@ -334,6 +342,16 @@ Route::prefix('admin')
     Route::put('/sidebar-menus/{id}', [AdminController::class, 'updateSidebarMenu']);
     Route::delete('/sidebar-menus/{id}', [AdminController::class, 'deleteSidebarMenu']);
 });
+
+Route::get('/download-supporting-doc', [DocumentController::class, 'download'])
+    ->name('supporting-doc.download');
+
+Route::get('/view-document/{path}', [DocumentController::class, 'view'])
+    ->where('path', '.*')
+    ->name('document.view');
+
+
+
 
 
 

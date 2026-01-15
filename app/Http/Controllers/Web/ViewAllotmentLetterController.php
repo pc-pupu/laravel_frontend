@@ -67,8 +67,8 @@ class ViewAllotmentLetterController extends Controller
     public function updateAllotment($encryptedAppId, $encryptedStatus)
     {
         try {
-            $appId = UrlEncryptionHelper::decrypt($encryptedAppId);
-            $status = UrlEncryptionHelper::decrypt($encryptedStatus);
+            $appId = UrlEncryptionHelper::decryptUrl($encryptedAppId);
+            $status = UrlEncryptionHelper::decryptUrl($encryptedStatus);
 
             if (!in_array($status, ['allot', 'cancel'])) {
                 return redirect()->route('view-allotment-letter.index')

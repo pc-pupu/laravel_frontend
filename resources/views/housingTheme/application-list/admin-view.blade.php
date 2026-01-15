@@ -3,6 +3,7 @@
 @section('title', 'Application Details')
 
 @section('content')
+@php use Illuminate\Support\Facades\Crypt; @endphp
 @php
     use Illuminate\Support\Facades\DB;
     use App\Helpers\UrlEncryptionHelper;
@@ -13,7 +14,7 @@
     $preferences = $application['estate_preferences'] ?? [];
     $statusDesc = $application['status_description'] ?? null;
     $flatDetails = $application['allotment_flat_details'] ?? null;
-    $documents = $application['documents'] ?? null;
+    $documents = $application['extra_doc_path'] ?? null;
     
     // Determine entity type added by Subham dt.05-01-2026
     $entityType = '';
@@ -137,11 +138,11 @@
     // Check if supporting document should be shown
     $showSupportingDoc = false;
     $supportingDocPath = '';
-    if ($documents && !empty($documents->extra_doc_path)) {
+    if ($documents) {
         $allotmentCategory = $app['na_allotment_category'] ?? $app['allotment_category'] ?? 'General';
         if ($allotmentCategory != 'General') {
             $showSupportingDoc = true;
-            $supportingDocPath = $documents->extra_doc_path;
+            $supportingDocPath = $documents;
         }
     }
     
@@ -191,9 +192,9 @@
                             <h3><i class="fa fa-file-alt me-2"></i> Application Details</h3>
                             <p class="mb-0">View application information</p>
                         </div>
-                        <a href="javascript:history.back()" class="btn btn-light">
+                        {{-- <a href="javascript:history.back()" class="btn btn-light">
                             <i class="fa fa-arrow-left me-2"></i> Back
-                        </a>
+                        </a> --}}
                     </div>
                 </div>
                 
@@ -205,7 +206,7 @@
                                 <td colspan="2">
                                     @if($showSupportingDoc)
                                         @if(!empty($supportingDocPath))
-                                            <a href="{{ asset('storage/' . $supportingDocPath) }}" download="supporting_document" class="btn bg-dark px-5 rounded-pill text-white fw-bolder">
+                                            <a href="{{ route('supporting-doc.download', ['path' => Crypt::encryptString($supportingDocPath)]) }}" class="btn bg-dark px-5 rounded-pill text-white fw-bolder">
                                                 <i class="fa fa-download me-2"></i> Download Supporting Document
                                             </a>
                                         @else

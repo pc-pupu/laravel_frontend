@@ -38,9 +38,10 @@ class AllotmentListController extends Controller
             $typesResponse = $httpClient->get($this->backend . '/allotment-list/process-types');
             $processTypes = $typesResponse->successful() ? $typesResponse->json('data') : [];
 
-            $allotmentProcessDate = $request->get('allotment_process_date');
-            $allotmentProcessNo = $request->get('allotment_process_no');
-            $allotmentProcessType = $request->get('allotment_process_type');
+            // Get data from session (if available from POST request)
+            $allotmentProcessDate = $request->session()->get('allotment_process_date');
+            $allotmentProcessNo = $request->session()->get('allotment_process_no');
+            $allotmentProcessType = $request->session()->get('allotment_process_type');
 
             $allottees = [];
             $processNumbers = [];
@@ -52,6 +53,7 @@ class AllotmentListController extends Controller
                 ]);
                 $processNumbers = $processNosResponse->successful() ? $processNosResponse->json('data') : [];
 
+                // echo $allotmentProcessDate.'--'.$allotmentProcessNo.'--'.$allotmentProcessType; die;
                 if ($allotmentProcessDate && $allotmentProcessNo && $allotmentProcessType) {
                     // Get allottee list
                     $allotteesResponse = $httpClient->get($this->backend . '/allotment-list/allottees', [
@@ -84,6 +86,36 @@ class AllotmentListController extends Controller
             ]);
 
             return redirect()->route('dashboard')->with('error', 'Failed to load allotment list.');
+        }
+    }
+
+    /**
+     * Handle POST request to show allotment list (hide URL parameters)
+     */
+    public function show(Request $request)
+    {
+        try {
+            $request->validate([
+                'allotment_process_date' => 'required|date',
+                'allotment_process_no' => 'nullable|string',
+                'allotment_process_type' => 'nullable|string'
+            ]);
+
+            // Store in session to avoid URL parameters
+            $request->session()->put('allotment_process_date', $request->allotment_process_date);
+            $request->session()->put('allotment_process_no', $request->allotment_process_no);
+            $request->session()->put('allotment_process_type', $request->allotment_process_type);
+
+            // Redirect to index without parameters
+            return redirect()->route('allotment-list.index');
+
+        } catch (\Exception $e) {
+            Log::error('Allotment List Show Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('allotment-list.index')->with('error', 'Failed to load allotment list.');
         }
     }
 
@@ -157,10 +189,11 @@ class AllotmentListController extends Controller
      */
     public function updateStatus(Request $request)
     {
+        
         try {
             $request->validate([
                 'action' => 'required|string|in:approve,reject,hold',
-                'online_application_ids' => 'required|string' // JSON string from form
+                'online_application_ids' => 'required' // JSON string from form
             ]);
 
             $token = $request->session()->get('api_token');
@@ -178,19 +211,26 @@ class AllotmentListController extends Controller
 
             $action = $request->action;
             $endpoint = $this->backend . '/allotment-list/' . $action;
-
+            // echo $endpoint;
             $response = Http::withToken($token)
                 ->acceptJson()
+                ->asJson()
                 ->post($endpoint, [
                     'online_application_ids' => $onlineApplicationIds
                 ]);
 
+                
+            // print_r($response->body()); exit;
             if ($response->successful()) {
                 $message = $response->json('message') ?? ucfirst($action) . ' completed successfully.';
-                return redirect()->back()->with('success', $message);
+                // Preserve session data for redirect
+                $request->session()->keep(['allotment_process_date', 'allotment_process_no', 'allotment_process_type']);
+                return redirect()->route('allotment-list.index')->with('success', $message);
             } else {
                 $errorMessage = $response->json('message') ?? 'Failed to ' . $action . ' allotments.';
-                return redirect()->back()->with('error', $errorMessage);
+                // Preserve session data for redirect
+                $request->session()->keep(['allotment_process_date', 'allotment_process_no', 'allotment_process_type']);
+                return redirect()->route('allotment-list.index')->with('error', $errorMessage);
             }
 
         } catch (\Exception $e) {

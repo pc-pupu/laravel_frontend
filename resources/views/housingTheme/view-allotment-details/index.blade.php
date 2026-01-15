@@ -23,6 +23,8 @@
 
                 @if($allotment)
                     @php
+                        $value = \App\Helpers\UrlEncryptionHelper::encryptUrl('Accept');
+                        //   echo \App\Helpers\UrlEncryptionHelper::decryptUrl($value);die;
                         $currentDate = date('Y-m-d');
                         $allotmentDate = $allotment['allotment_approve_or_reject_date'] ?? null;
                         $finalDate = $allotmentDate ? date("Y-m-d", strtotime("+15 days", strtotime($allotmentDate))) : null;

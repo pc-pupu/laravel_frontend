@@ -27,16 +27,16 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('login') }}">
+        <form method="POST" action="{{ route('login') }}" autocomplete="off">
             @csrf
             <div class="mb-3 mt-3">
-                <input type="username" class="form-control input-form-custom" id="username" placeholder="Enter user name" name="username" value="{{ old('username') }}" required>
+                <input type="text" class="form-control input-form-custom" id="username" placeholder="Enter user name" name="username" value="{{ old('username') }}" autocomplete="off" required>
                 @error('username')
                     <span class="text-danger">{{ $message }}</span>
                 @enderror
             </div>
             <div class="mb-3">
-                <input type="password" class="form-control input-form-custom" id="pass" placeholder="Enter password" name="pass" required>
+                <input type="password" class="form-control input-form-custom" id="pass" placeholder="Enter password" name="pass" autocomplete="new-password" required>
                 @error('pass')
                     <span class="text-danger">{{ $message }}</span>
                 @enderror

@@ -30,8 +30,10 @@ class UrlEncryptionHelper
 
     /**
      * Decrypt URL parameter (matching Drupal's decrypt_url function)
+     * @param string $string The encrypted string (can be URL-encoded or already decoded)
+     * @param bool $isUrlEncoded Whether the string is URL-encoded (default: true)
      */
-    public static function decryptUrl($string)
+    public static function decryptUrl($string, $isUrlEncoded = true)
     {
         if (empty($string)) {
             return '';
@@ -39,7 +41,17 @@ class UrlEncryptionHelper
 
         $key = self::$key;
         $result = '';
-        $string = base64_decode(urldecode($string));
+        
+        // Match Drupal: base64_decode(urldecode($string))
+        // Use rawurldecode() to preserve + characters (doesn't convert + to space like urldecode() does)
+        if ($isUrlEncoded) {
+            $string = base64_decode(rawurldecode($string));
+        } else {
+            // If already decoded by Laravel, we still need to handle + properly
+            // Re-encode + as %2B then use rawurldecode to get it back as +
+            $string = str_replace('+', '%2B', $string);
+            $string = base64_decode(rawurldecode($string));
+        }
 
         for ($i = 0; $i < strlen($string); $i++) {
             $char = substr($string, $i, 1);
