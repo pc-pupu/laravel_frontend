@@ -216,6 +216,7 @@ class ApplicationListController extends Controller
 
             $application = $response->json('data');
             // print_r($application);die;
+            
             return view('housingTheme.application-list.admin-view', [
                 'application' => $application,
                 'pageStatus' => $pageStatus,

@@ -244,16 +244,53 @@ class UserSsoController extends Controller
     }
 
     /**
-     * Get Test Info (for testing HRMS data fetch)
+     * Get Test Info (for testing HRMS data fetch) - Matching Drupal get_test_info
      * GET /get-test-info/{hrmsId}
      */
     public function getTestInfo($hrmsId = '')
     {
-        // This is a test endpoint - implement if needed
-        return response()->json([
-            'message' => 'Test info endpoint',
-            'hrms_id' => $hrmsId
-        ]);
+        $hrmsId = trim($hrmsId);
+        
+        if (empty($hrmsId)) {
+            return response()->json([
+                'error' => 'HRMS ID is required'
+            ], 400);
+        }
+
+        try {
+            // Call backend API to fetch HRMS test data
+            $response = Http::get(config('services.api.base_url') . '/get-test-info/' . urlencode($hrmsId));
+            
+            if (!$response->successful()) {
+                $error = $response->json();
+                return response()->json([
+                    'error' => $error['message'] ?? 'Failed to fetch HRMS data',
+                    'details' => $error
+                ], $response->status());
+            }
+
+            $data = $response->json();
+            $userData = $data['data'] ?? null;
+
+            // Display in formatted way like Drupal (with <pre> tags)
+            if ($userData) {
+                return response('<pre>' . print_r($userData, true) . '</pre>')
+                    ->header('Content-Type', 'text/html; charset=utf-8');
+            } else {
+                return response('<pre>No user data found</pre>')
+                    ->header('Content-Type', 'text/html; charset=utf-8');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Get Test Info Error', [
+                'error' => $e->getMessage(),
+                'hrms_id' => $hrmsId,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response('<pre>Error: ' . htmlspecialchars($e->getMessage()) . '</pre>')
+                ->header('Content-Type', 'text/html; charset=utf-8');
+        }
     }
 }
 
