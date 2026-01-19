@@ -97,6 +97,14 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
         ->where('encrypted_app_id', '.*')
         ->name('view-allotment-details.submit-declaration');
     
+    // DDO Change Routes
+    Route::get('ddo-change/{encrypted_app_id}', [\App\Http\Controllers\Web\DdoChangeController::class, 'index'])
+        ->where('encrypted_app_id', '.*')
+        ->name('ddo-change.index');
+    Route::post('ddo-change/{encrypted_app_id}', [\App\Http\Controllers\Web\DdoChangeController::class, 'submit'])
+        ->where('encrypted_app_id', '.*')
+        ->name('ddo-change.submit');
+    
     // View Allotment Letter Routes
     Route::get('view_proposed_rhe', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'index'])->name('view-allotment-letter.index');
     Route::get('update_allotment/{encrypted_app_id}/{encrypted_status}', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'updateAllotment'])

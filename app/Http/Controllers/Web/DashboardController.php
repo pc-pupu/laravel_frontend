@@ -159,11 +159,23 @@ class DashboardController extends Controller
      */
     private function defaultDashboard(Request $request)
     {
-        $stats = [
+        $user = $request->session()->get('user');
+        $role = $user['role'];
+        if($role == 18){
+            $stats = [
+                'existing_with_hrms' => 0,
+                'existing_without_hrms' => 0,
+                'cms_items' => $this->fetchPaginatedTotal('/api/cms-content'),
+            ];
+        }else{
+             $stats = [
             'existing_with_hrms' => $this->fetchPaginatedTotal('/api/existing-occupants/with-hrms'),
             'existing_without_hrms' => $this->fetchPaginatedTotal('/api/existing-occupants/without-hrms'),
             'cms_items' => $this->fetchPaginatedTotal('/api/cms-content'),
         ];
+        }
+       
+       
 
         return view('housingTheme.dashboard.index', [
             'user' => session('user'),

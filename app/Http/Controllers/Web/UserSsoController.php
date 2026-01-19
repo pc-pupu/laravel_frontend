@@ -180,9 +180,16 @@ class UserSsoController extends Controller
      */
     public function hrmsLoginForm(Request $request)
     {
-    //   print_r($request->session());die;
-        // If already logged in, redirect to dashboard
-        if (Auth::check() || $request->session()->has('user')) {
+        // If user is already logged in, redirect to appropriate dashboard
+        if ($request->session()->has('user') && $request->session()->has('api_token')) {
+            $user = $request->session()->get('user');
+            
+            // Check if user is admin (uid 1 and name 'admin')
+            if ($user && isset($user['uid']) && (int)$user['uid'] === 1 && isset($user['name']) && strtolower($user['name']) === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+            
+            // Redirect to user dashboard
             return redirect()->route('dashboard');
         }
   

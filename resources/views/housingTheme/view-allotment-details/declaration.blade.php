@@ -46,6 +46,8 @@
                             
                             @php
                                 $hrms = $hrms_data ?? [];
+                                // echo $hrms['applicantName'];
+                                // print_r($hrms);die;
                                 $applicantName = $hrms['applicantName'] ?? 'N/A';
                                 $guardianName = $hrms['guardianName'] ?? 'N/A';
                                 $permanentStreet = $hrms['permanentStreet'] ?? 'N/A';
