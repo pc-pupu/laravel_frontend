@@ -107,19 +107,36 @@ class CmsContentManagerController extends Controller
     public function update(Request $request, $id)
     {
         $payload = $this->buildPayload($request);
+        $payload['is_new'] = $request->is_new ? 1 : 0;
         $builder = $this->authorizedRequest();
-
+        
         if ($request->hasFile('content_file_upload')) {
+
             $file = $request->file('content_file_upload');
-            $builder = $builder->attach(
-                'content_file_upload',
-                file_get_contents($file->getRealPath()),
-                $file->getClientOriginalName()
-            );
+
+            $builder = $builder
+                ->attach(
+                    'content_file_upload',
+                    file_get_contents($file->getRealPath()),
+                    $file->getClientOriginalName()
+                );
+
+            // attach all fields
+            foreach ($payload as $key => $value) {
+                $builder = $builder->attach($key, (string) ($value ?? ''));
+            }
+
+            // IMPORTANT: spoof PUT
+            $builder = $builder->attach('_method', 'PUT');
+
+            // Send POST (not PUT)
+            $response = $builder->post($this->backend . "/api/cms-content/{$id}");
+        }else {
+            // When no file, send as JSON PUT request
+            $response = $builder->put($this->backend . "/api/cms-content/{$id}", $payload);
         }
 
-        $response = $builder->put($this->backend . "/api/cms-content/{$id}", $payload);
-
+        // print_r($response->json()); die;
         if ($response->status() === 422) {
             return $this->handleValidation($response, $request);
         }

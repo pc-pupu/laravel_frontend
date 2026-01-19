@@ -9,12 +9,38 @@ use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
-    public function showLoginForm(){
+    public function showLoginForm(Request $request){
+        // If user is already logged in, redirect to appropriate dashboard
+        if ($request->session()->has('user') && $request->session()->has('api_token')) {
+            $user = $request->session()->get('user');
+            
+            // Check if user is admin (uid 1 and name 'admin')
+            if ($user && isset($user['uid']) && (int)$user['uid'] === 1 && isset($user['name']) && strtolower($user['name']) === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+            
+            // Redirect to user dashboard
+            return redirect()->route('dashboard');
+        }
+        
         return view('outerTheme.pages.login')->with('title', 'Login');
     }
 
 
     public function login(Request $request){
+        // If user is already logged in, redirect to appropriate dashboard
+        if ($request->session()->has('user') && $request->session()->has('api_token')) {
+            $user = $request->session()->get('user');
+            
+            // Check if user is admin (uid 1 and name 'admin')
+            if ($user && isset($user['uid']) && (int)$user['uid'] === 1 && isset($user['name']) && strtolower($user['name']) === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+            
+            // Redirect to user dashboard
+            return redirect()->route('dashboard');
+        }
+        
         $request->validate([
             'username' => 'required|string',
             'pass' => 'required|string',

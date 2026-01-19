@@ -176,42 +176,42 @@ class SsoDashboardController extends Controller
             // $hrmsApiUrl = config('services.hrms.api_url', 'https://172.17.2.45/hrms-External/housing/fetchEmployeeDetails'); // Internal IP (for Live)
 
             
-            if (in_array(config('app.env'), ['local', 'development'])) {
+            // if (in_array(config('app.env'), ['local', 'development'])) {
 
-                $hrmsApiUrl = [
-                    'hrmsId' => $hrmsId,
-                    'applicantName' => 'PRADIP KUMAR HANSDA',
-                    'dateOfBirth' => '15/04/1980',
-                    'dateOfJoining' => '10/06/2005',
-                    'dateOfRetirement' => '30/04/2040',
-                    'mobileNo' => '7278587028',
-                    'gender' => 'Male',
-                    'applicantDesignation' => 'Upper Division Assistant',
-                    'officeName' => 'PANCHAYATS & RURAL DEVELOPMENT DEPARTMENT',
-                    'ddoId' => 'CAFPNA001',
-                    'permanentStreet' => 'Flat No R-5/1,Bidhan Abasan',
-                    'permanentCityTownVillage' => 'F B Block,Sector-III',
-                    'permanentPostOffice' => 'Bidhannagar',
-                    'permanentPincode' => '700106',
-                    'permanentDistrictCode' => '5',
-                    'permanentPresentSame' => 'Y',
-                    'presentStreet' => 'Flat No R-5/1,Bidhan Abasan',
-                    'presentCityTownVillage' => 'F B Block,Sector-III',
-                    'presentPostOffice' => 'Bidhannagar',
-                    'presentPincode' => '700106',
-                    'presentDistrictCode' => '5',
-                    'guardianName' => 'Sri Nabin Chandra Hansda',
-                    'applicantHeadquarter' => 'L1-DEPARTMENT',
-                    'gradePay' => '3600',
-                    'payBandId' => '3',
-                    'payScaleId' => '',
-                    'payInThePayBand' => '10600',
-                    'applicantPostingPlace' => 'Salt Lake City',
-                    'officePinCode' => '700106',
-                    'officeDistrict' => '5',
-                    'email' => '',
-                ];
-            }
+            //     $hrmsApiUrl = [
+            //         'hrmsId' => $hrmsId,
+            //         'applicantName' => 'PRADIP KUMAR HANSDA',
+            //         'dateOfBirth' => '15/04/1980',
+            //         'dateOfJoining' => '10/06/2005',
+            //         'dateOfRetirement' => '30/04/2040',
+            //         'mobileNo' => '7278587028',
+            //         'gender' => 'Male',
+            //         'applicantDesignation' => 'Upper Division Assistant',
+            //         'officeName' => 'PANCHAYATS & RURAL DEVELOPMENT DEPARTMENT',
+            //         'ddoId' => 'CAFPNA001',
+            //         'permanentStreet' => 'Flat No R-5/1,Bidhan Abasan',
+            //         'permanentCityTownVillage' => 'F B Block,Sector-III',
+            //         'permanentPostOffice' => 'Bidhannagar',
+            //         'permanentPincode' => '700106',
+            //         'permanentDistrictCode' => '5',
+            //         'permanentPresentSame' => 'Y',
+            //         'presentStreet' => 'Flat No R-5/1,Bidhan Abasan',
+            //         'presentCityTownVillage' => 'F B Block,Sector-III',
+            //         'presentPostOffice' => 'Bidhannagar',
+            //         'presentPincode' => '700106',
+            //         'presentDistrictCode' => '5',
+            //         'guardianName' => 'Sri Nabin Chandra Hansda',
+            //         'applicantHeadquarter' => 'L1-DEPARTMENT',
+            //         'gradePay' => '3600',
+            //         'payBandId' => '3',
+            //         'payScaleId' => '',
+            //         'payInThePayBand' => '10600',
+            //         'applicantPostingPlace' => 'Salt Lake City',
+            //         'officePinCode' => '700106',
+            //         'officeDistrict' => '5',
+            //         'email' => '',
+            //     ];
+            // }
 
             
             $requestData = [

@@ -15,7 +15,7 @@ class ViewAllotmentDetailsController extends Controller
 
     public function __construct()
     {
-        $this->backend = config('services.api.base_url');
+        $this->backend                  = config('services.api.base_url');
     }
 
     /**
@@ -24,18 +24,18 @@ class ViewAllotmentDetailsController extends Controller
     public function index(Request $request)
     {
         try {
-            $user = $request->session()->get('user');
-            $uid = $user['uid'] ?? null;
+            $user                       = $request->session()->get('user');
+            $uid                        = $user['uid'] ?? null;
 
             if (!$uid) {
                 return redirect()->route('homepage')->with('error', 'Please login to view allotment details.');
             }
 
-            $token = $request->session()->get('api_token');
+            $token                      = $request->session()->get('api_token');
             
-            $httpClient = Http::acceptJson();
+            $httpClient                 = Http::acceptJson();
             if ($token) {
-                $httpClient = $httpClient->withToken($token);
+                $httpClient             = $httpClient->withToken($token);
             }
 
             // Get online application ID for the user
@@ -51,24 +51,24 @@ class ViewAllotmentDetailsController extends Controller
                 ]);
             }
 
-            $allotment = $appIdResponse->json('data');
+            $allotment                  = $appIdResponse->json('data');
 
             // Get uploaded documents
             $documentsResponse = $httpClient->get($this->backend . '/view-allotment-details/documents', [
                 'uid' => $uid,
                 'online_application_id' => $allotment['online_application_id'] ?? null
             ]);
-            $documents = $documentsResponse->successful() ? $documentsResponse->json('data') : null;
+            $documents                  = $documentsResponse->successful() ? $documentsResponse->json('data') : null;
 
             // Check if can accept/reject
-            $canAcceptReject = false;
+            $canAcceptReject            = false;
             if ($allotment) {
-                $currentDate = date('Y-m-d');
-                $allotmentDate = $allotment['allotment_approve_or_reject_date'] ?? null;
+                $currentDate            = date('Y-m-d');
+                $allotmentDate          = $allotment['allotment_approve_or_reject_date'] ?? null;
                 
                 if ($allotmentDate) {
-                    $finalDate = date("Y-m-d", strtotime("+15 days", strtotime($allotmentDate)));
-                    $canAcceptReject = ($currentDate <= $finalDate) && 
+                    $finalDate          = date("Y-m-d", strtotime("+15 days", strtotime($allotmentDate)));
+                    $canAcceptReject    = ($currentDate <= $finalDate) &&
                                        ($allotment['accept_reject_status'] != 'Cancel') &&
                                        ($allotment['accept_reject_status'] == null || $allotment['status'] == 'offer_letter_extended');
                 }
@@ -97,22 +97,22 @@ class ViewAllotmentDetailsController extends Controller
     {
         // Get raw URL-encoded parameters from REQUEST_URI before Laravel decodes them
         // This is necessary because Laravel automatically decodes %2B to +, which breaks base64 decoding
-        $requestUri = $request->server('REQUEST_URI');
+        $requestUri                     = $request->server('REQUEST_URI');
         
         // Extract raw path segments directly from REQUEST_URI using regex
         // Pattern: /status_update/([^/]+)/([^/?]+)
         if (preg_match('#/status_update/([^/]+)/([^/?]+)#', $requestUri, $matches)) {
             // Get raw URL-encoded values (matches[1] and matches[2] are still URL-encoded)
-            $rawEncryptedAppId = $matches[1];
-            $rawEncryptedStatus = $matches[2];
+            $rawEncryptedAppId          = $matches[1];
+            $rawEncryptedStatus         = $matches[2];
             
             // Use raw URL-encoded values for decryption
-            $appId = UrlEncryptionHelper::decryptUrl($rawEncryptedAppId, true);
-            $status = UrlEncryptionHelper::decryptUrl($rawEncryptedStatus, true);
+            $appId                      = UrlEncryptionHelper::decryptUrl($rawEncryptedAppId, true);
+            $status                     = UrlEncryptionHelper::decryptUrl($rawEncryptedStatus, true);
         } else {
             // Fallback: if we can't extract from URI, handle Laravel's decoded parameters
-            $appId = UrlEncryptionHelper::decryptUrl($encryptedAppId, false);
-            $status = UrlEncryptionHelper::decryptUrl($encryptedStatus, false);
+            $appId                      = UrlEncryptionHelper::decryptUrl($encryptedAppId, false);
+            $status                     = UrlEncryptionHelper::decryptUrl($encryptedStatus, false);
         }
         
         
@@ -123,14 +123,14 @@ class ViewAllotmentDetailsController extends Controller
                     ->with('error', 'Invalid status.');
             }
 
-            $token = request()->session()->get('api_token');
+            $token                      = request()->session()->get('api_token');
             
             if (!$token) {
                 return redirect()->route('view-allotment-details.index')
                     ->with('error', 'Authentication required.');
             }
 
-            $response = Http::withToken($token)
+            $response                   = Http::withToken($token)
                 ->acceptJson()
                 ->post($this->backend . '/view-allotment-details/update-status', [
                     'online_application_id' => $appId,
@@ -138,11 +138,11 @@ class ViewAllotmentDetailsController extends Controller
                 ]);
 
             if ($response->successful()) {
-                $responseData = $response->json();
+                $responseData           = $response->json();
                 
                 if ($status == 'Accept') {
                     // Redirect to declaration page (matching Drupal behavior)
-                    $encryptedAppId = UrlEncryptionHelper::encryptUrl($appId);
+                    $encryptedAppId     = UrlEncryptionHelper::encryptUrl($appId);
                     return redirect()->route('view-allotment-details.declaration', ['encrypted_app_id' => $encryptedAppId])
                         ->with('success', $responseData['message'] ?? 'You have accepted the allotment. Please accept this Declaration to finalize your acceptance.');
                 } else {
@@ -151,7 +151,7 @@ class ViewAllotmentDetailsController extends Controller
                         ->with('success', $responseData['message'] ?? 'You rejected the allotment.');
                 }
             } else {
-                $errorMessage = $response->json('message') ?? 'Failed to update status.';
+                $errorMessage           = $response->json('message') ?? 'Failed to update status.';
                 return redirect()->route('view-allotment-details.index')
                     ->with('error', $errorMessage);
             }
@@ -174,17 +174,17 @@ class ViewAllotmentDetailsController extends Controller
     public function declaration($encryptedAppId, Request $request)
     {
         try {
-            $user = $request->session()->get('user');
-            $uid = $user['uid'] ?? null;
+            $user                       = $request->session()->get('user');
+            $uid                        = $user['uid'] ?? null;
 
             if (!$uid) {
                 return redirect()->route('homepage')->with('error', 'Please login to view declaration.');
             }
 
             // Decrypt application ID
-            $appId = UrlEncryptionHelper::decryptUrl($encryptedAppId, false);
+            $appId                      = UrlEncryptionHelper::decryptUrl($encryptedAppId, false);
 
-            $token = $request->session()->get('api_token');
+            $token                      = $request->session()->get('api_token');
             
             if (!$token) {
                 return redirect()->route('view-allotment-details.index')
@@ -192,14 +192,18 @@ class ViewAllotmentDetailsController extends Controller
             }
 
             // Get HRMS user data for declaration
-            $hrmsResponse = Http::withToken($token)
+            $hrmsResponse               = Http::withToken($token)
                 ->acceptJson()
                 ->get($this->backend . '/dashboard', [
                     'uid' => $uid,
                     'username' => $user['name'] ?? ''
                 ]);
 
-            $hrmsData = $hrmsResponse->successful() ? $hrmsResponse->json('user_info') : null;
+                // print_r($hrmsResponse->body()); 
+
+            $hrmsData                   = $hrmsResponse->successful() ? $hrmsResponse->json('data.user_info') : null;
+
+            // print_r($hrmsData);exit;
 
             return view('housingTheme.view-allotment-details.declaration', [
                 'encrypted_app_id' => $encryptedAppId,
@@ -230,17 +234,17 @@ class ViewAllotmentDetailsController extends Controller
                 'accept_declaration' => 'required|accepted'
             ]);
 
-            $user = $request->session()->get('user');
-            $uid = $user['uid'] ?? null;
+            $user                       = $request->session()->get('user');
+            $uid                        = $user['uid'] ?? null;
 
             if (!$uid) {
                 return redirect()->route('homepage')->with('error', 'Please login.');
             }
 
             // Decrypt application ID
-            $appId = UrlEncryptionHelper::decryptUrl($encryptedAppId, false);
+            $appId                      = UrlEncryptionHelper::decryptUrl($encryptedAppId, false);
 
-            $token = $request->session()->get('api_token');
+            $token                      = $request->session()->get('api_token');
             
             if (!$token) {
                 return redirect()->route('view-allotment-details.index')
@@ -248,14 +252,14 @@ class ViewAllotmentDetailsController extends Controller
             }
 
             // Get HRMS user data for declaration content
-            $hrmsResponse = Http::withToken($token)
+            $hrmsResponse               = Http::withToken($token)
                 ->acceptJson()
                 ->get($this->backend . '/dashboard', [
                     'uid' => $uid,
                     'username' => $user['name'] ?? ''
                 ]);
 
-            $hrmsData = $hrmsResponse->successful() ? $hrmsResponse->json('user_info') : null;
+            $hrmsData                   = $hrmsResponse->successful() ? $hrmsResponse->json('user_info') : null;
 
             // Prepare declaration content
             $declarationContent = [
@@ -270,7 +274,7 @@ class ViewAllotmentDetailsController extends Controller
             ];
 
             // Submit declaration to backend
-            $response = Http::withToken($token)
+            $response                   = Http::withToken($token)
                 ->acceptJson()
                 ->post($this->backend . '/view-allotment-details/submit-declaration', [
                     'online_application_id' => $appId,
@@ -279,17 +283,14 @@ class ViewAllotmentDetailsController extends Controller
                 ]);
 
             if ($response->successful()) {
-                $responseData = $response->json();
+                $responseData           = $response->json();
                 
                 // After declaration acceptance, redirect to ddo-change (matching Drupal)
-                // For now, redirect back to view allotment details until ddo-change is implemented
-                $encryptedAppIdForRedirect = UrlEncryptionHelper::encryptUrl($appId);
-                // TODO: Implement ddo-change route when available
-                // return redirect()->route('view-allotment-details.ddo-change', ['encrypted_app_id' => $encryptedAppIdForRedirect])
-                return redirect()->route('view-allotment-details.index')
+                $encryptedAppIdForRedirect      = UrlEncryptionHelper::encryptUrl($appId);
+                return redirect()->route('ddo-change.index', ['encrypted_app_id' => $encryptedAppIdForRedirect])
                     ->with('success', $responseData['message'] ?? 'Declaration accepted successfully.');
             } else {
-                $errorMessage = $response->json('message') ?? 'Failed to submit declaration.';
+                $errorMessage           = $response->json('message') ?? 'Failed to submit declaration.';
                 return redirect()->route('view-allotment-details.declaration', ['encrypted_app_id' => $encryptedAppId])
                     ->with('error', $errorMessage);
             }

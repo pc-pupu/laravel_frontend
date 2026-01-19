@@ -22,20 +22,24 @@
     </div>
 
     <div class="row g-3">
-        <div class="col-md-4">
-            <div class="dashboard-stat-card" style="background: linear-gradient(135deg, #5a67d8, #805ad5);">
-                <div class="dashboard-stat-value">{{ number_format($stats['existing_with_hrms']) }}</div>
-                <div class="dashboard-stat-label">Existing Occupant (with HRMS)</div>
-                <a href="{{ route('existing-occupant.with-hrms') }}" class="btn dashboard-btn-view">View Details</a>
+        @if(number_format($stats['existing_with_hrms']) > 0)
+            <div class="col-md-4">
+                <div class="dashboard-stat-card" style="background: linear-gradient(135deg, #5a67d8, #805ad5);">
+                    <div class="dashboard-stat-value">{{ number_format($stats['existing_with_hrms']) }}</div>
+                    <div class="dashboard-stat-label">Existing Occupant (with HRMS)</div>
+                    <a href="{{ route('existing-occupant.with-hrms') }}" class="btn dashboard-btn-view">View Details</a>
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="dashboard-stat-card" style="background: linear-gradient(135deg, #38b2ac, #4299e1);">
-                <div class="dashboard-stat-value">{{ number_format($stats['existing_without_hrms']) }}</div>
-                <div class="dashboard-stat-label">Existing Occupant (without HRMS)</div>
-                <a href="{{ route('existing-occupant.without-hrms') }}" class="btn dashboard-btn-view">View Details</a>
+        @endif   
+        @if(number_format($stats['existing_without_hrms']) > 0)
+            <div class="col-md-4">
+                <div class="dashboard-stat-card" style="background: linear-gradient(135deg, #38b2ac, #4299e1);">
+                    <div class="dashboard-stat-value">{{ number_format($stats['existing_without_hrms']) }}</div>
+                    <div class="dashboard-stat-label">Existing Occupant (without HRMS)</div>
+                    <a href="{{ route('existing-occupant.without-hrms') }}" class="btn dashboard-btn-view">View Details</a>
+                </div>
             </div>
-        </div>
+        @endif    
         <div class="col-md-4">
             <div class="dashboard-stat-card" style="background: linear-gradient(135deg, #ed64a6, #f56565);">
                 <div class="dashboard-stat-value">{{ number_format($stats['cms_items']) }}</div>
