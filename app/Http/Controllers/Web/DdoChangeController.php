@@ -139,7 +139,21 @@ class DdoChangeController extends Controller
                 return redirect()->route('dashboard')
                     ->with('success', $responseData['message'] ?? 'DDO details updated successfully.');
             } else {
-                $errorMessage = $response->json('message') ?? 'Failed to update DDO change.';
+                $errorData = $response->json();
+                $errorMessage = $errorData['message'] ?? 'Failed to update DDO change.';
+                
+                // Log the error for debugging
+                Log::error('DDO Change Update Failed', [
+                    'status' => $response->status(),
+                    'response' => $errorData,
+                    'request_data' => [
+                        'online_application_id' => $appId,
+                        'old_ddo_id' => $oldDdo['ddo_id'] ?? 0,
+                        'current_ddo_id' => $currentDdo['ddo_id'] ?? 0,
+                        'applicant_official_detail_id' => $oldDdo['applicant_official_detail_id'] ?? null,
+                    ]
+                ]);
+                
                 return redirect()->route('ddo-change.index', ['encrypted_app_id' => $encryptedAppId])
                     ->with('error', $errorMessage);
             }
