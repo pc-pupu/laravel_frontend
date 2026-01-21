@@ -295,6 +295,7 @@ class ApplicationListController extends Controller
      */
     public function generateLicense(Request $request, $id, $pageStatus = '', $status = '')
     {
+        
         if (!$request->session()->has('user')) {
             return redirect()->route('login')->with('error', 'Please login first');
         }
@@ -908,31 +909,49 @@ class ApplicationListController extends Controller
         }
 
         try {
-            $licenseId = UrlEncryptionHelper::decryptUrl($id);
+            // Decrypt online_application_id
+            $onlineApplicationId = UrlEncryptionHelper::decryptUrl($id, false);
 
+            // Get license data from backend
             $response = $this->authorizedRequest()
-                ->get($this->backend . '/api/license/download-pdf/' . $licenseId);
+                ->get($this->backend . '/api/license/download-pdf/' . $onlineApplicationId);
 
             if (!$response->successful()) {
-                return redirect()->back()
-                    ->with('error', 'Failed to download license PDF.');
-            }
-
-            // If the response is a file, return it
-            if ($response->header('Content-Type') === 'application/pdf') {
-                return response($response->body(), 200, [
-                    'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'attachment; filename="license_' . $licenseId . '.pdf"',
+                $errorData = $response->json();
+                Log::error('Download License PDF API Error', [
+                    'status' => $response->status(),
+                    'response' => $errorData,
+                    'online_application_id' => $onlineApplicationId
                 ]);
+                
+                return redirect()->back()
+                    ->with('error', $errorData['message'] ?? 'Failed to download license PDF.');
             }
 
-            // Otherwise, redirect with message
-            return redirect()->back()
-                ->with('info', 'License PDF download feature coming soon.');
+            $licenseData = $response->json('data');
+
+            if (!$licenseData) {
+                return redirect()->back()
+                    ->with('error', 'License data not found.');
+            }
+
+            // Generate PDF HTML content (matching Drupal structure)
+            $html = view('pdf.license', [
+                'licenseDetails' => (object)$licenseData
+            ])->render();
+
+            // Generate PDF using DomPDF
+            $pdf = Pdf::loadHTML($html);
+            $pdf->setPaper('A4', 'portrait');
+
+            $fileName = 'license_' . $licenseData['license_no'] . '.pdf';
+
+            return $pdf->download($fileName);
 
         } catch (\Exception $e) {
             Log::error('Download License PDF Error', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return redirect()->back()
