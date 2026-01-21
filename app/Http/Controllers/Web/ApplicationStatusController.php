@@ -154,11 +154,13 @@ class ApplicationStatusController extends Controller
 
             $data = $searchResponse->json('data');
             $application = $data['application'] ?? [];
+            $allotment_details = $data['allotment_details'] ?? null;
             
             // Get license and possession data from the search result
-            $licenseNo = $application['license_no'] ?? '';
+            $licenseNo = $allotment_details['license_no'] ?? '';
             $possessionDate = $application['possession_date'] ?? '';
             $releaseDate = $application['release_date'] ?? '';
+            
 
             return view('housingTheme.application-status-check.view-list', [
                 'application' => $application,

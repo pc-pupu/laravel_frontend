@@ -105,6 +105,18 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
         ->where('encrypted_app_id', '.*')
         ->name('ddo-change.submit');
     
+    // Generate License Routes
+    Route::get('generate-license', [\App\Http\Controllers\Web\GenerateLicenseController::class, 'index'])
+        ->name('generate-license.index');
+    Route::post('generate-license/{encrypted_app_id}', [\App\Http\Controllers\Web\GenerateLicenseController::class, 'generate'])
+        ->where('encrypted_app_id', '.*')
+        ->name('generate-license.generate');
+
+         // License Management
+    // Route::get('generate-license', [ApplicationListController::class, 'generateLicense'])->name('license.generate');
+    Route::get('view-generated-license', [ApplicationListController::class, 'licenseList'])->name('license.list');
+    
+    
     // View Allotment Letter Routes
     Route::get('view_proposed_rhe', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'index'])->name('view-allotment-letter.index');
     Route::get('update_allotment/{encrypted_app_id}/{encrypted_status}', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'updateAllotment'])
@@ -163,10 +175,7 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::post('update-status/{id}/{new_status}/{status}/{entity}', [ApplicationListController::class, 'updateStatus'])->where(['id' => '.*', 'new_status' => '.*', 'status' => '.*', 'entity' => '.*'])->name('application-list.update-status');
     Route::post('update-status/{id}/{new_status}/{status}/{entity}/{computer_serial_no}', [ApplicationListController::class, 'updateStatus'])->where(['id' => '.*', 'new_status' => '.*', 'status' => '.*', 'entity' => '.*', 'computer_serial_no' => '.*'])->name('application-list.update-status-with-serial');
 
-    // License Management
-    Route::get('generate-license/{id}/{page_status}/{status}', [ApplicationListController::class, 'generateLicense'])->where(['id' => '.*', 'status' => '.*'])->name('license.generate');
-    Route::get('view-generated-license', [ApplicationListController::class, 'licenseList'])->name('license.list');
-    
+   
     //DDO Specific Application Lists
     Route::get('view-flat-possession-taken-ddo', [ApplicationListController::class, 'flatPossessionTaken'])->name('flat-possession-taken');
     Route::get('view-flat-released-ddo', [ApplicationListController::class, 'flatReleased'])->name('flat-released');

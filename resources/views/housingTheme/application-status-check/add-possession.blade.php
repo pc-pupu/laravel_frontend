@@ -2,6 +2,10 @@
 
 @section('title', 'Add Possession Details')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('assets/housingTheme/css/jquery-ui.css') }}">
+@endpush
+
 @section('content')
 <div class="cms-wrapper">
     <div class="row">
@@ -57,16 +61,21 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('assets/housingTheme/jquery/jquery.min.js') }}"></script>
-<script src="{{ asset('assets/housingTheme/jquery-ui/jquery-ui.min.js') }}"></script>
+<script src="{{ asset('assets/housingTheme/jquery/jquery-ui.min.js') }}"></script>
 <script>
-    $(function() {
-        $("#add_possession_date").datepicker({
-            dateFormat: 'dd/mm/yy',
-            changeMonth: true,
-            changeYear: true,
-            yearRange: '2020:2050'
-        });
+    $(document).ready(function() {
+        // Ensure jQuery UI is loaded
+        if (typeof jQuery !== 'undefined' && jQuery.ui && jQuery.ui.datepicker) {
+            $("#add_possession_date").datepicker({
+                dateFormat: 'dd/mm/yy',
+                changeMonth: true,
+                changeYear: true,
+                yearRange: '2020:2050',
+                showButtonPanel: true
+            });
+        } else {
+            console.error('jQuery UI datepicker is not loaded');
+        }
     });
 </script>
 @endpush
