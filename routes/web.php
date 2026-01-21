@@ -19,6 +19,8 @@ use App\Http\Controllers\Web\CommonApplicationController;
 use App\Http\Controllers\Web\ApplicationListController;
 use App\Http\Controllers\Web\ApplicationStatusController;
 use App\Http\Controllers\Web\OnlineApplicationController;
+use App\Http\Controllers\Web\AddFlatBlockController;
+
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -367,9 +369,10 @@ Route::get('/view-document/{path}', [DocumentController::class, 'view'])
     ->where('path', '.*')
     ->name('document.view');
 
+Route::get('/add_block', [AddFlatBlockController::class, 'addFlatBlock'])
+    ->name('block.add');    // Added by Subham dt.20-01-2026
 
-
-
-
+Route::post('/add_block', [AddFlatBlockController::class, 'storeFlatBlock'])
+    ->name('blocks.store');  // Added by Subham dt.20-01-2026    
 
 /* Frontend URL End */
