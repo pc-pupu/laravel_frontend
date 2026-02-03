@@ -113,10 +113,99 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::post('generate-license/{encrypted_app_id}', [\App\Http\Controllers\Web\GenerateLicenseController::class, 'generate'])
         ->where('encrypted_app_id', '.*')
         ->name('generate-license.generate');
+    
+    // Generate VS License Routes
+    Route::get('generate-vs-license', [\App\Http\Controllers\Web\GenerateVsLicenseController::class, 'index'])
+        ->name('generate-vs-license.index');
+    Route::post('generate-vs-license/generate', [\App\Http\Controllers\Web\GenerateVsLicenseController::class, 'generate'])
+        ->name('generate-vs-license.generate');
+    Route::get('generate-vs-license/download-pdf/{encrypted_app_id}/{encrypted_flat_occupant_id}/{encrypted_license_app_id}', 
+        [\App\Http\Controllers\Web\GenerateVsLicenseController::class, 'downloadPdf'])
+        ->where(['encrypted_app_id' => '.*', 'encrypted_flat_occupant_id' => '.*', 'encrypted_license_app_id' => '.*'])
+        ->name('generate-vs-license.download-pdf');
+    Route::get('generate-vs-license/upload-signed/{encrypted_occupant_license_id}/{encrypted_license_no}', 
+        [\App\Http\Controllers\Web\GenerateVsLicenseController::class, 'showUploadForm'])
+        ->where(['encrypted_occupant_license_id' => '.*', 'encrypted_license_no' => '.*'])
+        ->name('generate-vs-license.show-upload');
+    Route::post('generate-vs-license/upload-signed', [\App\Http\Controllers\Web\GenerateVsLicenseController::class, 'uploadSigned'])
+        ->name('generate-vs-license.upload-signed');
+    Route::get('generate-vs-license/download-signed/{encrypted_occupant_license_id}', 
+        [\App\Http\Controllers\Web\GenerateVsLicenseController::class, 'downloadSigned'])
+        ->where('encrypted_occupant_license_id', '.*')
+        ->name('generate-vs-license.download-signed');
+    
+    // Generate CS License Routes
+    Route::get('generate-cs-license', [\App\Http\Controllers\Web\GenerateCsLicenseController::class, 'index'])
+        ->name('generate-cs-license.index');
+    Route::post('generate-cs-license/generate', [\App\Http\Controllers\Web\GenerateCsLicenseController::class, 'generate'])
+        ->name('generate-cs-license.generate');
+    Route::get('generate-cs-license/download-pdf/{encrypted_app_id}/{encrypted_flat_occupant_id}/{encrypted_license_app_id}', 
+        [\App\Http\Controllers\Web\GenerateCsLicenseController::class, 'downloadPdf'])
+        ->where(['encrypted_app_id' => '.*', 'encrypted_flat_occupant_id' => '.*', 'encrypted_license_app_id' => '.*'])
+        ->name('generate-cs-license.download-pdf');
+    Route::get('generate-cs-license/upload-signed/{encrypted_occupant_license_id}/{encrypted_license_no}', 
+        [\App\Http\Controllers\Web\GenerateCsLicenseController::class, 'showUploadForm'])
+        ->where(['encrypted_occupant_license_id' => '.*', 'encrypted_license_no' => '.*'])
+        ->name('generate-cs-license.show-upload');
+    Route::post('generate-cs-license/upload-signed', [\App\Http\Controllers\Web\GenerateCsLicenseController::class, 'uploadSigned'])
+        ->name('generate-cs-license.upload-signed');
+    Route::get('generate-cs-license/download-signed/{encrypted_occupant_license_id}', 
+        [\App\Http\Controllers\Web\GenerateCsLicenseController::class, 'downloadSigned'])
+        ->where('encrypted_occupant_license_id', '.*')
+        ->name('generate-cs-license.download-signed');
 
          // License Management
     // Route::get('generate-license', [ApplicationListController::class, 'generateLicense'])->name('license.generate');
     Route::get('view-generated-license', [ApplicationListController::class, 'licenseList'])->name('license.list');
+    
+    // License List Routes
+    Route::get('license-list', [\App\Http\Controllers\Web\LicenseListController::class, 'index'])
+        ->name('license-list.index');
+    Route::get('license-list/download-pdf/{encrypted_licensee_type}', 
+        [\App\Http\Controllers\Web\LicenseListController::class, 'downloadPdf'])
+        ->where('encrypted_licensee_type', '.*')
+        ->name('license-list.download-pdf');
+    Route::get('license-list/rhe-wise', [\App\Http\Controllers\Web\LicenseListController::class, 'rheWise'])
+        ->name('license-list.rhe-wise');
+    Route::get('license-list/rhe-wise/download-pdf/{encrypted_rhe_id}', 
+        [\App\Http\Controllers\Web\LicenseListController::class, 'downloadRheWisePdf'])
+        ->where('encrypted_rhe_id', '.*')
+        ->name('license-list.rhe-wise.download-pdf');
+    
+    // View License Details Routes (for applicants)
+    Route::get('view-license-details', [\App\Http\Controllers\Web\ViewLicenseDetailsController::class, 'index'])
+        ->name('view-license-details.index');
+    Route::get('view-license-details/download-pdf/{encrypted_license_type}/{encrypted_app_id}/{encrypted_flat_occupant_id}/{encrypted_license_app_id}', 
+        [\App\Http\Controllers\Web\ViewLicenseDetailsController::class, 'downloadPdf'])
+        ->where(['encrypted_license_type' => '.*', 'encrypted_app_id' => '.*', 'encrypted_flat_occupant_id' => '.*', 'encrypted_license_app_id' => '.*'])
+        ->name('view-license-details.download-pdf');
+    
+    // Download Signed License (unified route for all license types)
+    Route::get('download-signed-license/{encrypted_occupant_license_id}', 
+        [\App\Http\Controllers\Web\LicenseListController::class, 'downloadSignedLicense'])
+        ->where('encrypted_occupant_license_id', '.*')
+        ->name('download-signed-license');
+    
+    // License Application Routes
+    Route::get('new-license', [\App\Http\Controllers\Web\NewLicenseController::class, 'index'])
+        ->name('new-license.index');
+    Route::post('new-license', [\App\Http\Controllers\Web\NewLicenseController::class, 'store'])
+        ->name('new-license.store');
+    
+    Route::get('vs-license', [\App\Http\Controllers\Web\VsLicenseController::class, 'index'])
+        ->name('vs-license.index');
+    Route::post('vs-license', [\App\Http\Controllers\Web\VsLicenseController::class, 'store'])
+        ->name('vs-license.store');
+    
+    Route::get('cs-license', [\App\Http\Controllers\Web\CsLicenseController::class, 'index'])
+        ->name('cs-license.index');
+    Route::post('cs-license', [\App\Http\Controllers\Web\CsLicenseController::class, 'store'])
+        ->name('cs-license.store');
+    
+    Route::get('renew-license', [\App\Http\Controllers\Web\RenewLicenseController::class, 'index'])
+        ->name('renew-license.index');
+    Route::post('renew-license', [\App\Http\Controllers\Web\RenewLicenseController::class, 'store'])
+        ->name('renew-license.store');
     
     
     // View Allotment Letter Routes
