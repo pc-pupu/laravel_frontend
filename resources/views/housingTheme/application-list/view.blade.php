@@ -208,7 +208,7 @@
                     </div>
 
                     <div class="table-bottom">
-                        <table class="table table-list">
+                        <table class="table table-list" data-disable-listing-tools="1">
                             <tr>
                                 <th colspan="2" style="background: none repeat scroll 0 0 #473a39;color:white;text-align: center;font-size: 18px;line-height: 24px;font-weight: normal;font-family: 'Dosis',Arial,Verdana,serif;" class="first">Application Status</th>
                             </tr>

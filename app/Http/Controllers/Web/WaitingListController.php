@@ -39,6 +39,7 @@ class WaitingListController extends Controller
                 'flat_type_id' => $selectedFlatTypeId ?: null,
             ]);
 
+            
             if (!$response->successful()) {
                 $message = $response->json('message') ?? 'Failed to load waiting list.';
                 return view('housingTheme.waiting-list.flat-type', [
@@ -52,7 +53,10 @@ class WaitingListController extends Controller
             $data = $response->json('data') ?? [];
             $flatTypes = $data['flat_types'] ?? [];
             $rows = $data['rows'] ?? [];
-
+// print_r($response->json()); // Debugging line - remove in production
+// print_r($flatTypes); // Debugging line - remove in production
+// print_r($rows); // Debugging line - remove in production
+//             die;
             // Pre-encrypt online_application_id for links
             foreach ($rows as &$row) {
                 if (!empty($row['online_application_id'])) {

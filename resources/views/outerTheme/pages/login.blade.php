@@ -35,8 +35,12 @@
                     <span class="text-danger">{{ $message }}</span>
                 @enderror
             </div>
-            <div class="mb-3">
-                <input type="password" class="form-control input-form-custom" id="pass" placeholder="Enter password" name="pass" autocomplete="new-password" required>
+            <div class="mb-3 position-relative">
+                <input type="password" class="form-control input-form-custom pe-5" id="pass" placeholder="Enter password" name="pass" autocomplete="new-password" required>
+                <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-secondary text-decoration-none p-0 me-2" id="togglePassword" aria-label="Show password" title="Show password">
+                    <img id="eyeIcon" src="{{ asset('/assets/outerTheme/images/view.png') }}" alt="Show password" width="20" height="20">
+                    <img id="eyeOffIcon" src="{{ asset('/assets/outerTheme/images/hide.png') }}" alt="Hide password" width="20" height="20" class="d-none">
+                </button>
                 @error('pass')
                     <span class="text-danger">{{ $message }}</span>
                 @enderror
@@ -75,7 +79,25 @@
 <script type="text/javascript">
     document.getElementById('reload').addEventListener('click', function () {
         document.getElementById('captcha-img').src = '{{ captcha_src('flat') }}' + '?' + Date.now();
-    });    
+    });
 
+    document.getElementById('togglePassword').addEventListener('click', function () {
+        var passInput = document.getElementById('pass');
+        var eyeIcon = document.getElementById('eyeIcon');
+        var eyeOffIcon = document.getElementById('eyeOffIcon');
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            eyeIcon.classList.add('d-none');
+            eyeOffIcon.classList.remove('d-none');
+            this.setAttribute('aria-label', 'Hide password');
+            this.setAttribute('title', 'Hide password');
+        } else {
+            passInput.type = 'password';
+            eyeIcon.classList.remove('d-none');
+            eyeOffIcon.classList.add('d-none');
+            this.setAttribute('aria-label', 'Show password');
+            this.setAttribute('title', 'Show password');
+        }
+    });
 </script>
 @endsection

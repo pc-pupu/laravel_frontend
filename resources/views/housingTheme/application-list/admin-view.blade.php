@@ -200,7 +200,7 @@
                 
                 <div class="cms-body">
                     <div class="table-bottom">
-                        <table class="table table-list">
+                        <table class="table table-list" data-disable-listing-tools="1">
                             @if($showSupportingDoc || $showCurrentLicense)
                             <tr>
                                 <td colspan="2">
@@ -424,7 +424,7 @@
                         </table>
                         
                         @if($showRejectionForm)
-                        <table class="table table-list">
+                        <table class="table table-list" data-disable-listing-tools="1">
                             <tr>
                                 <th colspan="2" style="background: none repeat scroll 0 0 #cb3232;color:white;text-align: center;font-size: 18px;line-height: 24px;font-weight: normal;font-family: 'Dosis',Arial,Verdana,serif;" class="first">Remarks for Rejection</th>
                             </tr>

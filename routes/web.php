@@ -66,7 +66,7 @@ Route::get('dashboard', DashboardController::class)
 Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
     Route::get('new-apply', [\App\Http\Controllers\Web\NewApplicationController::class, 'create'])->name('new-application.create');
     Route::post('new-apply', [\App\Http\Controllers\Web\NewApplicationController::class, 'store'])->name('new-application.store');
-    Route::get('flat_type_waiting_list', [WaitingListController::class, 'flatTypeWaitingList'])->name('waiting-list.flat-type');
+    Route::match(['get', 'post'], 'flat_type_waiting_list', [WaitingListController::class, 'flatTypeWaitingList'])->name('waiting-list.flat-type');
     Route::get('vacany_list', [VacancyListController::class, 'districtWise'])->name('vacancy-list.district-wise');
     Route::get('rhe_vacancy_list', [VacancyListController::class, 'rheWise'])->name('vacancy-list.rhe-wise');
         Route::get('supporting-doc-upload/{id}', [\App\Http\Controllers\Web\NewApplicationController::class, 'showSupportingDocUploadForm'])
@@ -95,8 +95,8 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
         ->name('allotment-list.detail');
     
     // Generate Allotment Letter Routes
-    Route::get('generate_allotment_letter', [\App\Http\Controllers\Web\GenerateAllotmentLetterController::class, 'index'])->name('generate-allotment-letter.index');
-    Route::post('generate_letter', [\App\Http\Controllers\Web\GenerateAllotmentLetterController::class, 'generate'])->name('generate-allotment-letter.generate');
+    // Route::get('generate_allotment_letter', [\App\Http\Controllers\Web\GenerateAllotmentLetterController::class, 'index'])->name('generate-allotment-letter.index');
+    // Route::post('generate_letter', [\App\Http\Controllers\Web\GenerateAllotmentLetterController::class, 'generate'])->name('generate-allotment-letter.generate');
     
     // View Allotment Details Routes
     Route::get('view_allotment_details', [\App\Http\Controllers\Web\ViewAllotmentDetailsController::class, 'index'])->name('view-allotment-details.index');
@@ -257,10 +257,10 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     
     
     // View Allotment Letter Routes
-    Route::get('view_proposed_rhe', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'index'])->name('view-allotment-letter.index');
-    Route::get('update_allotment/{encrypted_app_id}/{encrypted_status}', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'updateAllotment'])
-        ->where(['encrypted_app_id' => '.*', 'encrypted_status' => '.*'])
-        ->name('view-allotment-letter.update-allotment');
+    // Route::get('view_proposed_rhe', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'index'])->name('view-allotment-letter.index');
+    // Route::get('update_allotment/{encrypted_app_id}/{encrypted_status}', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'updateAllotment'])
+    //     ->where(['encrypted_app_id' => '.*', 'encrypted_status' => '.*'])
+    //     ->name('view-allotment-letter.update-allotment');
     
     // RHE Allotment Routes
     Route::get('rhe_allotment', [\App\Http\Controllers\Web\RheAllotmentController::class, 'index'])->name('rhe-allotment.index');
