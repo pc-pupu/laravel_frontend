@@ -24,7 +24,8 @@
                 @endif
 
                 <div class="cms-body">
-                    <form method="GET" action="{{ url('flat_type_waiting_list') }}" class="mb-4">
+                    <form method="POST" action="{{ route('waiting-list.flat-type') }}" class="mb-4">
+                        @csrf
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-floating mb-3">

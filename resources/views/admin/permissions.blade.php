@@ -40,7 +40,7 @@
 
         {{-- Permissions Table --}}
         <div class="table-responsive">
-            <table class="admin-table">
+            <table class="admin-table" data-disable-listing-tools="1">
                 <thead>
                     <tr>
                         <th>ID</th>

@@ -217,21 +217,7 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('assets/housingTheme/jquery/jquery.min.js') }}"></script>
 <script>
-    $(document).ready(function() {
-        // Initialize DataTable if available
-        if ($.fn.DataTable) {
-            $('#admin-application-list-table').DataTable({
-                order: [[1, 'asc']],
-                pageLength: 25,
-                language: {
-                    emptyTable: "No applications found!"
-                }
-            });
-        }
-    });
-
     function showRejectModal(id, newStatus, status, entity, computerSerialNo) {
         const form = document.getElementById('rejectForm');
         

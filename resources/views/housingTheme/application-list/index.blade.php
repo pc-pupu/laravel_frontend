@@ -104,20 +104,3 @@
 </div>
 @endsection
 
-@push('scripts')
-<script>
-    $(document).ready(function() {
-        // Initialize DataTable if available
-        if ($.fn.DataTable) {
-            $('#application-list-table').DataTable({
-                order: [[2, 'desc']], // Sort by date of application
-                pageLength: 10,
-                language: {
-                    emptyTable: "No applications found!"
-                }
-            });
-        }
-    });
-</script>
-@endpush
-

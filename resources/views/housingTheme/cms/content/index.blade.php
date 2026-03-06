@@ -42,7 +42,7 @@
                                 <label for="content_type"><i class="fa fa-filter me-2"></i>Content Type</label>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-floating">
                                 <select class="form-select" id="is_active" name="is_active">
                                     <option value="">All Status</option>
@@ -50,6 +50,18 @@
                                     <option value="0" @selected(($filters['is_active'] ?? '') === '0')>Inactive</option>
                                 </select>
                                 <label for="is_active"><i class="fa fa-toggle-on me-2"></i>Status</label>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-floating">
+                                <select class="form-select" id="per_page" name="per_page" onchange="this.form.submit()">
+                                    @php $pp = (int)($filters['per_page'] ?? 10); @endphp
+                                    <option value="10" @selected($pp === 10)>10</option>
+                                    <option value="25" @selected($pp === 25)>25</option>
+                                    <option value="50" @selected($pp === 50)>50</option>
+                                    <option value="100" @selected($pp === 100)>100</option>
+                                </select>
+                                <label for="per_page"><i class="fa fa-list-ol me-2"></i>Per page</label>
                             </div>
                         </div>
                         <div class="col-md-1 d-flex align-items-end">

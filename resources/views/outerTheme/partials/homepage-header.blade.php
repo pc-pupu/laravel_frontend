@@ -15,10 +15,10 @@
             <div class="col-md-6"><img src="{{ asset('assets/outerTheme/images/e-allotment-rhe-logo2.jpg') }}" alt="Housing Department"
                     title="Housing Department"></div>
             <div class="col-md-6 text-end mt-5">
-                <a href="{{url('/site-login')}}" target="_self" class="btn-admin-login mx-2">Official Login</a>
+                <a href="{{url('/login')}}" target="_self" class="btn-admin-login mx-2">Official Login</a>
                 <!-- <a href="{{url('/hrms-applicant-login')}}" target="_self" class="btn-admin-login">Applicant Login</a> -->
-                <a href="{{url('/hrms-login')}}" target="_self" class="btn-admin-login">Applicant Login</a> 
-                 <a href="{{url('/hrms-ddo-login')}}" target="_self" class="btn-admin-login">DDO Login</a>
+                {{-- <a href="{{url('/hrms-login')}}" target="_self" class="btn-admin-login">Applicant Login</a> 
+                 <a href="{{url('/hrms-ddo-login')}}" target="_self" class="btn-admin-login">DDO Login</a> --}}
             </div>
         </div>
     </div>

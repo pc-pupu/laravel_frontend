@@ -19,8 +19,13 @@ class CmsContentManagerController extends Controller
 
     public function index(Request $request)
     {
+        $query = $request->query();
+        if (empty($query['per_page'])) {
+            $query['per_page'] = 10;
+        }
+
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/cms-content', $request->query());
+            ->get($this->backend . '/api/cms-content', $query);
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load CMS contents.');
@@ -36,13 +41,13 @@ class CmsContentManagerController extends Controller
             $payload['current_page'] ?? 1,
             [
                 'path'  => url()->current(),
-                'query' => $request->query(),
+                'query' => $query,
             ]
         );
 
         return view('housingTheme.cms.content.index', [
             'contents'     => $contents,
-            'filters'      => $request->only(['search', 'content_type', 'is_active']),
+            'filters'      => array_merge($request->only(['search', 'content_type', 'is_active']), ['per_page' => $query['per_page']]),
             'contentTypes' => $this->contentTypes(),
         ]);
     }

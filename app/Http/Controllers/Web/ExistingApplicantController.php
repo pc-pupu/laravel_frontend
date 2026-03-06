@@ -19,8 +19,13 @@ class ExistingApplicantController extends Controller
 
     public function index(Request $request)
     {
+        $query = $request->query();
+        if (empty($query['per_page'])) {
+            $query['per_page'] = 10;
+        }
+
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/existing-applicants', $request->query());
+            ->get($this->backend . '/api/existing-applicants', $query);
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load existing applicants.');
@@ -36,20 +41,25 @@ class ExistingApplicantController extends Controller
             $payload['current_page'] ?? 1,
             [
                 'path'  => url()->current(),
-                'query' => $request->query(),
+                'query' => $query,
             ]
         );
 
         return view('housingTheme.existing-applicant.index', [
             'applicants' => $applicants,
-            'filters'   => $request->only(['search', 'has_hrms']),
+            'filters'   => array_merge($request->only(['search', 'has_hrms']), ['per_page' => $query['per_page']]),
         ]);
     }
 
     public function withHrms(Request $request)
     {
+        $query = $request->query();
+        if (empty($query['per_page'])) {
+            $query['per_page'] = 10;
+        }
+
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/existing-applicants/with-hrms', $request->query());
+            ->get($this->backend . '/api/existing-applicants/with-hrms', $query);
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load applicants.');
@@ -65,21 +75,26 @@ class ExistingApplicantController extends Controller
             $payload['current_page'] ?? 1,
             [
                 'path'  => url()->current(),
-                'query' => $request->query(),
+                'query' => $query,
             ]
         );
 
         return view('housingTheme.existing-applicant.index', [
             'applicants' => $applicants,
-            'filters'   => $request->only(['search']),
+            'filters'   => array_merge($request->only(['search']), ['per_page' => $query['per_page']]),
             'title'     => 'Legacy Applicant List with HRMS ID',
         ]);
     }
 
     public function withoutHrms(Request $request)
     {
+        $query = $request->query();
+        if (empty($query['per_page'])) {
+            $query['per_page'] = 10;
+        }
+
         $response = $this->authorizedRequest()
-            ->get($this->backend . '/api/existing-applicants/without-hrms', $request->query());
+            ->get($this->backend . '/api/existing-applicants/without-hrms', $query);
 
         if (!$response->successful()) {
             return back()->with('error', $response->json('message') ?? 'Failed to load applicants.');
@@ -95,13 +110,13 @@ class ExistingApplicantController extends Controller
             $payload['current_page'] ?? 1,
             [
                 'path'  => url()->current(),
-                'query' => $request->query(),
+                'query' => $query,
             ]
         );
 
         return view('housingTheme.existing-applicant.index', [
             'applicants' => $applicants,
-            'filters'   => $request->only(['search']),
+            'filters'   => array_merge($request->only(['search']), ['per_page' => $query['per_page']]),
             'title'     => 'Legacy Applicant List without HRMS ID',
         ]);
     }
