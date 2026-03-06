@@ -20,6 +20,8 @@ use App\Http\Controllers\Web\ApplicationListController;
 use App\Http\Controllers\Web\ApplicationStatusController;
 use App\Http\Controllers\Web\OnlineApplicationController;
 use App\Http\Controllers\Web\AddFlatBlockController;
+use App\Http\Controllers\Web\WaitingListController;
+use App\Http\Controllers\Web\VacancyListController;
 
 
 // Route::get('/', function () {
@@ -64,6 +66,15 @@ Route::get('dashboard', DashboardController::class)
 Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
     Route::get('new-apply', [\App\Http\Controllers\Web\NewApplicationController::class, 'create'])->name('new-application.create');
     Route::post('new-apply', [\App\Http\Controllers\Web\NewApplicationController::class, 'store'])->name('new-application.store');
+    Route::get('flat_type_waiting_list', [WaitingListController::class, 'flatTypeWaitingList'])->name('waiting-list.flat-type');
+    Route::get('vacany_list', [VacancyListController::class, 'districtWise'])->name('vacancy-list.district-wise');
+    Route::get('rhe_vacancy_list', [VacancyListController::class, 'rheWise'])->name('vacancy-list.rhe-wise');
+        Route::get('supporting-doc-upload/{id}', [\App\Http\Controllers\Web\NewApplicationController::class, 'showSupportingDocUploadForm'])
+            ->where('id', '.*')
+            ->name('new-application.supporting-doc-upload.form');
+        Route::post('supporting-doc-upload/{id}', [\App\Http\Controllers\Web\NewApplicationController::class, 'submitSupportingDocUpload'])
+            ->where('id', '.*')
+            ->name('new-application.supporting-doc-upload.submit');
     
     // Category Shifting (CS) Application
     Route::get('cs', [\App\Http\Controllers\Web\CategoryShiftingController::class, 'create'])->name('category-shifting.create');
@@ -207,6 +218,43 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::post('renew-license', [\App\Http\Controllers\Web\RenewLicenseController::class, 'store'])
         ->name('renew-license.store');
     
+    // Special Recommendation Routes
+    Route::get('housing-approver-list', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'housingApproverList'])
+        ->name('special-recommendation.housing-approver-list');
+    Route::get('special-recommendation/{encrypted_online_application_id}/{encrypted_allotment_category}', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'addToSpecialRecommendation'])
+        ->where(['encrypted_online_application_id' => '.*', 'encrypted_allotment_category' => '.*'])
+        ->name('special-recommendation.add');
+    Route::get('special-recommendation-remove/{encrypted_online_application_id}', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'removeFromSpecialRecommendation'])
+        ->where('encrypted_online_application_id', '.*')
+        ->name('special-recommendation.remove');
+    Route::get('special-recommendation-list-view', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'listView'])
+        ->name('special-recommendation.list-view');
+    Route::post('special-recommendation-list-view', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'updatePriorityOrder'])
+        ->name('special-recommendation.update-priority');
+    Route::get('special-recommended-list', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'finalList'])
+        ->name('special-recommendation.final-list');
+    Route::get('view-app-det/{encrypted_online_application_id}', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'viewApplicationDetails'])
+        ->where('encrypted_online_application_id', '.*')
+        ->name('special-recommendation.view-details');
+    Route::get('convrt-to-gen-cat/{encrypted_online_application_id}', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'convertToGeneralCategory'])
+        ->where('encrypted_online_application_id', '.*')
+        ->name('special-recommendation.convert-to-general');
+    Route::get('special-recommendation-occupant/{encrypted_online_application_id}', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'showManualAllotmentForm'])
+        ->where('encrypted_online_application_id', '.*')
+        ->name('special-recommendation.manual-allotment');
+    Route::post('special-recommendation-occupant', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'submitManualAllotment'])
+        ->name('special-recommendation.submit-manual-allotment');
+    
+    // AJAX endpoints for manual allotment
+    Route::get('special-recommendation/get-flat-types', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'getFlatTypes'])
+        ->name('special-recommendation.get-flat-types');
+    Route::get('special-recommendation/get-blocks', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'getBlocks'])
+        ->name('special-recommendation.get-blocks');
+    Route::get('special-recommendation/get-floors', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'getFloors'])
+        ->name('special-recommendation.get-floors');
+    Route::get('special-recommendation/get-flats', [\App\Http\Controllers\Web\SpecialRecommendationController::class, 'getFlats'])
+        ->name('special-recommendation.get-flats');
+    
     
     // View Allotment Letter Routes
     Route::get('view_proposed_rhe', [\App\Http\Controllers\Web\ViewAllotmentLetterController::class, 'index'])->name('view-allotment-letter.index');
@@ -218,6 +266,26 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::get('rhe_allotment', [\App\Http\Controllers\Web\RheAllotmentController::class, 'index'])->name('rhe-allotment.index');
     Route::post('rhe_allotment/show-vacancy', [\App\Http\Controllers\Web\RheAllotmentController::class, 'showVacancy'])->name('rhe-allotment.show-vacancy');
     Route::post('rhe_allotment/process', [\App\Http\Controllers\Web\RheAllotmentController::class, 'processAllotment'])->name('rhe-allotment.process');
+    
+    // Shifting Allotment Routes
+    Route::get('vs_allotment', [\App\Http\Controllers\Web\ShiftingAllotmentController::class, 'vsAllotmentForm'])->name('shifting-allotment.vs');
+    Route::post('vs_allotment', [\App\Http\Controllers\Web\ShiftingAllotmentController::class, 'processVsAllotment'])->name('shifting-allotment.vs.process');
+    Route::get('cs_allotment', [\App\Http\Controllers\Web\ShiftingAllotmentController::class, 'csAllotmentForm'])->name('shifting-allotment.cs');
+    Route::post('cs_allotment', [\App\Http\Controllers\Web\ShiftingAllotmentController::class, 'processCsAllotment'])->name('shifting-allotment.cs.process');
+    
+    // AJAX routes for shifting allotment
+    Route::get('shifting-allotment/vs/counts', [\App\Http\Controllers\Web\ShiftingAllotmentController::class, 'getVsCountsAjax'])->name('shifting-allotment.vs.counts');
+    Route::get('shifting-allotment/cs/counts', [\App\Http\Controllers\Web\ShiftingAllotmentController::class, 'getCsCountsAjax'])->name('shifting-allotment.cs.counts');
+    
+    // Shifting Allotment List Routes
+    Route::get('vs_allotment_list', [\App\Http\Controllers\Web\ShiftingAllotmentListController::class, 'vsAllotmentList'])->name('shifting-allotment-list.vs');
+    Route::get('cs_allotment_list', [\App\Http\Controllers\Web\ShiftingAllotmentListController::class, 'csAllotmentList'])->name('shifting-allotment-list.cs');
+    
+    // AJAX routes for shifting allotment list
+    Route::get('shifting-allotment-list/vs/process-numbers', [\App\Http\Controllers\Web\ShiftingAllotmentListController::class, 'getVsProcessNumbersAjax'])->name('shifting-allotment-list.vs.process-numbers');
+    Route::get('shifting-allotment-list/cs/process-numbers', [\App\Http\Controllers\Web\ShiftingAllotmentListController::class, 'getCsProcessNumbersAjax'])->name('shifting-allotment-list.cs.process-numbers');
+    Route::get('shifting-allotment-list/vs/allottees', [\App\Http\Controllers\Web\ShiftingAllotmentListController::class, 'getVsAllotteesAjax'])->name('shifting-allotment-list.vs.allottees');
+    Route::get('shifting-allotment-list/cs/allottees', [\App\Http\Controllers\Web\ShiftingAllotmentListController::class, 'getCsAllotteesAjax'])->name('shifting-allotment-list.cs.allottees');
     
     // AJAX endpoints for new application
     Route::get('new-application/flat-type-categories', [\App\Http\Controllers\Web\NewApplicationController::class, 'getFlatTypeAndCategoriesAjax'])->name('new-application.flat-type-categories');

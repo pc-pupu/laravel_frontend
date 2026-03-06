@@ -214,6 +214,123 @@ class NewApplicationController extends Controller
     }
 
     /**
+     * Show Supporting Document Upload form
+     * GET /supporting-doc-upload/{id}
+     */
+    public function showSupportingDocUploadForm(Request $request, $encryptedId)
+    {
+        if (!$request->session()->has('user')) {
+            return redirect()->route('login')->with('error', 'Please login first');
+        }
+
+        try {
+            $onlineApplicationId = UrlEncryptionHelper::decryptUrl($encryptedId);
+
+            // Fetch minimal application info for display (from dashboard API data shape)
+            $user = $request->session()->get('user');
+            $uid = $user['uid'];
+
+            $response = $this->authorizedRequest()
+                ->get($this->backend . '/api/dashboard', [
+                    'uid' => $uid,
+                ]);
+
+            $applicationNo = null;
+            $allotmentCategory = null;
+
+            if ($response->successful()) {
+                $output = $response->json('data') ?? [];
+                $applications = $output['all-application-data'] ?? [];
+                foreach ($applications as $app) {
+                    if ((int)($app['online_application_id'] ?? 0) === (int)$onlineApplicationId) {
+                        $applicationNo = $app['application_no'] ?? null;
+                        $allotmentCategory = $app['allotment_category'] ?? null;
+                        break;
+                    }
+                }
+            }
+
+            return view('housingTheme.new-application.supporting-doc-upload', [
+                'encryptedId' => $encryptedId,
+                'applicationNo' => $applicationNo,
+                'allotmentCategory' => $allotmentCategory,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Show Supporting Doc Upload Form Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->route('dashboard')
+                ->with('error', 'Failed to load supporting document upload form.');
+        }
+    }
+
+    /**
+     * Handle Supporting Document Upload
+     * POST /supporting-doc-upload/{id}
+     */
+    public function submitSupportingDocUpload(Request $request, $encryptedId)
+    {
+        if (!$request->session()->has('user')) {
+            return redirect()->route('login')->with('error', 'Please login first');
+        }
+
+        $request->validate([
+            'extra_doc' => 'required|file|mimes:pdf|max:1024',
+        ]);
+
+        try {
+            $onlineApplicationId = UrlEncryptionHelper::decryptUrl($encryptedId);
+
+            $multipartData = [
+                [
+                    'name' => 'online_application_id',
+                    'contents' => (string)$onlineApplicationId,
+                ],
+            ];
+
+            if ($request->hasFile('extra_doc')) {
+                $multipartData[] = [
+                    'name' => 'extra_doc',
+                    'contents' => fopen($request->file('extra_doc')->getRealPath(), 'r'),
+                    'filename' => $request->file('extra_doc')->getClientOriginalName(),
+                ];
+            }
+
+            $token = session('api_token');
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->asMultipart()->post($this->backend . '/api/new-application/supporting-doc-upload', $multipartData);
+
+            if (!$response->successful()) {
+                $errors = $response->json('errors') ?? [];
+                $message = $response->json('message') ?? 'Failed to upload supporting document.';
+
+                return back()
+                    ->withInput()
+                    ->withErrors($errors)
+                    ->with('error', $message);
+            }
+
+            return redirect()->route('dashboard')
+                ->with('success', 'Supporting Document uploaded successfully.');
+
+        } catch (\Exception $e) {
+            Log::error('Submit Supporting Doc Upload Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'An error occurred while uploading the supporting document.');
+        }
+    }
+
+    /**
      * Check draft status
      */
     private function checkDraftStatus($uid)
