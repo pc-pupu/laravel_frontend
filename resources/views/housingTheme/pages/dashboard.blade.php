@@ -391,13 +391,46 @@
                         </thead>
                         <tbody>
                            @foreach($output['all-application-data'] as $application)
+                              @php
+                                 $applicationNo = $application['application_no'] ?? '';
+                                 $allotmentCategory = $application['allotment_category'] ?? '';
+                                 $extraDocPath = $application['extra_doc_path'] ?? '';
+                                 $statusId = $application['status_id'] ?? null;
+                                 $showSupportingDocLink = false;
+
+                                 // Mirror Drupal logic:
+                                 // - Not VS/CS application (no VS/CS in application_no)
+                                 // - Non-General allotment category
+                                 // - No supporting document uploaded yet
+                                 // - Early status (status_id <= 8)
+                                 if (
+                                     $applicationNo !== '' &&
+                                     strpos($applicationNo, 'VS') === false &&
+                                     strpos($applicationNo, 'CS') === false &&
+                                     !empty($allotmentCategory) &&
+                                     strtoupper(trim($allotmentCategory)) !== 'GENERAL' &&
+                                     (empty($extraDocPath)) &&
+                                     !is_null($statusId) &&
+                                     (int)$statusId <= 8
+                                 ) {
+                                     $showSupportingDocLink = true;
+                                 }
+                              @endphp
                               <tr>
                                  <td><b>{{ $application['applicant_name'] }}</b></td>
-                                 <td>{{ $application['application_no'] }}</td>
+                                 <td>{{ $applicationNo }}</td>
                                  <td>{{ !empty($application['date_of_application']) ? \Carbon\Carbon::parse($application['date_of_application'])->format('d-m-Y') : 'N/A' }}</td>
                                  <td>{{ $application['status_description'] }}</td>
                                  <td>
                                     <a href="{{ url('/view-application-details/' . \App\Helpers\UrlEncryptionHelper::encryptUrl($application['online_application_id'])) }}" class="btn btn-outline-primary btn-sm px-5 rounded-pill fw-bolder">View</a>
+                                    
+                                    @if($showSupportingDocLink)
+                                       <br>
+                                       <a href="{{ route('new-application.supporting-doc-upload.form', ['id' => \App\Helpers\UrlEncryptionHelper::encryptUrl($application['online_application_id'])]) }}"
+                                          class="btn btn-outline-warning btn-sm px-5 rounded-pill fw-bolder mt-2">
+                                          Upload Supporting Documents
+                                       </a>
+                                    @endif
                                  </td>
                               </tr>
                            @endforeach
