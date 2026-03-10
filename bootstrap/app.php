@@ -24,16 +24,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Hide internal paths and sensitive information in production
-        if (config('app.env') === 'production') {
-            $exceptions->render(function (\Throwable $e, $request) {
-                // Don't expose internal paths or stack traces
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'message' => 'An error occurred. Please try again later.',
-                        'error' => config('app.debug') ? $e->getMessage() : 'Internal Server Error'
-                    ], 500);
-                }
-            });
-        }
+        $exceptions->render(function (\Throwable $e, $request) {
+            if (config('app.debug')) {
+                return null;
+            }
+            $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+            $message = 'An error occurred. Please try again later.';
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $message, 'error' => 'Internal Server Error'], $status >= 400 ? $status : 500);
+            }
+            return null;
+        });
     })->create();

@@ -15,6 +15,7 @@
             <li><a href="{{ route('admin.roles') }}" class="{{ request()->routeIs('admin.roles') ? 'active' : '' }}"><i class="fas fa-user-tag"></i> Roles</a></li>
             <li><a href="{{ route('admin.permissions') }}" class="{{ request()->routeIs('admin.permissions') ? 'active' : '' }}"><i class="fas fa-key"></i> Permissions</a></li>
             <li><a href="{{ route('admin.error-logs') }}" class="{{ request()->routeIs('admin.error-logs') ? 'active' : '' }}"><i class="fas fa-exclamation-triangle"></i> Error Logs</a></li>
+            <li><a href="{{ route('admin.cache') }}" class="{{ request()->routeIs('admin.cache') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Cache & Optimize</a></li>
             <li><a href="{{ route('admin.sidebar-menus') }}" class="{{ request()->routeIs('admin.sidebar-menus') ? 'active' : '' }}"><i class="fas fa-bars"></i> Sidebar Menus</a></li>
 
             {{-- Divider before dynamic menus --}}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 class AdminController extends Controller
 {
@@ -11,7 +12,41 @@ class AdminController extends Controller
 
     public function __construct()
     {
-        $this->backend = rtrim(env('BACKEND_API'), '/');
+        $this->backend = $this->normalizeBackendUrl(rtrim(env('BACKEND_API', ''), '/'));
+    }
+
+    /**
+     * Ensure backend URL has a valid port so cURL does not reject it.
+     * Fixes: "URL rejected: Port number was not a decimal number between 0 and 65535"
+     */
+    private function normalizeBackendUrl(string $base): string
+    {
+        if ($base === '') {
+            return '';
+        }
+        $parsed = parse_url($base);
+        if ($parsed === false || !isset($parsed['host'])) {
+            return $base;
+        }
+        $scheme = $parsed['scheme'] ?? 'http';
+        $host = $parsed['host'];
+        $port = $parsed['port'] ?? null;
+        $path = $parsed['path'] ?? '';
+        $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+        $validPort = null;
+        if ($port !== null && $port !== '') {
+            $p = is_numeric($port) ? (int) $port : null;
+            if ($p !== null && $p >= 0 && $p <= 65535) {
+                $validPort = $p;
+            }
+        }
+        if ($validPort === null) {
+            $validPort = ($scheme === 'https') ? 443 : 80;
+        }
+        $defaultPort = ($scheme === 'https') ? 443 : 80;
+        $showPort = ($validPort !== $defaultPort);
+        $url = $scheme . '://' . $host . ($showPort ? ':' . $validPort : '') . $path . $query;
+        return rtrim($url, '/');
     }
 
     /***********************************************************
@@ -19,7 +54,14 @@ class AdminController extends Controller
      ***********************************************************/
     private function apiRequest($method, $endpoint, $data = [])
     {
-        $url = $this->backend . '/api/' . ltrim($endpoint, '/');
+        if ($this->backend === '') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Backend API URL is not configured. Set BACKEND_API in .env.',
+            ], 500);
+        }
+
+        $url = $this->backend .'/api'. '/' . ltrim($endpoint, '/');
 
         // For GET requests, append query parameters to URL
         if (strtoupper($method) === 'GET' && !empty($data)) {
@@ -94,6 +136,87 @@ class AdminController extends Controller
     public function sidebarMenusPage()
     {
         return view('admin.sidebar-menus');
+    }
+
+    /**
+     * Cache & Optimize page (clear cache, view, optimize for this Laravel app).
+     */
+    public function cachePage()
+    {
+        return view('admin.cache');
+    }
+
+    /**
+     * Run cache/view/optimize clear on both frontend and backend. POST with action: cache|view|optimize|config|route|all.
+     */
+    public function clearCache(Request $request)
+    {
+        $action = $request->input('action', 'all');
+        $allowed = ['cache', 'view', 'optimize', 'config', 'route', 'all'];
+        if (!in_array($action, $allowed, true)) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid action.'], 422);
+        }
+
+        $commands = [
+            'cache'    => ['cache:clear', 'Application cache cleared'],
+            'view'     => ['view:clear', 'Compiled views cleared'],
+            'config'   => ['config:clear', 'Configuration cache cleared'],
+            'route'    => ['route:clear', 'Route cache cleared'],
+            'optimize' => ['optimize:clear', 'Optimize (bootstrap) cache cleared'],
+        ];
+
+        // ---- Frontend (this app) ----
+        $frontendResults = [];
+        if ($action === 'all') {
+            foreach ($commands as $key => [$cmd, $label]) {
+                try {
+                    Artisan::call($cmd);
+                    $frontendResults[$key] = ['ok' => true, 'message' => $label];
+                } catch (\Throwable $e) {
+                    $frontendResults[$key] = ['ok' => false, 'message' => $e->getMessage()];
+                }
+            }
+        } else {
+            [$cmd, $label] = $commands[$action];
+            try {
+                Artisan::call($cmd);
+                $frontendResults[$action] = ['ok' => true, 'message' => $label];
+            } catch (\Throwable $e) {
+                $frontendResults[$action] = ['ok' => false, 'message' => $e->getMessage()];
+            }
+        }
+
+        // ---- Backend (API) ----
+        $backendResults = null;
+        $backendError = null;
+        if ($this->backend !== '') {
+            try {
+                $backendResponse = $this->apiRequest('POST', 'admin/cache/clear', ['action' => $action]);
+                $content = $backendResponse->getContent();
+                $data = json_decode($content, true);
+                $backendResults = $data['results'] ?? [];
+                $backendError = ($data['status'] ?? '') === 'error' ? ($data['message'] ?? 'Backend returned error') : null;
+            } catch (\Throwable $e) {
+                $backendResults = ['_error' => ['ok' => false, 'message' => $e->getMessage()]];
+                $backendError = $e->getMessage();
+            }
+        } else {
+            $backendResults = ['_error' => ['ok' => false, 'message' => 'Backend API not configured (BACKEND_API).']];
+            $backendError = 'Backend not configured';
+        }
+
+        $frontendOk = !in_array(false, array_column($frontendResults, 'ok'));
+        $backendOk = $backendError === null && (is_array($backendResults) && !isset($backendResults['_error']));
+        $allOk = $frontendOk && $backendOk;
+
+        return response()->json([
+            'status'  => $allOk ? 'success' : 'error',
+            'message' => $allOk ? 'Frontend and backend cleared.' : ($frontendOk ? 'Frontend cleared; backend had issues.' : 'Some commands failed.'),
+            'results' => [
+                'frontend' => $frontendResults,
+                'backend'  => $backendResults,
+            ],
+        ], $allOk ? 200 : 500);
     }
 
 
@@ -205,6 +328,11 @@ class AdminController extends Controller
     public function clearAllErrorLogs()
     {
         return $this->apiRequest('DELETE', "admin/error-logs");
+    }
+
+    public function clearErrorLogsByTime(Request $req)
+    {
+        return $this->apiRequest('DELETE', "admin/error-logs/clear-by-time", $req->all());
     }
 
 

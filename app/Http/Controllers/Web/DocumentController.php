@@ -3,13 +3,9 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Helpers\UrlEncryptionHelper;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Crypt;
 
 class DocumentController extends Controller
 {
@@ -41,12 +37,8 @@ class DocumentController extends Controller
                 ]);
 
             if (!$response->successful()) {
-                $error = $response->json();
-                Log::error('Document Download API Error', [
-                    'status' => $response->status(),
-                    'error' => $error
-                ]);
-                abort($response->status(), $error['error'] ?? 'Failed to download document');
+                Log::error('Document Download API Error', ['status' => $response->status()]);
+                abort($response->status(), 'Failed to download document');
             }
 
             // Get file name from response headers or use default
@@ -64,53 +56,56 @@ class DocumentController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Document Download Error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            abort(500, 'Failed to download document: ' . $e->getMessage());
+            Log::error('Document Download Error', ['error' => $e->getMessage()]);
+            abort(500, 'Failed to download document');
         }
     }
 
     /**
-     * View document securely without exposing the original path
+     * View document (auth required). Proxies through backend so access control is enforced.
      */
-    public function view($path)
+    public function view(Request $request, $path)
     {
+        if (!$request->session()->has('user') || !$request->session()->has('api_token')) {
+            abort(403, 'Authentication required');
+        }
+
+        $encryptedPath = $path;
+        if (empty($encryptedPath)) {
+            abort(403, 'Missing document path');
+        }
+
         try {
-            $filePath = Crypt::decryptString($path);
-        } catch (\Exception $e) {
-            abort(403, 'Invalid document link');
-        }
+            $token = $request->session()->get('api_token');
+            $backend = rtrim(env('BACKEND_API'), '/');
+            $response = Http::withToken($token)->withOptions(['stream' => true])
+                ->get($backend . '/api/document/download', ['path' => $encryptedPath]);
 
-        if (!Storage::disk('public')->exists($filePath)) {
-            abort(404, 'Document not found');
-        }
+            if (!$response->successful()) {
+                Log::warning('Document View API Error', ['status' => $response->status()]);
+                abort($response->status(), 'Failed to view document');
+            }
 
-        $fullPath = Storage::disk('public')->path($filePath);
-        $mimeType = mime_content_type($fullPath);
-        $fileName = basename($filePath);
+            $contentType = $response->header('Content-Type') ?? 'application/octet-stream';
+            $contentDisposition = $response->header('Content-Disposition');
+            $fileName = 'document';
+            if ($contentDisposition && preg_match('/filename="?([^"]+)"?/', $contentDisposition, $m)) {
+                $fileName = $m[1];
+            }
+            $inlineTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'text/plain'];
+            $mimeType = strtolower(trim(explode(';', $contentType)[0]));
+            $disposition = in_array($mimeType, $inlineTypes) ? 'inline' : 'attachment';
 
-        // Determine if document can be displayed inline
-        $canDisplayInline = in_array($mimeType, [
-            'application/pdf',
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/webp',
-            'text/plain',
-            'text/html'
-        ]);
-
-        if ($canDisplayInline) {
-            return response()->file($fullPath, [
-                'Content-Type' => $mimeType,
-                'Content-Disposition' => 'inline; filename="' . $fileName . '"',
+            return response()->stream(function () use ($response) {
+                echo $response->body();
+            }, 200, [
+                'Content-Type' => $contentType,
+                'Content-Disposition' => $disposition . '; filename="' . $fileName . '"',
             ]);
+        } catch (\Exception $e) {
+            Log::error('Document View Error', ['error' => $e->getMessage()]);
+            abort(500, 'Failed to view document');
         }
-
-        // For unsupported types, force download
-        return Storage::disk('public')->download($filePath);
     }
 
 }

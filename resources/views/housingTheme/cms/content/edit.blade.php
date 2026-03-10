@@ -28,7 +28,7 @@
                     </div>
                 @endif
 
-                <form id="cmsContentForm" method="POST" action="{{ route('cms-content.update', $content['housing_cms_id']) }}" enctype="multipart/form-data" novalidate>
+                <form id="cmsContentForm" method="POST" action="{{ route('cms-content.update', $encrypted_id ?? $content['housing_cms_id']) }}" enctype="multipart/form-data" novalidate>
                     @csrf
                     @method('PUT')
                     <div class="form-section">

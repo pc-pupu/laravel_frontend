@@ -9,13 +9,51 @@
     <div class="admin-card-header">
         <h3>Error Logs</h3>
 
-        <button class="btn-admin btn-admin-danger btn-admin-sm"
-                onclick="clearAllLogs()">
-            <i class="fas fa-trash"></i> Clear All
-        </button>
+        <div class="d-flex gap-2 flex-wrap">
+            <button class="btn-admin btn-admin-danger btn-admin-sm" onclick="clearAllLogs()">
+                <i class="fas fa-trash"></i> Clear All
+            </button>
+        </div>
     </div>
 
     <div class="admin-card-body">
+
+        {{-- Clear by time --}}
+        <div class="card mb-4 border border-warning">
+            <div class="card-header bg-light py-2">
+                <strong><i class="fas fa-broom"></i> Clear errors by time</strong>
+            </div>
+            <div class="card-body py-3">
+                <div class="row align-items-end g-2">
+                    <div class="col-auto">
+                        <label class="form-label small mb-0">Older than</label>
+                        <select id="clear-older-than-days" class="form-select form-select-sm" style="width: auto;">
+                            <option value="">— Select —</option>
+                            <option value="1">1 day</option>
+                            <option value="7">7 days</option>
+                            <option value="30">30 days</option>
+                            <option value="90">90 days</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <span class="text-muted small">or</span>
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label small mb-0">From date</label>
+                        <input type="date" id="clear-date-from" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label small mb-0">To date</label>
+                        <input type="date" id="clear-date-to" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn-admin btn-admin-warning btn-admin-sm" onclick="clearByTime()">
+                            <i class="fas fa-broom"></i> Clear by time
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         {{-- Filters --}}
         <div class="row mb-3">
@@ -63,18 +101,17 @@
                     <tr>
                         <th>ID</th>
                         <th>Level</th>
+                        <th>Error type</th>
                         <th>Message</th>
                         <th>User</th>
-                        <th>URL</th>
-                        <th>IP Address</th>
-                        <th>Date</th>
+                        <th>Time</th>
                         <th style="width: 120px;">Actions</th>
                     </tr>
                 </thead>
 
                 <tbody id="logs-table-body">
                     <tr>
-                        <td colspan="8" class="text-center">
+                        <td colspan="7" class="text-center">
                             <div class="spinner"></div>
                         </td>
                     </tr>

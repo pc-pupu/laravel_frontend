@@ -53,10 +53,10 @@ class WaitingListController extends Controller
             $data = $response->json('data') ?? [];
             $flatTypes = $data['flat_types'] ?? [];
             $rows = $data['rows'] ?? [];
-// print_r($response->json()); // Debugging line - remove in production
-// print_r($flatTypes); // Debugging line - remove in production
-// print_r($rows); // Debugging line - remove in production
-//             die;
+            // print_r($response->json()); // Debugging line - remove in production
+            // print_r($flatTypes); // Debugging line - remove in production
+            // print_r($rows); // Debugging line - remove in production
+            //             die;
             // Pre-encrypt online_application_id for links
             foreach ($rows as &$row) {
                 if (!empty($row['online_application_id'])) {
