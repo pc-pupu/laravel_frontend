@@ -125,17 +125,13 @@
                                             @endif
                                         </td>
                                         <td class="text-end">
-                                            <a href="{{ route('cms-content.edit', $item['housing_cms_id']) }}" class="btn btn-action-edit">
+                                            <a href="{{ route('cms-content.edit', \App\Helpers\UrlEncryptionHelper::encryptUrl($item['housing_cms_id'])) }}" class="btn btn-action-edit">
                                                 <i class="fa fa-edit"></i> Edit
                                             </a>
-                                            <form action="{{ route('cms-content.destroy', $item['housing_cms_id']) }}" method="POST" class="d-inline"
-                                                onsubmit="return confirm('Are you sure you want to delete this content?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-action-delete" type="submit">
-                                                    <i class="fa fa-trash"></i> Delete
-                                                </button>
-                                            </form>
+                                            <a href="{{ route('cms-content.destroy', \App\Helpers\UrlEncryptionHelper::encryptUrl($item['housing_cms_id'])) }}" class="btn btn-action-delete"
+                                                onclick="return confirm('Are you sure you want to Delete?');">
+                                                <i class="fa fa-trash"></i> Delete
+                                            </a>
                                         </td>
                                     </tr>
                                 @empty

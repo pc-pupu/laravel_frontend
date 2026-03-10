@@ -34,24 +34,25 @@ function displayErrorLogs(logs) {
     const tbody = document.getElementById('logs-table-body');
     if (!tbody) return;
     if (!logs || logs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center">No error logs found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No error logs found</td></tr>';
         return;
     }
 
     tbody.innerHTML = logs.map(log => {
         const levelBadge = getLevelBadge(log.level);
-        const userName = log.user ? log.user.name : '-';
-        const date = H.formatDate(log.created_at);
+        const userName = log.user ? log.user.name : '—';
+        const time = H.formatDate(log.created_at);
+        const errorType = log.exception_type ? (log.exception_type.length > 40 ? log.exception_type.substring(0, 40) + '…' : log.exception_type) : '—';
+        const msg = log.message ? (log.message.length > 50 ? log.message.substring(0, 50) + '…' : log.message) : '—';
 
         return `
             <tr>
                 <td>${log.id}</td>
                 <td>${levelBadge}</td>
-                <td>${log.message ? (log.message.length > 50 ? log.message.substring(0,50) + '...' : log.message) : '-'}</td>
+                <td><span class="small" title="${(log.exception_type || '').replace(/"/g, '&quot;')}">${errorType}</span></td>
+                <td>${msg}</td>
                 <td>${userName}</td>
-                <td>${log.url ? (log.url.length > 30 ? log.url.substring(0,30) + '...' : log.url) : '-'}</td>
-                <td>${log.ip_address || '-'}</td>
-                <td>${date}</td>
+                <td>${time}</td>
                 <td>
                     <button class="btn-admin btn-admin-sm btn-admin-primary" onclick="viewLogDetail(${log.id})"><i class="fas fa-eye"></i> View</button>
                     <button class="btn-admin btn-admin-sm btn-admin-danger" onclick="deleteLog(${log.id})"><i class="fas fa-trash"></i> Delete</button>
@@ -98,14 +99,15 @@ async function viewLogDetail(logId) {
             if (content) {
                 content.innerHTML = `
                     <div class="mb-3"><strong>Level:</strong> ${getLevelBadge(log.level)}</div>
+                    <div class="mb-3"><strong>Error type:</strong> ${log.exception_type || '—'}</div>
                     <div class="mb-3"><strong>Message:</strong><br><pre style="background:#f5f5f5;padding:10px;border-radius:5px;white-space:pre-wrap;">${log.message || '-'}</pre></div>
-                    <div class="mb-3"><strong>User:</strong> ${log.user ? log.user.name : '-'}</div>
+                    <div class="mb-3"><strong>User:</strong> ${log.user ? log.user.name : '—'}</div>
+                    <div class="mb-3"><strong>Time:</strong> ${H.formatDate(log.created_at)}</div>
                     <div class="mb-3"><strong>URL:</strong> ${log.url || '-'}</div>
                     <div class="mb-3"><strong>Method:</strong> ${log.method || '-'}</div>
                     <div class="mb-3"><strong>IP Address:</strong> ${log.ip_address || '-'}</div>
                     <div class="mb-3"><strong>File:</strong> ${log.file || '-'}</div>
                     <div class="mb-3"><strong>Line:</strong> ${log.line || '-'}</div>
-                    <div class="mb-3"><strong>Date:</strong> ${H.formatDate(log.created_at)}</div>
                     ${log.context ? `<div class="mb-3"><strong>Context:</strong><pre style="background:#f5f5f5;padding:10px;border-radius:5px;white-space:pre-wrap;">${JSON.stringify(log.context,null,2)}</pre></div>` : ''}
                     ${log.trace ? `<div class="mb-3"><strong>Stack Trace:</strong><pre style="background:#f5f5f5;padding:10px;border-radius:5px;white-space:pre-wrap;max-height:400px;overflow-y:auto;">${JSON.stringify(log.trace,null,2)}</pre></div>` : ''}
                 `;
@@ -149,10 +151,54 @@ async function clearAllLogs() {
     }
 }
 
+async function clearByTime() {
+    const olderThanDays = document.getElementById('clear-older-than-days')?.value || '';
+    const dateFrom = document.getElementById('clear-date-from')?.value || '';
+    const dateTo = document.getElementById('clear-date-to')?.value || '';
+
+    if (!olderThanDays && !dateFrom && !dateTo) {
+        H.showError('Select "Older than" days or set From/To date.');
+        return;
+    }
+    if (olderThanDays && (dateFrom || dateTo)) {
+        H.showError('Use either "Older than" or date range, not both.');
+        return;
+    }
+
+    const msg = olderThanDays
+        ? `Delete all error logs older than ${olderThanDays} day(s)?`
+        : `Delete error logs from ${dateFrom || '…'} to ${dateTo || '…'}?`;
+    if (!confirm(msg)) return;
+
+    const body = olderThanDays ? { older_than_days: parseInt(olderThanDays, 10) } : {};
+    if (dateFrom) body.date_from = dateFrom;
+    if (dateTo) body.date_to = dateTo;
+
+    try {
+        const data = await H.apiFetch('/admin/error-logs/clear-by-time', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (data && data.status === 'success') {
+            H.showNotification(data.message || 'Errors cleared', 'success');
+            loadErrorLogs(1);
+            document.getElementById('clear-older-than-days').value = '';
+            document.getElementById('clear-date-from').value = '';
+            document.getElementById('clear-date-to').value = '';
+        } else {
+            H.showError(data?.message || 'Failed to clear logs');
+        }
+    } catch (err) {
+        H.showError('Error clearing logs: ' + (err.message || 'Unknown'));
+    }
+}
+
 window.loadErrorLogs = loadErrorLogs;
 window.viewLogDetail = viewLogDetail;
 window.deleteLog = deleteLog;
 window.clearAllLogs = clearAllLogs;
+window.clearByTime = clearByTime;
 
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => loadErrorLogs(1), 50);

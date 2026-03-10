@@ -5,76 +5,90 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Pagination\Paginator;
 
+/**
+ * Public-facing CMS and static pages (no auth).
+ * Fetches content from backend API and renders outerTheme views.
+ */
 class FrontendController extends Controller
 {
-    public function showData(){
-        // $response = Http::get('http://127.0.0.1:8000/api/users');
-        $response = Http::get(config('services.api.base_url') . '/users');
-        $data = $response->json();
-
-        // Pass users array to Blade
-        return view('data-view', ['users' => $data['users']]);
+    private function getApiBaseUrl(): string
+    {
+        return rtrim(config('services.api.base_url', ''), '/');
     }
 
-    public function about_us(){   
-        $response = Http::get(config('services.api.base_url') . '/content/about-us');
+    public function showData()
+    {
+        $response = Http::get($this->getApiBaseUrl() . '/users');
         $data = $response->json();
-        // dd($data);
 
-        // Pass to the view
+        return view('data-view', ['users' => $data['users'] ?? []]);
+    }
+
+    /** About Us: single content block from CMS (content_type = about_us). */
+    public function about_us()
+    {
+        $data = $this->fetchPublicContent('about-us');
+
         return view('outerTheme.pages.about-us', [
-            'link_title' => $data['link_title'] ?? [],
-            'content_title' => $data['content_title'] ?? [],
-            'content_description' => $data['content_description'] ?? []
+            'link_title'         => $data['link_title'] ?? 'About Us',
+            'content_title'      => $data['content_title'] ?? '',
+            'content_description'=> $data['content_description'] ?? '',
         ]);
     }
 
-    public function contact_us(){   
-        $response = Http::get(config('services.api.base_url') . '/content/contact-us');
-        $data = $response->json();
-        
-        // Pass to the view
+    /** Contact Us: single content block + map iframe. */
+    public function contact_us()
+    {
+        $data = $this->fetchPublicContent('contact-us');
+
         return view('outerTheme.pages.contact-us', [
-            'link_title' => $data['link_title'] ?? [],
-            'content_title' => $data['content_title'] ?? [],
-            'content_description' => $data['content_description'] ?? []
+            'link_title'         => $data['link_title'] ?? 'Contact Us',
+            'content_title'      => $data['content_title'] ?? '',
+            'content_description'=> $data['content_description'] ?? '',
         ]);
     }
 
-    public function faq(){   
-        $response = Http::get(config('services.api.base_url') . '/content/faq');
-        $allData = collect($response->json());
+    /** FAQ: list of items, rendered as accordion. */
+    public function faq()
+    {
+        $items = $this->fetchPublicContentList('faq');
 
-        $perPage = 1;
-        $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $currentItems = $allData->slice(($currentPage - 1) * $perPage, $perPage)->values();
-
-        
-        return view('outerTheme.pages.faq', ['faqs' => $allData]);
+        return view('outerTheme.pages.faq', ['faqs' => $items]);
     }
 
-    public function notice(Request $request){ 
-        
-        $response = Http::get(config('services.api.base_url') . '/content/notice');
-        $allData = collect($response->json());
+    /** Notice: list with title, download link, date of notification. */
+    public function notice(Request $request)
+    {
+        $items = $this->fetchPublicContentList('notice');
 
-        $perPage = 1;
-        $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $currentItems = $allData->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        return view('outerTheme.pages.notice', ['notices' => $items]);
+    }
 
-        // Step 3: Create paginator instance
-        $paginatedData = new LengthAwarePaginator(
-            $currentItems,
-            $allData->count(),
-            $perPage,
-            $currentPage,
-            ['path' => url()->current()]
-        );
+    /** User Manual: list with description and download link (CMS content_type = user_manual). */
+    public function user_manual()
+    {
+        $items = $this->fetchPublicContentList('user-manual');
 
-        return view('outerTheme.pages.notice', ['notices' => $paginatedData]);
+        return view('outerTheme.pages.user-manual', ['manuals' => $items]);
+    }
+
+    /** Fetch single public CMS content (about_us, contact_us, what_is_new). */
+    private function fetchPublicContent(string $type): array
+    {
+        $response = Http::get($this->getApiBaseUrl() . '/content/' . $type);
+        $data = $response->json();
+
+        return is_array($data) ? $data : [];
+    }
+
+    /** Fetch list of public CMS content (faq, notice, user_manual). */
+    private function fetchPublicContentList(string $type): Collection
+    {
+        $response = Http::get($this->getApiBaseUrl() . '/content/' . $type);
+        $data = $response->json();
+
+        return collect(is_array($data) ? $data : []);
     }
 }

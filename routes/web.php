@@ -36,11 +36,11 @@ Route::controller(HomeController::class)->group(function () {
 });
 
 Route::controller(FrontendController::class)->group(function () {
-    // Additional frontend routes can be added here
     Route::get('/about-us', 'about_us')->name('about-us');
     Route::get('/contact-us', 'contact_us')->name('contact-us');
     Route::get('/faq', 'faq')->name('faq');
     Route::get('/notice', 'notice')->name('notice');
+    Route::get('/user-manual', 'user_manual')->name('user-manual');
 });
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -372,17 +372,16 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::get('tagged-user-list/{status?}', [UserTaggingController::class, 'taggedUserList'])->name('user-tagging.tagged-user-list');
 });
 
-Route::prefix('cms-content')
-    ->middleware(\App\Http\Middleware\CheckSessionAuth::class)
-    ->name('cms-content.')
-    ->group(function () {
-        Route::get('/', [CmsContentManagerController::class, 'index'])->name('index');
-        Route::get('/create', [CmsContentManagerController::class, 'create'])->name('create');
-        Route::post('/', [CmsContentManagerController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [CmsContentManagerController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [CmsContentManagerController::class, 'update'])->name('update');
-        Route::delete('/{id}', [CmsContentManagerController::class, 'destroy'])->name('destroy');
-    });
+// CMS Content (URLs match Drupal cms_content module)
+Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
+    Route::get('cms-content-list', [CmsContentManagerController::class, 'index'])->name('cms-content.index');
+    Route::get('cms-content-add', [CmsContentManagerController::class, 'create'])->name('cms-content.create');
+    Route::post('cms-content-add', [CmsContentManagerController::class, 'store'])->name('cms-content.store');
+    Route::get('cms-content-edit/{id}', [CmsContentManagerController::class, 'edit'])->name('cms-content.edit');
+    Route::match(['put', 'patch'], 'cms-content-edit/{id}', [CmsContentManagerController::class, 'update'])->name('cms-content.update');
+    Route::post('cms-content-edit/{id}', [CmsContentManagerController::class, 'update'])->name('cms-content.update.post');
+    Route::get('cms-content-delete/{id}', [CmsContentManagerController::class, 'destroy'])->name('cms-content.destroy');
+});
 
 // Existing Applicant (Legacy/Physical Applicants) Routes
 Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
@@ -483,6 +482,8 @@ Route::prefix('admin')
     Route::get('/permissions', [AdminController::class, 'permissionsPage'])->name('admin.permissions');
     Route::get('/error-logs', [AdminController::class, 'errorLogsPage'])->name('admin.error-logs');
     Route::get('/sidebar-menus', [AdminController::class, 'sidebarMenusPage'])->name('admin.sidebar-menus');
+    Route::get('/cache', [AdminController::class, 'cachePage'])->name('admin.cache');
+    Route::post('/cache/clear', [AdminController::class, 'clearCache'])->name('admin.cache.clear');
 
     // USERS PROXY
     Route::get('/users/list', [AdminController::class, 'listUsers']);
@@ -507,6 +508,7 @@ Route::prefix('admin')
 
     // ERROR LOGS
     Route::get('/error-logs/list', [AdminController::class, 'listErrorLogs']);
+    Route::delete('/error-logs/clear-by-time', [AdminController::class, 'clearErrorLogsByTime']);
     Route::get('/error-logs/{id}', [AdminController::class, 'getErrorLog']);
     Route::delete('/error-logs/{id}', [AdminController::class, 'deleteErrorLog']);
     Route::delete('/error-logs', [AdminController::class, 'clearAllErrorLogs']);
@@ -522,9 +524,11 @@ Route::prefix('admin')
 Route::get('/download-supporting-doc', [DocumentController::class, 'download'])
     ->name('supporting-doc.download');
 
-Route::get('/view-document/{path}', [DocumentController::class, 'view'])
-    ->where('path', '.*')
-    ->name('document.view');
+Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function () {
+    Route::get('/view-document/{path}', [DocumentController::class, 'view'])
+        ->where('path', '.*')
+        ->name('document.view');
+});
 
 Route::get('/add_block', [AddFlatBlockController::class, 'addFlatBlock'])
     ->name('block.add');    // Added by Subham dt.20-01-2026

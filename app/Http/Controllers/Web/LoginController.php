@@ -42,15 +42,19 @@ class LoginController extends Controller
         }
         
         $request->validate([
-            'username' => 'required|string',
-            'pass' => 'required|string',
-            'captcha' => 'required|captcha'
+            'username' => 'required|string|max:255',
+            'pass' => 'required_without:password_encrypted|nullable|string|max:255',
+            'password_encrypted' => 'nullable|string|max:4096',
+            'captcha' => 'required|captcha|string|max:10',
         ]);
-        
-        $response = Http::post(config('services.api.base_url').'/login', [
-            'name' => $request->username,
-            'password' => $request->pass,
-        ]);
+
+        $payload = ['name' => $request->username];
+        if ($request->filled('password_encrypted')) {
+            $payload['password_encrypted'] = $request->password_encrypted;
+        } else {
+            $payload['password'] = $request->pass;
+        }
+        $response = Http::post(rtrim(config('services.api.base_url'), '/').'/login', $payload);
 
         if($response->successful()){
             $data = $response->json();
@@ -67,7 +71,8 @@ class LoginController extends Controller
             // Store user data and token in session
             $request->session()->put('user', $user);
             $request->session()->put('api_token', $token);
-            
+            $request->session()->regenerate();
+
             // Ensure session is saved
             $request->session()->save();
             

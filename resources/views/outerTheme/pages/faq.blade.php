@@ -20,7 +20,7 @@
                                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m10 16 4-4-4-4"/>
                                             </svg>
                                         </i>
-                                        {{ strtoupper($item['link_title']) }}
+                                        {{ $item['content_title'] ?? $item['link_title'] ?? 'Question' }}
                                     </b>
                                 </button>
                             </h2>
@@ -29,7 +29,7 @@
                                 aria-labelledby="flush-heading{{ $key }}"
                                 data-bs-parent="#accordionFlushExample">
                                 <div class="accordion-body">
-                                    {{ $item['content_description'] }}
+                                    {!! $item['content_description'] ?? '' !!}
                                 </div>
                             </div>
                         </div>

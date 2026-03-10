@@ -22,7 +22,7 @@ class FileUploadValidationMiddleware
         }
         
         // Validate file uploads if present
-        if ($request->hasFile('*')) {
+        if (!empty($request->allFiles())) {
             $files = $request->allFiles();
             
             foreach ($files as $key => $file) {
@@ -44,28 +44,32 @@ class FileUploadValidationMiddleware
      */
     private function validateFile($file, $fieldName)
     {
-        // Check for double extension (e.g., file.php.jpg)
         $filename = $file->getClientOriginalName();
-        $extension = $file->getClientOriginalExtension();
-        
-        // Remove extension and check if remaining part contains another extension
+        $extension = strtolower($file->getClientOriginalExtension());
         $nameWithoutExt = pathinfo($filename, PATHINFO_FILENAME);
-        
-        // List of dangerous extensions
+
+        if (str_contains($filename, "\0") || str_contains($filename, '..') || preg_match('#[/\\\\]#', $filename)) {
+            abort(422, 'File upload rejected: Invalid filename');
+        }
+
         $dangerousExtensions = ['php', 'php3', 'php4', 'php5', 'phtml', 'exe', 'bat', 'cmd', 'com', 'scr', 'vbs', 'js', 'jsp', 'asp', 'aspx', 'sh', 'py', 'pl', 'rb', 'jar', 'war'];
-        
-        // Check if filename contains dangerous extension before the actual extension
         foreach ($dangerousExtensions as $dangerousExt) {
-            if (stripos($nameWithoutExt, '.' . $dangerousExt) !== false) {
-                abort(422, "File upload rejected: Double extension detected. File contains dangerous extension: .{$dangerousExt}");
+            if (stripos($nameWithoutExt, '.' . $dangerousExt) !== false || stripos($nameWithoutExt, $dangerousExt . '.') !== false) {
+                abort(422, 'File upload rejected: Double extension detected');
             }
         }
-        
-        // Validate file extension
+
+        $parts = explode('.', $filename);
+        if (count($parts) > 2) {
+            $suspicious = array_intersect(array_map('strtolower', array_slice($parts, 0, -1)), $dangerousExtensions);
+            if (!empty($suspicious)) {
+                abort(422, 'File upload rejected: Double extension detected');
+            }
+        }
+
         $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'csv'];
-        
-        if (!in_array(strtolower($extension), $allowedExtensions)) {
-            abort(422, "File upload rejected: Extension '{$extension}' is not allowed.");
+        if (!in_array($extension, $allowedExtensions)) {
+            abort(422, 'File upload rejected: Extension not allowed');
         }
         
         // Validate file size (max 10MB)
@@ -85,7 +89,7 @@ class FileUploadValidationMiddleware
         
         $mimeType = $file->getMimeType();
         if (!in_array($mimeType, $allowedMimeTypes)) {
-            abort(422, "File upload rejected: MIME type '{$mimeType}' is not allowed.");
+            abort(422, 'File upload rejected: MIME type not allowed');
         }
     }
 }
