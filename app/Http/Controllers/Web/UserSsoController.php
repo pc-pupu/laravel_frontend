@@ -181,6 +181,12 @@ class UserSsoController extends Controller
     public function hrmsLoginForm(Request $request)
     {
         // If user is already logged in, redirect to appropriate dashboard
+        // session()->flush();
+            //  $request->session()->invalidate();
+            // $request->session()->regenerateToken();
+
+            // print_r($request->session()->all());
+            // die;
         if ($request->session()->has('user') && $request->session()->has('api_token')) {
             $user = $request->session()->get('user');
             
