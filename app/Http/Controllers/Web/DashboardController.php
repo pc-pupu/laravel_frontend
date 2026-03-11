@@ -33,8 +33,8 @@ class DashboardController extends Controller
             Cookie::queue(Cookie::forget('user_type'));
 
             // $userType = request()->cookie('user_type');
-
-        if ($referer && (str_contains($referer, 'user-tagging') || str_contains($referer, 'dashboard'))) {
+    
+        if ($referer && (str_contains($referer, 'user-tagging') || str_contains($referer, 'dashboard') || str_contains($referer, 'login'))) {
             // Check if cookie is already set, if not set it server-side
             if (!$request->cookie('user_type')) {
                 $cookie = cookie('user_type', 'new', 60 * 24, '/', null, false, false, false, 'Lax');
@@ -126,6 +126,7 @@ class DashboardController extends Controller
                     }
                 }
 
+                // print_r($output);die;
                 return view('housingTheme.pages.dashboard', [
                     'output' => $output,
                     'sidebar_menus' => $menus

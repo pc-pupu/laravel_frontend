@@ -171,6 +171,7 @@ class SsoDashboardController extends Controller
             // HRMS API URL
             $hrmsApiUrl = config(
                 'services.hrms.api_url',
+                // 'https://uat.wbifms.gov.in/hrms-External/housing/fetchEmployeeDetails'
                 'https://uat.wbifms.gov.in/hrms-External/housing/fetchEmployeeDetails'
             );
             // $hrmsApiUrl = config('services.hrms.api_url', 'https://172.17.2.45/hrms-External/housing/fetchEmployeeDetails'); // Internal IP (for Live)
