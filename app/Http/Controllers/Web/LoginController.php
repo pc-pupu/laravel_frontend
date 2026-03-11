@@ -12,6 +12,10 @@ class LoginController extends Controller
     public function showLoginForm(Request $request){
         // If user is already logged in, redirect to appropriate dashboard
         if ($request->session()->has('user') && $request->session()->has('api_token')) {
+        //    $request->session()->invalidate();
+        //     $request->session()->regenerateToken();
+        //     print_r($request->session()->all());
+        //     die;
             $user = $request->session()->get('user');
             
             // Check if user is admin (uid 1 and name 'admin')
@@ -55,7 +59,7 @@ class LoginController extends Controller
             $payload['password'] = $request->pass;
         }
         $response = Http::post(rtrim(config('services.api.base_url'), '/').'/login', $payload);
-
+        
         if($response->successful()){
             $data = $response->json();
             
@@ -104,6 +108,7 @@ class LoginController extends Controller
                 return redirect()->route('admin.dashboard')->withCookie($cookie);
             }
             
+            
             if ($user && isset($user['uid']) && isset($user['name']) && strtolower($user['name']) !== 'admin') {
                 // Redirect to CMS content manager dashboard with token in cookie
                 return redirect()->route('dashboard')->withCookie($cookie);
@@ -111,6 +116,7 @@ class LoginController extends Controller
 
             // return redirect()->route('dashboard')->withCookie($cookie);
         } else {
+            
             // Handle different error scenarios
             $errorData = $response->json();
             $errorMessage = $errorData['message'] ?? 'Login failed. Please check your credentials.';

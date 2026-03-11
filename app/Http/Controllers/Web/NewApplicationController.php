@@ -360,8 +360,10 @@ class NewApplicationController extends Controller
             // Call HRMS API
             $hrmsApiUrl = config(
                 'services.hrms.api_url',
-                'https://uat.wbifms.gov.in/hrms-External/housing/fetchEmployeeDetails'
+                
+                'https://172.17.2.45/hrms-External/housing/fetchEmployeeDetails'
             );
+            // 'https://uat.wbifms.gov.in/hrms-External/housing/fetchEmployeeDetails'
             $requestData = [
                 'req' => [
                     'hrmsId' => $hrmsId,
