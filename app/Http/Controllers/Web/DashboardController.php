@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cookie;
 
+
 class DashboardController extends Controller
 {
     private string $backend;
@@ -29,6 +30,10 @@ class DashboardController extends Controller
         $cookie = null;
         $referer = $request->header('Referer');
        
+            Cookie::queue(Cookie::forget('user_type'));
+
+            // $userType = request()->cookie('user_type');
+
         if ($referer && (str_contains($referer, 'user-tagging') || str_contains($referer, 'dashboard'))) {
             // Check if cookie is already set, if not set it server-side
             if (!$request->cookie('user_type')) {
@@ -46,8 +51,8 @@ class DashboardController extends Controller
             if ($token) {
                 $httpClient = $httpClient->withToken($token);
             }
+           
             $userType = $_COOKIE['user_type'] ?? ($cookie ? 'new' : null);
-            // echo 'User Type Cookie: ' . ($userType ?? 'not set');die;
             $dashboardResponse = $httpClient->get($this->backend . '/api/dashboard', [
                 'uid' => $uid,
                 'username' => $username,
