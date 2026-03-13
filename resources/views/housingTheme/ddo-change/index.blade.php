@@ -97,7 +97,8 @@
                         @else
                             <div class="alert alert-warning">
                                 <i class="fa fa-exclamation-triangle me-2"></i>
-                                <strong>Note:</strong> Your DDO code is not found in the Housing Department records. Please contact the department for updation before proceeding.
+                                <strong>Note:</strong> Your DDO code is not found in the Housing Department records. Please contact the department for updation before proceeding.<br>
+                                <span class="text-danger fw-bold">You can not proceed further without departmental approval.</span>
                             </div>
                         @endif
                     </form>

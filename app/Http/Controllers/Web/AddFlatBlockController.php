@@ -9,13 +9,31 @@ use Illuminate\Support\Facades\Log;
 
 class AddFlatBlockController extends Controller
 {
-    public function addFlatBlock(Request $request)
+    public function addFlatBlock(Request $request) // Modified by Subham dt.12-03-2026
     {
-
         if (!$request->session()->has('user')) {
             abort(403, 'Authentication required');
         }
-        return view('housingTheme.add-block.add-block');  
+
+        $blocks = collect(); // default empty collection
+
+        try {
+            $token   = $request->session()->get('api_token');
+            $backend = rtrim(env('BACKEND_API'), '/');
+
+            $response = Http::withToken($token)->get($backend . '/api/block/list');
+
+            if ($response->successful()) {
+                $blocks = collect($response->json());
+            }
+        } catch (\Exception $e) {
+            Log::error('Fetch Blocks Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+
+        return view('housingTheme.add-block.add-block', compact('blocks'));
     }
     
     public function storeFlatBlock(Request $request)
