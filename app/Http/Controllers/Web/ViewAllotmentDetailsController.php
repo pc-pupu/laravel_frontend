@@ -137,6 +137,7 @@ class ViewAllotmentDetailsController extends Controller
                     'status' => $status
                 ]);
 
+                // print_r($response->body());exit;
             if ($response->successful()) {
                 $responseData           = $response->json();
                 
@@ -282,6 +283,7 @@ class ViewAllotmentDetailsController extends Controller
                     'uid' => $uid
                 ]);
 
+                // print_r($response->body());exit;
             if ($response->successful()) {
                 $responseData           = $response->json();
                 

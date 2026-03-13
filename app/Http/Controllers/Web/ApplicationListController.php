@@ -85,6 +85,7 @@ class ApplicationListController extends Controller
         $user = $request->session()->get('user');
         $userRole = $user['role'] ?? null;
         $ddoCode = $user['name'] ?? null; // DDO code is stored in name field
+        $flatTypeFilter = $request->query('flat_type'); // e.g. A+, A, B, C, D, All / null
         
 
         try {
@@ -107,6 +108,14 @@ class ApplicationListController extends Controller
             }
 
             $data = $response->json('data') ?? [];
+            // Local flat type filter (A+, A, B, C, D). "All" or empty shows everything.
+            if ($flatTypeFilter && strtoupper($flatTypeFilter) !== 'ALL') {
+                $normalized = strtoupper(trim($flatTypeFilter));
+                $data = array_values(array_filter($data, function ($row) use ($normalized) {
+                    $flat = isset($row['flat_type']) ? strtoupper(trim($row['flat_type'])) : '';
+                    return $flat === $normalized;
+                }));
+            }
             $counts = $response->json('counts') ?? [];
             // print('<pre>');print_r($counts);die;
             // Get status message
@@ -129,6 +138,7 @@ class ApplicationListController extends Controller
                 'user' => $user,
                 'verifiedStatus' => $verifiedStatus,
                 'rejectedStatus' => $rejectedStatus,
+                'flatTypeFilter' => $flatTypeFilter,
             ]);
 
         } catch (\Exception $e) {
