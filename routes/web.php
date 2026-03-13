@@ -303,6 +303,9 @@ Route::middleware(\App\Http\Middleware\CheckSessionAuth::class)->group(function 
     Route::get('view_application_list/{status}/{url}/{page_status}', [ApplicationListController::class, 'dashboard'])
         ->where(['status' => '.*', 'url' => '.*', 'page_status' => '.*'])
         ->name('view_application_list.dashboard');
+        Route::get('view_application_list/{status}/{url}', [ApplicationListController::class, 'dashboard'])
+        ->where(['status' => '.*', 'url' => '.*', 'page_status' => '.*'])
+        ->name('view-application-list.dashboard');
     Route::get('view_application/{status}/{entity}/{page_status}', [ApplicationListController::class, 'adminList'])
         ->where(['status' => '.*', 'entity' => '.*', 'page_status' => '.*'])
         ->name('view_application');

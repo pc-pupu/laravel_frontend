@@ -569,6 +569,14 @@ footer a:hover {
         box-shadow: 0 6px 20px rgba(73, 128, 247, 0.5);
         color: white;
     }
+    .select-field-style{
+        background: linear-gradient(135deg, #a999ad 0%, #92a7aa 100%);
+        color: rgb(14, 13, 13);
+        padding: 1.5rem 2rem;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+    }
+  
     .search-filter-box {
         background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%);
         padding: 1.5rem;
